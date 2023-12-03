@@ -1,0 +1,37 @@
+以centos7安装配置为例，其它系统自行研究
+yum -y install chrony
+编辑此区域
+配置文件修改
+vi /etc/chrony.conf
+################
+server ntp.xtp.com iburst
+server ntp1.xtp.com iburst
+server ntp2.xtp.com iburst
+driftfile /var/lib/chrony/drift
+makestep 1.0 3
+rtcsync
+allow 10.36.0.0/16
+logdir /var/log/chrony 
+###############
+systemctl enable chronyd
+systemctl start chronyd　
+systemctl status chronyd
+编辑此区域
+常用命令
+#立即手工同步
+chronyc -a makestep
+
+#查看时间同步源
+chronyc sources -v
+
+#查看时间同步源状态
+chronyc sourcestats -v
+
+#校准时间服务器
+chronyc tracking -v
+
+#硬件时间默认为UTC
+timedatectl set-local-rtc 1
+
+#启用NTP时间同步,根据实际需求设置
+timedatectl set-ntp yes

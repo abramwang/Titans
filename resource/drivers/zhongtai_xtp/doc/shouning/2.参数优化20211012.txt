@@ -1,0 +1,44 @@
+1、更新api版本至2.2.30.7以上版本
+
+2、api中设置UDPBufferSize为512M，按先初始化、设置buff size，再登录的顺序
+
+3、socket参数优化
+
+a.Linux下，修改/proc/sys/net/core/rmem_max 以及rmem_default数值到128M大小，/proc/sys/net/core/netdev_max_backlog 调整到4000
+
+1）修改/proc/sys/net/core/rmem_max 以及rmem_default数值到128M大小，命令如下：
+cd /proc/sys/net/ipv4
+sysctl -w net.core.rmem_default=134217728
+sysctl -w net.core.rmem_max=134217728
+sysctl -w net.core.wmem_default=134217728
+sysctl -w net.core.wmem_max=134217728
+sysctl -w net.ipv4.udp_mem="134217728 134217728 268435456"
+sysctl -w net.ipv4.udp_rmem_min=134217728
+sysctl -w net.ipv4.udp_wmem_min=134217728
+
+2）修改/proc/sys/net/core/netdev_max_backlog 调整到4000；命令如下:
+echo "net.core.netdev_max_backlog=4000" >> /etc/sysctl.conf
+
+3）修改/etc/sysctl.conf文件，增加以下参数配置：命令如下:
+vi /etc/sysctl.conf 
+net.core.rmem_default=134217728
+net.core.rmem_max=134217728
+net.core.wmem_default=134217728
+net.core.wmem_max=134217728
+net.ipv4.udp_mem="134217728 134217728 268435456"
+net.ipv4.udp_rmem_min=134217728
+net.ipv4.udp_wmem_min=134217728
+
+4）最后执行：/sbin/sysctl -p
+
+b.Windows下，打开注册表
+　　“\HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\AFD\Parameters ”
+　　增加DefaultReceiveWindow 字段，DWORD类型，大小设置为33554432
+
+4、行情数据copy到另外的内存空间，并在另一个线程内处理。
+
+5、日志设为info级别。
+
+6、是否大包数据丢失，ping -s 4000 ip 到服务器（windows下使用ping -l 4000 ip），看看是否有回应，如果没有回应，检查相同网络环境下其他机器是否可以ping大包，如果可以，则检查系统配置和网卡，可以尝试重启系统等操作。
+
+7、是否进行绑核设置并将api绑在了一个cpu核上？如果是的话，请取消绑核操作，或者将回调线程和接收线程分别绑在不同的cpu核上（用带有绑核的api2.2.30.7：https://xtp.zts.com.cn/download.html）。
