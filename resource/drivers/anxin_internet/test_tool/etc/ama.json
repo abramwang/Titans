@@ -1,0 +1,134 @@
+{
+    "LocalIp": "",
+    "IsThreadSafe": false,
+    "ChannelMode": ["TCP"],
+    "HAMode": 0,
+    "IsSubscribeFull": true,
+    "KeepOrder": false,
+    "KeepOrderTimeOutMs": 3000,
+    "IsOutputMonData": true,
+    "EnableOrderBook": 0,
+    "OrderBookThread": 3,
+    "OrderBookEntrySize": 10,
+    "OrderQueueSize": 0,
+    "OrderBookOutputInternal": 10000,
+    "TcpCompressMode": 0,
+    "UMSInfo":
+    [
+        {
+            "ServerIp": "10.128.0.51",
+            "ServerPort": 8305
+        }
+    ],
+
+    "Username" : "wfb_ama1",
+    "Password" : "1",
+    
+    "DynamicGetStaticInfo": false,
+    "CodeTableQuery":
+    {
+        "Enable": false,
+        "CodeTableInfo":
+        [
+            {
+                "Enable": true,
+                "Market": "SSE",
+                "SecurityCode":[]
+            }
+        ]
+    },
+    "ETFQuery":
+    {
+        "Enable": false,
+        "QueryInfo":
+        [
+            {
+                "Enable": true,
+                "Market": "SSE",
+                "SecurityCode":[]
+            }
+        ]
+    },
+    "GetIMCExchangeRate": false,
+    "RDIQuery":
+    {
+        "Enable": false,
+        "QueryInfo":
+        [
+            {
+                "Enable": true,
+                "Type": "BondInfoInterbank",
+                "SecurityCode":[""]
+            }
+        ]
+    },
+
+
+    "DynamicLoadSubInfo":false,
+    "SubOrderBook": 
+    {
+        "SubscribeType" : "Set",
+        "Enable": false,
+        "SubInfo":
+        [
+            {
+                "Enable": true,
+                "Market": "SSE",
+                "Flag": [],
+                "SecurityCode":["600000"]
+            }
+        ]
+    },
+    "SubDerivedData": 
+    {
+        "Enable": false,
+        "SubInfo":
+        [
+            {
+                "Enable": true,
+                "SubscribeType" : "Set",
+                "Flag": "IOPVSnapshot",
+                "CodeInfos":
+                [
+                    {
+                        "Market": "SSE",
+                        "SecurityCode":["510180"]
+                    },
+                    {
+                        "Market": "SZSE",
+                        "SecurityCode":["159767"]
+                    }
+                ]
+            }
+        ]
+    },
+    "SubscribeCategory" :
+    {
+        "SubscribeType" : "Set",
+        "Enable": false,
+        "SubInfo":
+        [
+            {
+                "Enable": true,
+                "Market": "SSE",
+                "SubSecuDataType": [],
+                "SubCategoryType": [],
+                "SecurityCode":["600000", "510180"]
+            }
+        ]
+    },
+    "Subscribe" :
+    {
+        "SubscribeType" : "Set",
+        "Enable": false,
+        "SubInfo":
+        [
+            {
+                "Market": "SSE",
+                "Enable": false,
+                "SubDataType": [],
+                "SecurityCode":["600000"]
+            }
+        ]
+    }
+}

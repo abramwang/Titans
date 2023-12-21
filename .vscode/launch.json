@@ -5,11 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "cwd": "${workspaceFolder}/oceanus/src/oc_ipc_quote_demo/build/",
+            "cwd": "${workspaceFolder}/oceanus/src/oc_quote_ipc_server_anxin_internet/build/",
             "name": "Remote Debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "./oc_ipc_quote_demo",
+            "program": "./oc_quote_ipc_server_anxin_internet",
             "miDebuggerServerAddress": "localhost:1234",
             "miDebuggerPath": "gdb"
         }
