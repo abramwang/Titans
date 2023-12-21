@@ -18,6 +18,11 @@ yum install devtoolset-9-gcc devtoolset-9-gcc-c++ -y
 source /opt/rh/devtoolset-9/enable
 ```
 
+### 安装 libuv
+```shell
+yum install libuv-devel -y
+```
+
 ### 安装 glog
 ```shell
 yum install glog-devel -y
@@ -28,6 +33,11 @@ yum install gflags-devel -y
 ```shell
 yum install -y http://rpms.famillecollet.com/enterprise/remi-release-7.rpm
 yum --enablerepo=remi install redis
+```
+
+### 安装 hiredis
+```shell
+yum install hiredis-devel -y
 ```
 
 ### 安装 Apache Arrow
