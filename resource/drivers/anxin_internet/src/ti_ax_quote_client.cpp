@@ -346,7 +346,7 @@ void TiAxQuoteClient::init_ama_config()
         m_cfg.channel_mode = amd::ama::ChannelMode::kAMI;
     }
 
-    m_cfg.tcp_compress_mode = 0;  //TCP传输数据方式: 0 不压缩 1 华锐自定义压缩 2 zstd压缩(仅TCP模式有效)
+    m_cfg.tcp_compress_mode = 1;  //TCP传输数据方式: 0 不压缩 1 华锐自定义压缩 2 zstd压缩(仅TCP模式有效)
     
     
     /*
