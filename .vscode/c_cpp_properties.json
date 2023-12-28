@@ -10,7 +10,7 @@
             "cStandard": "gnu17",
             "cppStandard": "gnu++14",
             "configurationProvider": "ms-vscode.cmake-tools",
-            "compileCommands": "${workspaceFolder}/oceanus/src/oc_quote_ipc_server_anxin_internet/build/compile_commands.json"
+            "compileCommands": "${workspaceFolder}/oceanus/src/oc_ipc_quote_json_server/build/compile_commands.json"
         }
     ],
     "version": 4

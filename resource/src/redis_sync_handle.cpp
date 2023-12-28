@@ -253,3 +253,16 @@ bool RedisSyncHandle::xadd(const char* key, const char* message)
     freeReplyObject(reply);
     return true;
 }
+
+bool RedisSyncHandle::xadd_binary(const char* key, const char* message, size_t len)
+{
+    LOG(INFO) << "key: " << key << ", message len: " << len;
+    redisReply *reply = (redisReply *)redisCommand(_context, "XADD %s * msg %b", key, message, len);
+    if (nullptr == reply)
+    {
+        cerr << "xadd command failed!:" << _context->err << " " << _context->errstr << endl;
+        return false;
+    }
+    freeReplyObject(reply);
+    return true;
+}

@@ -1,5 +1,6 @@
 ﻿#include <iostream>
 #include <unistd.h>
+#include <set>
 #include <glog/logging.h>
 
 #include "ti_quote_callback.h"
@@ -14,12 +15,17 @@ private:
     int64_t m_cout_match_time;
     int64_t m_cout_order_time;
     int64_t m_cout_order_book_time;
+    std::set<std::string> m_selected_symbols;
 public:
     UserCallback(){
         m_cout_snap_time = 0;
         m_cout_match_time = 0;
         m_cout_order_time = 0;
         m_cout_order_book_time = 0;
+        m_selected_symbols.insert("600000");
+        m_selected_symbols.insert("000001");
+        m_selected_symbols.insert("688981");
+        m_selected_symbols.insert("300152");
     };
     virtual ~UserCallback(){};
 public:
@@ -39,6 +45,10 @@ public:
     };
 
     virtual void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){
+        auto iter = m_selected_symbols.find(pData->symbol);
+        if(iter == m_selected_symbols.end()){
+            return;
+        }
         if ((pData->time - m_cout_snap_time) > 1000)
         {
             printf("[OnL2StockSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 

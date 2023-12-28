@@ -49,6 +49,8 @@ public:
     /// STREAM
     bool xadd(const char* key, const char* message);
 
+    bool xadd_binary(const char* key, const char* message, size_t len);
+
 
 };
 
