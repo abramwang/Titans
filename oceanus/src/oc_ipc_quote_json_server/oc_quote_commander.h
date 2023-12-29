@@ -58,6 +58,7 @@ public:
 
 public:
     virtual void OnCommandRtn(const char* type, const char* command);
+    virtual void OnTimer();
 
     virtual void OnTradingDayRtn(const unsigned int day, const char* exchangeName);
    
@@ -67,7 +68,6 @@ public:
     virtual void OnL2StockMatchesRtn(const TiQuoteMatchesField* pData);
     virtual void OnL2StockOrderRtn(const TiQuoteOrderField* pData);
 
-    
     virtual void OnDepthSnapshotRtn(const TiQuoteDepthSnapshotBaseField* pBase, 
         const std::vector<TiQuoteDepthLevel*> &asks, 
         const std::vector<TiQuoteDepthLevel*> &bids){};
@@ -85,11 +85,12 @@ public:
 	virtual ~OcQuoteCommander();
 
 
+    static void onTimer(uv_timer_t* handle);
 private:
     RedisSyncHandle m_redis;
+    uv_timer_t m_timer;
     ConfigInfo* m_config;
     json m_json_cash;
-    json m_json_msg;
 
     std::set<int64_t> m_subscribed_snapshot_symbol_ids;
     std::set<int64_t> m_subscribed_matches_symbol_ids;

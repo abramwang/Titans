@@ -18,7 +18,13 @@ OcQuoteCommander::OcQuoteCommander(uv_loop_s* loop, std::string configPath)
         
         bool flag = m_redis.connect(m_config->szIp.c_str(), m_config->nPort, m_config->szAuth.c_str());
         LOG(INFO) << "[OcQuoteCommander] flag: " << flag;
+
+        resetStreamKey();
     }
+
+    m_timer.data = this;
+    uv_timer_init(loop, &m_timer);
+    uv_timer_start(&m_timer, onTimer, 1000, 500);
 }
 OcQuoteCommander::~OcQuoteCommander(){
     if(m_quote_client){
@@ -52,6 +58,19 @@ void OcQuoteCommander::OnCommandRtn(const char* type, const char* command)
     
 };
 
+void OcQuoteCommander::OnTimer()
+{
+    if (m_json_cash.empty())
+    {
+        return;
+    }
+    
+    std::string msg = m_json_cash.dump();
+    m_json_cash = json::array();
+
+    m_redis.xadd(m_config->szQuoteStreamKey.c_str(), msg.c_str());
+};
+
 
 void OcQuoteCommander::OnTradingDayRtn(const unsigned int day, const char* exchangeName){};
    
@@ -68,10 +87,8 @@ void OcQuoteCommander::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pDa
 
     json j;
     TiQuoteFormater::FormatSnapshot(pData, j);
-    std::string msg = j.dump();
 
-    m_redis.xadd(m_config->szQuoteStreamKey.c_str(), msg.c_str());
-    
+    m_json_cash.push_back(j);    
 };
 void OcQuoteCommander::OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){};
 void OcQuoteCommander::OnL2StockOrderRtn(const TiQuoteOrderField* pData){};
@@ -110,6 +127,11 @@ void OcQuoteCommander::onXreadgroupMsg(const char* streamKey, const char* id, co
     OnCommandRtn(type, msg);
 };
 
+void OcQuoteCommander::onTimer(uv_timer_t* handle)
+{
+    OcQuoteCommander* pThis = (OcQuoteCommander*)handle->data;
+    pThis->OnTimer();
+};
 
 ////////////////////////////////////////////////////////////////////////
 // 内部方法
@@ -193,6 +215,8 @@ void OcQuoteCommander::resetStreamKey()
     {
         return;
     }
+    m_redis.xtrim(m_config->szQuoteStreamKey.c_str(), 1000);
+
     int64_t time_num = datetime::get_time_num();
     if (time_num  > 95000000 && time_num < 155000000)   //交易时段不重置了
     {

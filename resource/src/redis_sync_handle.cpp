@@ -271,6 +271,19 @@ bool RedisSyncHandle::hgetall(const char* key, map<string, string> &result)
     return true;
 };
 
+bool RedisSyncHandle::xtrim(const char* key, size_t count)
+{
+    LOG(INFO) << "key: " << key << ", message: " << count;
+    redisReply *reply = (redisReply *)redisCommand(_context, "XTRIM %s MAXLEN %ld", key, count);
+    if (nullptr == reply)
+    {
+        cerr << "xadd command failed!:" << _context->err << " " << _context->errstr << endl;
+        return false;
+    }
+    freeReplyObject(reply);
+    return true;
+};
+
 bool RedisSyncHandle::xadd(const char* key, const char* message)
 {
     LOG(INFO) << "key: " << key << ", message: " << message;

@@ -49,6 +49,7 @@ public:
     bool hgetall(const char* key, map<string, string> &result);
 
     /// STREAM
+    bool xtrim(const char* key, size_t count);
     bool xadd(const char* key, const char* message);
 
     bool xadd_binary(const char* key, const char* message, size_t len);
