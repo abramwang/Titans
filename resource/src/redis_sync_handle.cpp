@@ -137,6 +137,36 @@ bool RedisSyncHandle::rpush(const char* key, const char* message)
     return true;
 }
 
+bool RedisSyncHandle::set(const char* key, const char* message)
+{
+    LOG(INFO) << "key: " << key << ", message: " << message;
+    redisReply *reply = (redisReply *)redisCommand(_context, "SET %s %s", key, message);
+    if (nullptr == reply)
+    {
+        cerr << "set command failed!:" << _context->err << " " << _context->errstr << endl;
+        return false;
+    }
+    freeReplyObject(reply);
+    return true;
+}
+
+bool RedisSyncHandle::get(const char* key, string &result)
+{
+    LOG(INFO) << "key: " << key ;
+    redisReply *reply = (redisReply *)redisCommand(_context, "GET %s", key);
+    if (nullptr == reply)
+    {
+        cerr << "get command failed!:" << _context->err << " " << _context->errstr << endl;
+        return false;
+    }
+    if(reply->str){
+        result = reply->str;
+    }
+    freeReplyObject(reply);
+    return true;
+
+};
+
 bool RedisSyncHandle::sadd(const char* key, const char* message)
 {
     LOG(INFO) << "key: " << key << ", message: " << message;

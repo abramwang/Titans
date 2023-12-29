@@ -36,6 +36,8 @@ public:
     bool rpush(const char* key, const char* message);
 
     // SET
+    bool set(const char* key, const char* message);
+    bool get(const char* key, string &result);
     bool sadd(const char* key, const char* message);
     bool smembers(const char* key, vector<string> &result);
 

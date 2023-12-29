@@ -13,15 +13,12 @@ OcQuoteCommander::OcQuoteCommander(uv_loop_s* loop, std::string configPath)
     m_config = NULL;
     loadConfig(configPath);
 
-    ///*
     if(m_config){
         connect(m_config->szIp.c_str(), m_config->nPort, m_config->szAuth.c_str());
         
         bool flag = m_redis.connect(m_config->szIp.c_str(), m_config->nPort, m_config->szAuth.c_str());
         LOG(INFO) << "[OcQuoteCommander] flag: " << flag;
-        resetStreamKey();
     }
-
 }
 OcQuoteCommander::~OcQuoteCommander(){
     if(m_quote_client){
@@ -61,6 +58,11 @@ void OcQuoteCommander::OnTradingDayRtn(const unsigned int day, const char* excha
 void OcQuoteCommander::OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){};
 void OcQuoteCommander::OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData){};
 void OcQuoteCommander::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){
+    int64_t symbol_id = TiQuoteTools::GetSymbolID(pData->exchange, pData->symbol);
+    if (m_subscribed_snapshot_symbol_ids.find(symbol_id) == m_subscribed_snapshot_symbol_ids.end())
+    {
+        return;
+    }
     printf("[OnL2StockSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
                 pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
 
@@ -83,6 +85,8 @@ void OcQuoteCommander::onAuth(int err, const char* errStr){
             m_config->nBlock);
     }
     std::cout << "onAuth:" << err << " " << errStr << std::endl;
+
+    initQuoteInfo(m_config->szSubscribedInfoKey);
 
     if(m_config->szQuoteTopic.empty()){
         m_quote_client->run(NULL);
@@ -117,17 +121,19 @@ int OcQuoteCommander::loadConfig(std::string iniFileName){
 
     m_config = new ConfigInfo();
 
-    m_config->szIp        = string(_iniFile["oc_trader_commander_anxin"]["ip"]);
-    m_config->nPort       = _iniFile["oc_trader_commander_anxin"]["port"];
-    m_config->szAuth      = string(_iniFile["oc_trader_commander_anxin"]["auth"]);
+    m_config->szIp        = string(_iniFile["oc_quote_commander"]["ip"]);
+    m_config->nPort       = _iniFile["oc_quote_commander"]["port"];
+    m_config->szAuth      = string(_iniFile["oc_quote_commander"]["auth"]);
 
-    m_config->nBlock          = _iniFile["oc_trader_commander_anxin"]["block"];
-    m_config->szCommandStreamKey     = string(_iniFile["oc_trader_commander_anxin"]["command_stream_key"]);
-    m_config->szCommandStreamGroup   = string(_iniFile["oc_trader_commander_anxin"]["command_stream_group"]);
-    m_config->szCommandConsumerId   = string(_iniFile["oc_trader_commander_anxin"]["command_consumer_id"]);
+    m_config->szQuoteTopic      = string(_iniFile["oc_quote_commander"]["ipc_quote_topic"]);
+
+    m_config->nBlock                    = _iniFile["oc_quote_commander"]["block"];
+    m_config->szCommandStreamKey        = string(_iniFile["oc_quote_commander"]["command_stream_key"]);
+    m_config->szCommandStreamGroup      = string(_iniFile["oc_quote_commander"]["command_stream_group"]);
+    m_config->szCommandConsumerId       = string(_iniFile["oc_quote_commander"]["command_consumer_id"]);
     
-    m_config->szOrderKey         = string(_iniFile["oc_trader_commander_anxin"]["order_key"]);
-    m_config->szMatchKey         = string(_iniFile["oc_trader_commander_anxin"]["match_key"]);
+    m_config->szSubscribedInfoKey       = string(_iniFile["oc_quote_commander"]["subscribed_info_key"]);
+    m_config->szQuoteStreamKey          = string(_iniFile["oc_quote_commander"]["quote_notify_stream_key"]);
     
     if( m_config->szIp.empty() |
         !m_config->nPort |
@@ -143,6 +149,38 @@ int OcQuoteCommander::loadConfig(std::string iniFileName){
     return 0;
 };
 
+void OcQuoteCommander::initQuoteInfo(std::string quoteInfoKey)
+{
+    std::string quoteInfo;
+    bool flag = m_redis.get(quoteInfoKey.c_str(), quoteInfo);
+
+    json j;
+    if(flag){
+        m_subscribed_snapshot_symbol_ids.clear();
+        m_subscribed_matches_symbol_ids.clear();
+        m_subscribed_orders_symbol_ids.clear();
+
+        j = json::parse(quoteInfo);
+
+        if(j["SH.snapshot"].is_array()){
+            for(auto it = j["SH.snapshot"].begin(); it != j["SH.snapshot"].end(); it++){
+                std::string symbol = it->get<std::string>();
+                m_subscribed_snapshot_symbol_ids.insert(TiQuoteTools::GetSymbolID("SH", symbol.c_str()));
+            }
+        }
+
+        if(j["SZ.snapshot"].is_array()){
+            for(auto it = j["SZ.snapshot"].begin(); it != j["SZ.snapshot"].end(); it++){
+                std::string symbol = it->get<std::string>();
+                m_subscribed_snapshot_symbol_ids.insert(TiQuoteTools::GetSymbolID("SZ", symbol.c_str()));
+            }
+        }
+    }
+
+    std::cout << "m_subscribed_snapshot_symbol_ids: " << m_subscribed_snapshot_symbol_ids.size() << std::endl;
+
+};
+
 void OcQuoteCommander::resetStreamKey()
 {
     if (!m_config)
@@ -154,12 +192,12 @@ void OcQuoteCommander::resetStreamKey()
     {
         return;
     }
-    if(!m_config->szOrderKey.empty())
+    if(!m_config->szSubscribedInfoKey.empty())
     {
-        m_redis.del(m_config->szOrderKey.c_str());
+        m_redis.del(m_config->szSubscribedInfoKey.c_str());
     }
-    if(!m_config->szMatchKey.empty())
+    if(!m_config->szQuoteStreamKey.empty())
     {
-        m_redis.del(m_config->szMatchKey.c_str());
+        m_redis.del(m_config->szQuoteStreamKey.c_str());
     }
 };

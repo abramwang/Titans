@@ -9,6 +9,7 @@
 #include "ti_quote_callback.h"
 #include "ti_quote_depth_callback.h"
 #include "ti_quote_ipc_client.h"
+#include "ti_quote_tools.h"
 
 #include <nlohmann/json.hpp>
 
@@ -26,15 +27,16 @@ public:
         int         nPort;
         std::string szAuth;
 
+        std::string szQuoteTopic;
+
         int nBlock;
         std::string szCommandStreamKey;
         std::string szCommandStreamGroup;
         std::string szCommandConsumerId;
 
-        std::string szQuoteTopic;
+        std::string szSubscribedInfoKey;
 
-        std::string szOrderKey;
-        std::string szMatchKey;
+        std::string szQuoteStreamKey;
 
     } ConfigInfo;
 
@@ -89,10 +91,15 @@ private:
     json m_json_cash;
     json m_json_msg;
 
+    std::set<int64_t> m_subscribed_snapshot_symbol_ids;
+    std::set<int64_t> m_subscribed_matches_symbol_ids;
+    std::set<int64_t> m_subscribed_orders_symbol_ids;
+
     TiQuoteIpcClient* m_quote_client;
 
 private:
     int loadConfig(std::string iniFileName);
+    void initQuoteInfo(std::string quoteInfo);
     void resetStreamKey();
 
 public:
