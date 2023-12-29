@@ -3,64 +3,98 @@
 
 __version__ = '0.1.0'
 __all__ = [
-    'Init', 'Sub', 'SubStop', 'Pub', 'Destroy'
+    'Init', 'SubQuote', 'ReadLoop'
 ]
 __author__ = 'bo wang <bo.wang@sci-inv.cn>'
 
 from types import FunctionType
 
 __user_data__ = None
+"""
+__user_data__ = {
+    "redis_conn": obj,
+    "user": "lw",
+    "commander_key": "oc_quote_commander.lw",
+    "response_key": "oc_quote_commander",
+    "response_group": "g1",
+    "sub_info" : {
+        "SH.snapshot": [],
+        "SH.orders": [],
+        "SH.matches": [],
+        "SZ.snapshot": [],
+        "SZ.orders": [],
+        "SZ.matches": []
+    }
+}
+"""
 
-def Init(host_:str, port_:int, user_:str, pwd_:str = "XrychhqCdkyhhlHhyqbffByqzkyy2020)%!&",
-    host2_:str="", port2_:int=0, user2_:str="", pwd2_:str = ""):
+def Init(host_:str, port_:int, user_:str, pwd_:str = "P7pO48Lw4AZTOLXKlR"):
     global __user_data__
     if not __user_data__:
         import redis
-        rc = redis.Redis(
-            host=host_, 
-            port=port_, 
-            password="XrychhqCdkyhhlHhyqbffByqzkyy2020)%!&",
-            socket_keepalive_options=True,
-            decode_responses=True)
-        ps = rc.pubsub()
-        rc2 = None
-        if host2_ and port2_ and user2_ and pwd2_:
-            rc2 = redis.Redis(
-                host=host2_, 
-                port=port2_, 
-                password=pwd2_,
-                socket_keepalive_options=True,
-                decode_responses=True)
-        else:
-            rc2 = rc
-            user2_ = user_
+        redis_pool = redis.ConnectionPool(
+            host = host_, 
+            port = port_, 
+            password= pwd_, db= 0)
+        
+        redis_conn = redis.Redis(connection_pool= redis_pool)
+
         __user_data__ = {
-            'rc': rc,
-            'ps': ps,
-            'rc2': rc2,
+            'redis_conn': redis_conn,
             'user': user_,
-            'user2': user2_
+            'commander_key': f"oc_quote_commander.{user_}",
+            'response_key': f"oc_quote_commander.response.{user_}",
+            "response_group": "g1",
+            "sub_info" : {
+                "SH.snapshot": [],
+                "SH.orders": [],
+                "SH.matches": [],
+                "SZ.snapshot": [],
+                "SZ.orders": [],
+                "SZ.matches": []
+            }
         }
+        try:
+            redis_conn.xgroup_create(__user_data__["response_key"], __user_data__["response_group"])
+        except Exception as e:
+            print(e)
+            pass
         return 0
     return -1
 
-def Sub(topic_:str, cb_:FunctionType):
+def SubQuote(dateType:str, exchange:str, symbol_list:list):
+    print(dateType, exchange, symbol_list)
+    global __user_data__
+    if not __user_data__:
+        return -1
+    import json
+    __user_data__["sub_info"][f"{exchange}.{dateType}"] = symbol_list
+    __user_data__["redis_conn"].xadd(__user_data__["commander_key"], {
+            "update_sub_info": json.dumps(__user_data__["sub_info"])
+        })
+    return 0
+
+def ReadLoop(cb_:FunctionType):
     global __user_data__
     if not __user_data__:
         return -1
     if not cb_:
         return -1
     import json
-    ps = __user_data__['ps']
-    ps.psubscribe('{}.{}'.format(__user_data__['user'], topic_))
-    for item in ps.listen():
-        if item['type'] == 'pmessage':
-            cb_(item['channel'].split(".")[1], json.loads(item['data']))
+    while True:
+        msg = __user_data__["redis_conn"].xreadgroup(
+            __user_data__["response_group"], 
+            "c1", 
+            {__user_data__["response_key"]: '>'}, 
+            1, 0, False)
+        for stream_key, entries in msg:
+            for entry_id, fields in entries:
+                data_array = json.loads(fields[b'msg'].decode())
+                for data in data_array:
+                    cb_(data["type"], data)
+                __user_data__["redis_conn"].xack(
+                    __user_data__["response_key"], 
+                    __user_data__["response_group"], 
+                    entry_id)
 
-def Pub(topic_:str, data_:object):
-    global __user_data__
-    if not __user_data__:
-        return -1
-    import json
-    rc = __user_data__['rc2']
-    rc.publish('{}.{}'.format(__user_data__['user2'], topic_), json.dumps(data_))
+

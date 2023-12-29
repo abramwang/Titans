@@ -42,6 +42,7 @@ OcQuoteCommander::~OcQuoteCommander(){
 ////////////////////////////////////////////////////////////////////////
 void OcQuoteCommander::OnCommandRtn(const char* type, const char* command)
 {
+    return;
     std::cout << "OnCommandRtn: " << type << " " << command << std::endl;
     if (!strcmp(type, "enterOrder"))
     {
@@ -271,10 +272,11 @@ void OcQuoteCommander::resetStreamKey()
     }
 
     int64_t time_num = datetime::get_time_num();
-    if (time_num  > 95000000 && time_num < 155000000)   //交易时段不重置了
+    if (time_num  > 95000000 && time_num < 205000000)   //交易时段不重置了
     {
         return;
     }
+    return;
     if(!m_config->szSubscribedInfoKey.empty())
     {
         m_redis.del(m_config->szSubscribedInfoKey.c_str());

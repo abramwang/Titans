@@ -16,6 +16,7 @@ while True:
             print("Stream Key:", stream_key)
             print("Entry ID:", entry_id)
             print("Fields:", fields)
+            redis_conn.xack(streamKey, groupName, entry_id)
     #print(msg)
 
 exit()

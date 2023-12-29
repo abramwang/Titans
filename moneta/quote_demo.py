@@ -5,16 +5,21 @@ import pymoneta.quote as quote
 from datetime import datetime
 
 
-time_delta_list = []
-x = 0
-
-def cb(topic_, data_):
-    print(topic_, data_)
+def cb(type_, data_):
+    print(type_, data_)
     
 def main():
-    quote.Init('47.103.74.35', 20183, 't0')
+    quote.Init('127.0.0.1', 20184, 'lw')
 
-    mq.Sub("*", cb)
+    quote.SubQuote("snapshot", "SH", [
+        "600000",
+        "600004",
+        "688788"
+    ])
+
+    #return
+
+    quote.ReadLoop(cb)
         #time.sleep(1)
     pass
 
