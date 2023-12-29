@@ -17,7 +17,30 @@ def main():
         "688788"
     ])
 
-    #return
+    quote.SubQuote("snapshot", "SZ", [
+        "000001"
+    ])
+
+    quote.SubQuote("orders", "SH", [
+        "600000",
+        "600004",
+        "688788"
+    ])
+
+    quote.SubQuote("orders", "SZ", [
+        "000001"
+    ])
+
+    quote.SubQuote("matches", "SH", [
+        "600000",
+        "600004",
+        "688788"
+    ])
+
+    quote.SubQuote("matches", "SZ", [
+        "000001"
+    ])
+
 
     quote.ReadLoop(cb)
         #time.sleep(1)
