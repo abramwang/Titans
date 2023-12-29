@@ -5,7 +5,7 @@ redis_pool = redis.ConnectionPool(
     host='127.0.0.1', port= 20184, password= 'kymq20180', db= 0)
 redis_conn = redis.Redis(connection_pool= redis_pool)
 
-streamKey = "quote_command.huatai_8080.07420"
+streamKey = "oc_quote_commander.lw"
 
 
 def querySymbolList():

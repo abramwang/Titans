@@ -69,6 +69,7 @@ void OcQuoteCommander::OnTimer()
     m_json_cash = json::array();
 
     m_redis.xadd(m_config->szQuoteStreamKey.c_str(), msg.c_str());
+    m_redis.xtrim(m_config->szQuoteStreamKey.c_str(), 1000);
 };
 
 
@@ -87,11 +88,36 @@ void OcQuoteCommander::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pDa
 
     json j;
     TiQuoteFormater::FormatSnapshot(pData, j);
+    j["type"] = "snapshot";
 
     m_json_cash.push_back(j);    
 };
-void OcQuoteCommander::OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){};
-void OcQuoteCommander::OnL2StockOrderRtn(const TiQuoteOrderField* pData){};
+void OcQuoteCommander::OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){
+    int64_t symbol_id = TiQuoteTools::GetSymbolID(pData->exchange, pData->symbol);
+    if (m_subscribed_snapshot_symbol_ids.find(symbol_id) == m_subscribed_snapshot_symbol_ids.end())
+    {
+        return;
+    }
+
+    json j;
+    TiQuoteFormater::FormatMatch(pData, j);
+    j["type"] = "matches";
+
+    m_json_cash.push_back(j);
+};
+void OcQuoteCommander::OnL2StockOrderRtn(const TiQuoteOrderField* pData){
+    int64_t symbol_id = TiQuoteTools::GetSymbolID(pData->exchange, pData->symbol);
+    if (m_subscribed_snapshot_symbol_ids.find(symbol_id) == m_subscribed_snapshot_symbol_ids.end())
+    {
+        return;
+    }
+
+    json j;
+    TiQuoteFormater::FormatOrder(pData, j);
+    j["type"] = "order";
+
+    m_json_cash.push_back(j);
+};
 
 ////////////////////////////////////////////////////////////////////////
 // 回调方法
@@ -203,6 +229,34 @@ void OcQuoteCommander::initQuoteInfo(std::string quoteInfoKey)
                 m_subscribed_snapshot_symbol_ids.insert(TiQuoteTools::GetSymbolID("SZ", symbol.c_str()));
             }
         }
+
+        if(j["SH.matches"].is_array()){
+            for(auto it = j["SH.matches"].begin(); it != j["SH.matches"].end(); it++){
+                std::string symbol = it->get<std::string>();
+                m_subscribed_matches_symbol_ids.insert(TiQuoteTools::GetSymbolID("SH", symbol.c_str()));
+            }
+        }
+
+        if(j["SZ.matches"].is_array()){
+            for(auto it = j["SZ.matches"].begin(); it != j["SZ.matches"].end(); it++){
+                std::string symbol = it->get<std::string>();
+                m_subscribed_matches_symbol_ids.insert(TiQuoteTools::GetSymbolID("SZ", symbol.c_str()));
+            }
+        }
+
+        if(j["SH.orders"].is_array()){
+            for(auto it = j["SH.orders"].begin(); it != j["SH.orders"].end(); it++){
+                std::string symbol = it->get<std::string>();
+                m_subscribed_orders_symbol_ids.insert(TiQuoteTools::GetSymbolID("SH", symbol.c_str()));
+            }
+        }
+
+        if(j["SZ.orders"].is_array()){
+            for(auto it = j["SZ.orders"].begin(); it != j["SZ.orders"].end(); it++){
+                std::string symbol = it->get<std::string>();
+                m_subscribed_orders_symbol_ids.insert(TiQuoteTools::GetSymbolID("SZ", symbol.c_str()));
+            }
+        }
     }
 
     std::cout << "m_subscribed_snapshot_symbol_ids: " << m_subscribed_snapshot_symbol_ids.size() << std::endl;
@@ -215,7 +269,6 @@ void OcQuoteCommander::resetStreamKey()
     {
         return;
     }
-    m_redis.xtrim(m_config->szQuoteStreamKey.c_str(), 1000);
 
     int64_t time_num = datetime::get_time_num();
     if (time_num  > 95000000 && time_num < 155000000)   //交易时段不重置了
