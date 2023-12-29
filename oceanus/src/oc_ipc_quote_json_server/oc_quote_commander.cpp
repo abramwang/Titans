@@ -4,7 +4,7 @@
 #include "iniFile.h"
 #include "datetime.h"
 #include <glog/logging.h>
-#include "ti_trader_formater.h"
+#include "ti_quote_formater.h"
 
 OcQuoteCommander::OcQuoteCommander(uv_loop_s* loop, std::string configPath)
     : RedisCommander(loop)
@@ -66,6 +66,12 @@ void OcQuoteCommander::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pDa
     printf("[OnL2StockSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
                 pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
 
+    json j;
+    TiQuoteFormater::FormatSnapshot(pData, j);
+    std::string msg = j.dump();
+
+    m_redis.xadd(m_config->szQuoteStreamKey.c_str(), msg.c_str());
+    
 };
 void OcQuoteCommander::OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){};
 void OcQuoteCommander::OnL2StockOrderRtn(const TiQuoteOrderField* pData){};
