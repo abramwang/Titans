@@ -2,7 +2,7 @@ import redis
 import json
 
 redis_pool = redis.ConnectionPool(
-    host='127.0.0.1', port= 20184, password= 'kymq20180', db= 0)
+    host='127.0.0.1', port= 20184, password= 'P7pO48Lw4AZTOLXKlR', db= 0)
 redis_conn = redis.Redis(connection_pool= redis_pool)
 
 streamKey = "oc_quote_commander.lw"
@@ -38,3 +38,6 @@ def registerSymbol2():
 #querySymbolList()
 registerSymbol()
 registerSymbol2()
+
+
+redis_conn.xread({streamKey: 0}, block= 0)
