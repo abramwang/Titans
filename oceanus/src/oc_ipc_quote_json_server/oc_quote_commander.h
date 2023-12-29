@@ -100,6 +100,7 @@ private:
 
 private:
     int loadConfig(std::string iniFileName);
+    void updateQuoteInfo(std::string quoteInfo);
     void initQuoteInfo(std::string quoteInfo);
     void resetStreamKey();
 

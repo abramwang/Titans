@@ -42,21 +42,14 @@ OcQuoteCommander::~OcQuoteCommander(){
 ////////////////////////////////////////////////////////////////////////
 void OcQuoteCommander::OnCommandRtn(const char* type, const char* command)
 {
-    return;
     std::cout << "OnCommandRtn: " << type << " " << command << std::endl;
-    if (!strcmp(type, "enterOrder"))
-    {
-        json j = json::parse(command);
-        //enterOrder(j);
-        return;
-    }
-
-    if (!strcmp(type, "QueryAsset"))
-    {
-        //m_client->QueryAsset();
-        return;
-    }
     
+    if (!strcmp(type, "update_sub_info"))
+    {
+        updateQuoteInfo(command);
+        initQuoteInfo(command);
+        return;
+    }
 };
 
 void OcQuoteCommander::OnTimer()
@@ -84,8 +77,10 @@ void OcQuoteCommander::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pDa
     {
         return;
     }
+    /*
     printf("[OnL2StockSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
                 pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
+    */
 
     json j;
     TiQuoteFormater::FormatSnapshot(pData, j);
@@ -136,7 +131,11 @@ void OcQuoteCommander::onAuth(int err, const char* errStr){
     }
     std::cout << "onAuth:" << err << " " << errStr << std::endl;
 
-    initQuoteInfo(m_config->szSubscribedInfoKey);
+    std::string quoteInfo;
+    bool flag = m_redis.get(m_config->szSubscribedInfoKey.c_str(), quoteInfo);
+    if(flag){
+        initQuoteInfo(quoteInfo);
+    }
 
     if(m_config->szQuoteTopic.empty()){
         m_quote_client->run(NULL);
@@ -204,64 +203,68 @@ int OcQuoteCommander::loadConfig(std::string iniFileName){
     return 0;
 };
 
-void OcQuoteCommander::initQuoteInfo(std::string quoteInfoKey)
+void OcQuoteCommander::updateQuoteInfo(std::string quoteInfo)
 {
-    std::string quoteInfo;
-    bool flag = m_redis.get(quoteInfoKey.c_str(), quoteInfo);
+    bool flag = m_redis.set(m_config->szSubscribedInfoKey.c_str(), quoteInfo.c_str());
+    if (!flag)
+    {
+        std::cout << "updateQuoteInfo failed" << std::endl;
+    }
+};
 
+void OcQuoteCommander::initQuoteInfo(std::string quoteInfo)
+{
     json j;
-    if(flag){
-        m_subscribed_snapshot_symbol_ids.clear();
-        m_subscribed_matches_symbol_ids.clear();
-        m_subscribed_orders_symbol_ids.clear();
 
-        j = json::parse(quoteInfo);
+    m_subscribed_snapshot_symbol_ids.clear();
+    m_subscribed_matches_symbol_ids.clear();
+    m_subscribed_orders_symbol_ids.clear();
 
-        if(j["SH.snapshot"].is_array()){
-            for(auto it = j["SH.snapshot"].begin(); it != j["SH.snapshot"].end(); it++){
-                std::string symbol = it->get<std::string>();
-                m_subscribed_snapshot_symbol_ids.insert(TiQuoteTools::GetSymbolID("SH", symbol.c_str()));
-            }
+    j = json::parse(quoteInfo);
+
+    if(j["SH.snapshot"].is_array()){
+        for(auto it = j["SH.snapshot"].begin(); it != j["SH.snapshot"].end(); it++){
+            std::string symbol = it->get<std::string>();
+            m_subscribed_snapshot_symbol_ids.insert(TiQuoteTools::GetSymbolID("SH", symbol.c_str()));
         }
+    }
 
-        if(j["SZ.snapshot"].is_array()){
-            for(auto it = j["SZ.snapshot"].begin(); it != j["SZ.snapshot"].end(); it++){
-                std::string symbol = it->get<std::string>();
-                m_subscribed_snapshot_symbol_ids.insert(TiQuoteTools::GetSymbolID("SZ", symbol.c_str()));
-            }
+    if(j["SZ.snapshot"].is_array()){
+        for(auto it = j["SZ.snapshot"].begin(); it != j["SZ.snapshot"].end(); it++){
+            std::string symbol = it->get<std::string>();
+            m_subscribed_snapshot_symbol_ids.insert(TiQuoteTools::GetSymbolID("SZ", symbol.c_str()));
         }
+    }
 
-        if(j["SH.matches"].is_array()){
-            for(auto it = j["SH.matches"].begin(); it != j["SH.matches"].end(); it++){
-                std::string symbol = it->get<std::string>();
-                m_subscribed_matches_symbol_ids.insert(TiQuoteTools::GetSymbolID("SH", symbol.c_str()));
-            }
+    if(j["SH.matches"].is_array()){
+        for(auto it = j["SH.matches"].begin(); it != j["SH.matches"].end(); it++){
+            std::string symbol = it->get<std::string>();
+            m_subscribed_matches_symbol_ids.insert(TiQuoteTools::GetSymbolID("SH", symbol.c_str()));
         }
+    }
 
-        if(j["SZ.matches"].is_array()){
-            for(auto it = j["SZ.matches"].begin(); it != j["SZ.matches"].end(); it++){
-                std::string symbol = it->get<std::string>();
-                m_subscribed_matches_symbol_ids.insert(TiQuoteTools::GetSymbolID("SZ", symbol.c_str()));
-            }
+    if(j["SZ.matches"].is_array()){
+        for(auto it = j["SZ.matches"].begin(); it != j["SZ.matches"].end(); it++){
+            std::string symbol = it->get<std::string>();
+            m_subscribed_matches_symbol_ids.insert(TiQuoteTools::GetSymbolID("SZ", symbol.c_str()));
         }
+    }
 
-        if(j["SH.orders"].is_array()){
-            for(auto it = j["SH.orders"].begin(); it != j["SH.orders"].end(); it++){
-                std::string symbol = it->get<std::string>();
-                m_subscribed_orders_symbol_ids.insert(TiQuoteTools::GetSymbolID("SH", symbol.c_str()));
-            }
+    if(j["SH.orders"].is_array()){
+        for(auto it = j["SH.orders"].begin(); it != j["SH.orders"].end(); it++){
+            std::string symbol = it->get<std::string>();
+            m_subscribed_orders_symbol_ids.insert(TiQuoteTools::GetSymbolID("SH", symbol.c_str()));
         }
+    }
 
-        if(j["SZ.orders"].is_array()){
-            for(auto it = j["SZ.orders"].begin(); it != j["SZ.orders"].end(); it++){
-                std::string symbol = it->get<std::string>();
-                m_subscribed_orders_symbol_ids.insert(TiQuoteTools::GetSymbolID("SZ", symbol.c_str()));
-            }
+    if(j["SZ.orders"].is_array()){
+        for(auto it = j["SZ.orders"].begin(); it != j["SZ.orders"].end(); it++){
+            std::string symbol = it->get<std::string>();
+            m_subscribed_orders_symbol_ids.insert(TiQuoteTools::GetSymbolID("SZ", symbol.c_str()));
         }
     }
 
     std::cout << "m_subscribed_snapshot_symbol_ids: " << m_subscribed_snapshot_symbol_ids.size() << std::endl;
-
 };
 
 void OcQuoteCommander::resetStreamKey()
