@@ -99,7 +99,7 @@ public:
         m_mutex.lock();
         if ((pData->time - m_cout_time_snap) > 5000)
         {
-            printf("[OnL2StockSnapshotRtn] %s, %s, %d, %f, %ld, %ld\n", 
+            printf("[OnL2StockSnapshotRtn] %s, %s, %d, %f, %ld, %f\n", 
                 pData->symbol, pData->time_str, pData->time, pData->last, pData->acc_volume, pData->acc_turnover);
             json j;
             TiQuoteFormater::FormatSnapshot(pData, j);
@@ -172,7 +172,17 @@ int main(int argc, char* argv[]) {
 
     while (1)
     {
-        usleep(1000);
+        usleep(1000000);
+        std::time_t currentTime = std::time(nullptr);
+        std::tm* localTime = std::localtime(&currentTime);
+        std::cout << "当前时间: "
+              << localTime->tm_year + 1900 << "-" << localTime->tm_mon + 1 << "-" << localTime->tm_mday << " "
+              << localTime->tm_hour << ":" << localTime->tm_min << ":" << localTime->tm_sec
+              << std::endl;
+        if (localTime->tm_hour >16 )
+        {
+            return 0;
+        }
     }
     
     return 0;
