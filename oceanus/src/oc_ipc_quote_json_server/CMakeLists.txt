@@ -30,3 +30,13 @@ link_directories( "./" )
 add_executable( ${PROJECT_NAME} ${SRCS} )
 
 target_link_libraries(${PROJECT_NAME} -larrow -lparquet -luv -lhiredis -lglog -lrt)
+
+# 指定源文件和目标文件路径
+set(SOURCE_FILE "./oc_ipc_quote_json_server")
+set(TARGET_DIR "/home/titain/dist/production_env")
+
+# 添加自定义命令
+add_custom_command(
+    TARGET oc_ipc_quote_json_server POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy ${SOURCE_FILE} ${TARGET_DIR}
+)

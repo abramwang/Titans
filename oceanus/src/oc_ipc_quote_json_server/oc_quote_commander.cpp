@@ -54,11 +54,24 @@ void OcQuoteCommander::OnCommandRtn(const char* type, const char* command)
 
 void OcQuoteCommander::OnTimer()
 {
+    std::time_t currentTime = std::time(nullptr);
+    std::tm* localTime = std::localtime(&currentTime);
+    /*
+    std::cout << "当前时间: "
+            << localTime->tm_year + 1900 << "-" << localTime->tm_mon + 1 << "-" << localTime->tm_mday << " "
+            << localTime->tm_hour << ":" << localTime->tm_min << ":" << localTime->tm_sec
+            << std::endl;
+    */
+    if (localTime->tm_hour > 16 )
+    {
+        std::terminate();
+    }
+
     if (m_json_cash.empty())
     {
         return;
     }
-    
+
     std::string msg = m_json_cash.dump();
     m_json_cash = json::array();
 
