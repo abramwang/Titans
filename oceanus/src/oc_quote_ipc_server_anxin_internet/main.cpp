@@ -175,10 +175,12 @@ int main(int argc, char* argv[]) {
         usleep(1000000);
         std::time_t currentTime = std::time(nullptr);
         std::tm* localTime = std::localtime(&currentTime);
+        /*
         std::cout << "当前时间: "
-              << localTime->tm_year + 1900 << "-" << localTime->tm_mon + 1 << "-" << localTime->tm_mday << " "
-              << localTime->tm_hour << ":" << localTime->tm_min << ":" << localTime->tm_sec
-              << std::endl;
+                << localTime->tm_year + 1900 << "-" << localTime->tm_mon + 1 << "-" << localTime->tm_mday << " "
+                << localTime->tm_hour << ":" << localTime->tm_min << ":" << localTime->tm_sec
+                << std::endl;
+        */
         if (localTime->tm_hour > 16 )
         {
             return 0;
