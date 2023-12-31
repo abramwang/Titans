@@ -33,10 +33,12 @@ target_link_libraries(${PROJECT_NAME} -larrow -lparquet -luv -lhiredis -lglog -l
 
 # 指定源文件和目标文件路径
 set(SOURCE_FILE "./oc_ipc_quote_json_server")
-set(TARGET_DIR "/home/titain/dist/production_env")
+set(TARGET_PROD_DIR "/home/titain/dist/production_env")
+set(TARGET_TEST_DIR "/home/titain/dist/test_env")
 
 # 添加自定义命令
 add_custom_command(
     TARGET oc_ipc_quote_json_server POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy ${SOURCE_FILE} ${TARGET_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${SOURCE_FILE} ${TARGET_PROD_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy ${SOURCE_FILE} ${TARGET_TEST_DIR}
 )
