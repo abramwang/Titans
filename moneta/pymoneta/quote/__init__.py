@@ -28,7 +28,7 @@ __user_data__ = {
 }
 """
 
-def Init(host_:str, port_:int, user_:str, pwd_:str = "P7pO48Lw4AZTOLXKlR"):
+def Init(host_:str, port_:int, user_:str, pwd_:str):
     global __user_data__
     if not __user_data__:
         import redis
