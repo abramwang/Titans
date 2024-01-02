@@ -39,6 +39,6 @@ set(TARGET_TEST_DIR "/home/titain/dist/test_env")
 # 添加自定义命令
 add_custom_command(
     TARGET oc_ipc_quote_json_server POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy ${SOURCE_FILE} ${TARGET_PROD_DIR}
+#    COMMAND ${CMAKE_COMMAND} -E copy ${SOURCE_FILE} ${TARGET_PROD_DIR}
     COMMAND ${CMAKE_COMMAND} -E copy ${SOURCE_FILE} ${TARGET_TEST_DIR}
 )

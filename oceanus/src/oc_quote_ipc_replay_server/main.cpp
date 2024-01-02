@@ -71,11 +71,12 @@ public:
     virtual void OnTradingDayRtn(const unsigned int day, const char* exchangeName){};
    
     virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){};
+    virtual void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData){};
 
     virtual void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){
         if ((pData->time - m_cout_time) > 5000)
         {
-            printf("[OnL2StockSnapshotRtn] %s, %s, %d, %f, %ld, %ld\n", 
+            printf("[OnL2StockSnapshotRtn] %s, %s, %d, %f, %ld, %f\n", 
                 pData->symbol, pData->time_str, pData->time, pData->last, pData->acc_volume, pData->acc_turnover);
             m_cout_time = pData->time;
         }
@@ -135,7 +136,7 @@ int main(int argc, char** argv) {
         sleep_speed = atoi(argv[1]);
     }
 
-    int trading_day = 20230309;
+    int trading_day = 20231201;
     if (argc > 2)
     {
         trading_day = atoi(argv[2]);
