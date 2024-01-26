@@ -36,3 +36,14 @@ link_directories( "./" )
 add_executable( ${PROJECT_NAME} ${SRCS} )
 
 target_link_libraries(${PROJECT_NAME} -luv -lhiredis -larrow -lparquet -lglog -lrt)
+
+
+# 指定源文件和目标文件路径
+set(SOURCE_FILE "./oc_quote_ipc_replay_loop_server")
+set(TARGET_DIR "/home/titain/dist/test_env")
+
+# 添加自定义命令
+add_custom_command(
+    TARGET oc_quote_ipc_replay_loop_server POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy ${SOURCE_FILE} ${TARGET_DIR}
+)
