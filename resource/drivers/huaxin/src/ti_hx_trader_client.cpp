@@ -2,6 +2,7 @@
 #include <glog/logging.h>
 #include "iniFile.h"
 #include "datetime.h"
+#include "ti_encoding_tool.h"
 
 #include <atomic>
 
@@ -67,15 +68,60 @@ void TiHxTraderClient::OnFrontDisconnected(int nReason){
 void TiHxTraderClient::OnRspUserLogin(CTORATstpRspUserLoginField *pRspUserLoginField, CTORATstpRspInfoField *pRspInfoField, int nRequestID)
 {
     std::cout << "[OnRspUserLogin] nRequestID: " << nRequestID << std::endl;
+    if (pRspInfoField->ErrorID != 0)
+    {
+        printf("OnRspUserLogin fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, pRspInfoField->ErrorMsg);
+        return;
+    }
+    printf("login success\n");
+    CTORATstpQryShareholderAccountField req = {0};
+    m_client->ReqQryShareholderAccount(&req, ++nReqId);
+};
+
+void TiHxTraderClient::OnRspQryShareholderAccount(CTORATstpShareholderAccountField *pShareholderAccountField, CTORATstpRspInfoField *pRspInfoField, int nRequestID, bool bIsLast) 
+{
+    if (pRspInfoField->ErrorID != 0)
+    {
+        printf("OnRspQryShareholderAccount fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, pRspInfoField->ErrorMsg);
+        return;
+    }
+
+    if (bIsLast){
+        return;
+    }
+
+    printf("OnRspQryShareholderAccount ExchangeID %c, ShareholderID %s, InvestorID %s\n", 
+        pShareholderAccountField->ExchangeID,
+        pShareholderAccountField->ShareholderID,
+        pShareholderAccountField->InvestorID);
+    
+    if (pShareholderAccountField->ExchangeID == TORA_TSTP_EXD_SSE)
+    {
+        m_config->szInvestorIDSH = pShareholderAccountField->InvestorID;
+        m_config->szShareholderIdSH = pShareholderAccountField->ShareholderID;
+    }
+    if (pShareholderAccountField->ExchangeID == TORA_TSTP_EXD_SZSE)
+    {
+        m_config->szInvestorIDSZ = pShareholderAccountField->InvestorID;
+        m_config->szShareholderIdSZ = pShareholderAccountField->ShareholderID;
+    }
+}; 	
+
+///报单录入响应
+void TiHxTraderClient::OnRspOrderInsert(CTORATstpInputOrderField *pInputOrderField, CTORATstpRspInfoField *pRspInfoField, int nRequestID)
+{
+    std::cout << "[OnRspOrderInsert] nRequestID: " << nRequestID << std::endl;
     if (pRspInfoField->ErrorID == 0)
     {
-        printf("login success\n");
+        printf("order insert success\n");
     }
     else
     {
-        printf("login fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, pRspInfoField->ErrorMsg);
+        printf("order insert fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, TiEncodingTool::GbkToUtf8(pRspInfoField->ErrorMsg).c_str() );
     }
 };
+
+    
 ////////////////////////////////////////////////////////////////////////
 // 私有工具方法
 ////////////////////////////////////////////////////////////////////////
@@ -100,20 +146,11 @@ int TiHxTraderClient::loadConfig(std::string iniFileName){
     m_config->szCertSerial          = string(_iniFile["ti_hx_trader_client"]["cert_serial"]);
     m_config->szProductInfo         = string(_iniFile["ti_hx_trader_client"]["product_info"]);
     m_config->szTerminalInfo        = string(_iniFile["ti_hx_trader_client"]["terminal_info"]);
-    
-    m_config->szFundAccount         = string(_iniFile["ti_hx_trader_client"]["fund_account"]);
-    m_config->szFundPass            = string(_iniFile["ti_hx_trader_client"]["fund_pass"]);
-    m_config->szShareholderIdSH     = string(_iniFile["ti_hx_trader_client"]["shareholder_id_sh"]);
-    m_config->szShareholderIdSZ     = string(_iniFile["ti_hx_trader_client"]["shareholder_id_sz"]);
 
     
     if( m_config->szLocations.empty() |
         m_config->szUser.empty() |
-        m_config->szPass.empty() |
-        m_config->szFundAccount.empty() |
-        m_config->szFundPass.empty() |
-        m_config->szShareholderIdSH.empty() |
-        m_config->szShareholderIdSZ.empty())
+        m_config->szPass.empty())
     {
         LOG(INFO) << "[loadConfig] Not enough parameters in inifile";
         delete m_config;
@@ -166,12 +203,14 @@ int TiHxTraderClient::orderInsertStock(TiReqOrderInsert* req){
     if (!strcmp(req->szExchange, "SH"))
     {
         msg.ExchangeID = TORA_TSTP_EXD_SSE;             // 市场ID，上海
-        //strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);               // 账户ID
+        strcpy(msg.ShareholderID, m_config->szShareholderIdSH.c_str());               // 股东号
+        strcpy(msg.InvestorID, m_config->szInvestorIDSH.c_str());                     // 投资者ID
     }
     if (!strcmp(req->szExchange, "SZ"))
     {
         msg.ExchangeID = TORA_TSTP_EXD_SZSE;             // 市场ID，上海
-        //strncpy(msg.account_id, m_config->szShareholderIdSZ.c_str(), 13);               // 账户ID
+        strcpy(msg.ShareholderID, m_config->szShareholderIdSZ.c_str());               // 账户ID
+        strcpy(msg.InvestorID, m_config->szInvestorIDSZ.c_str());                     // 投资者ID
     }
     strcpy(msg.SecurityID, req->szSymbol);               // 证券代码
 
@@ -205,12 +244,14 @@ int TiHxTraderClient::orderInsertEtf(TiReqOrderInsert* req){
     if (!strcmp(req->szExchange, "SH"))
     {
         msg.ExchangeID = TORA_TSTP_EXD_SSE;             // 市场ID，上海
-        //strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);               // 账户ID
+        strcpy(msg.ShareholderID, m_config->szShareholderIdSH.c_str());               // 股东号
+        strcpy(msg.InvestorID, m_config->szInvestorIDSH.c_str());                     // 投资者ID
     }
     if (!strcmp(req->szExchange, "SZ"))
     {
         msg.ExchangeID = TORA_TSTP_EXD_SZSE;             // 市场ID，上海
-        //strncpy(msg.account_id, m_config->szShareholderIdSZ.c_str(), 13);               // 账户ID
+        strcpy(msg.ShareholderID, m_config->szShareholderIdSZ.c_str());               // 账户ID
+        strcpy(msg.InvestorID, m_config->szInvestorIDSZ.c_str());                     // 投资者ID
     }
     strcpy(msg.SecurityID, req->szSymbol);               // 证券代码
 

@@ -28,10 +28,10 @@ public:
 
         std::string szTerminalInfo;
 
-        std::string szFundAccount;  //资金账号
-        std::string szFundPass;     //资金账号密码
-        std::string szShareholderIdSH;     //沪市股东号
-        std::string szShareholderIdSZ;     //深市股东号
+        std::string szInvestorIDSH;         //资金账号
+        std::string szInvestorIDSZ;         //资金账号密码
+        std::string szShareholderIdSH;      //沪市股东号
+        std::string szShareholderIdSZ;      //深市股东号
     } ConfigInfo;
     
 private:
@@ -89,7 +89,7 @@ public:
     virtual void OnRspInputDeviceSerial(CTORATstpRspInputDeviceSerialField *pRspInputDeviceSerialField, CTORATstpRspInfoField *pRspInfoField, int nRequestID) {};
     
     ///报单录入响应
-    virtual void OnRspOrderInsert(CTORATstpInputOrderField *pInputOrderField, CTORATstpRspInfoField *pRspInfoField, int nRequestID) {};
+    virtual void OnRspOrderInsert(CTORATstpInputOrderField *pInputOrderField, CTORATstpRspInfoField *pRspInfoField, int nRequestID);
     
     ///报单回报
     virtual void OnRtnOrder(CTORATstpOrderField *pOrderField) {};
@@ -134,7 +134,7 @@ public:
     virtual void OnRspQryInvestor(CTORATstpInvestorField *pInvestorField, CTORATstpRspInfoField *pRspInfoField, int nRequestID, bool bIsLast) {}; 
     
     ///查询股东账户响应
-    virtual void OnRspQryShareholderAccount(CTORATstpShareholderAccountField *pShareholderAccountField, CTORATstpRspInfoField *pRspInfoField, int nRequestID, bool bIsLast) {}; 
+    virtual void OnRspQryShareholderAccount(CTORATstpShareholderAccountField *pShareholderAccountField, CTORATstpRspInfoField *pRspInfoField, int nRequestID, bool bIsLast); 
     
     ///查询报单响应
     virtual void OnRspQryOrder(CTORATstpOrderField *pOrderField, CTORATstpRspInfoField *pRspInfoField, int nRequestID, bool bIsLast) {}; 

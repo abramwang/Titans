@@ -13,12 +13,12 @@ def enterOrder():
         {
             "enterOrder": json.dumps(
                 {
-                    "szSymbol" : "000001",
-                    "szExchange" : "SZ",
+                    "szSymbol" : "600000",
+                    "szExchange" : "SH",
                     "nTradeSideType" : 'B',
-                    "nOffsetType" : 'C',
+                    "nOffsetType" : 'O',
                     "nBusinessType" : 'S',
-                    "nOrderPrice" : 11.26,
+                    "nOrderPrice" : 6.86,
                     "nOrderVol" : 100000
                 }
             )
