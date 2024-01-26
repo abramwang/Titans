@@ -52,7 +52,21 @@ public:
     virtual ~TiHxTraderClient();
 
 public:
-    virtual void OnFrontDisconnected(int nReason){};
+    ///当客户端与交易后台建立起通信连接时（还未登录前），该方法被调用。
+    virtual void OnFrontConnected();
+    
+    ///当客户端与交易后台通信连接断开时，该方法被调用。当发生这个情况后，API会自动重新连接，客户端可不做处理。
+    ///@param nReason 错误原因
+    ///        -3 连接已断开
+    ///        -4 网络读失败
+    ///        -5 网络写失败
+    ///        -6 订阅流错误
+    ///        -7 流序号错误
+    ///        -8 错误的心跳报文
+    ///        -9 错误的报文
+    ///		  -15 网络读失败
+    ///		  -16 网络写失败
+    virtual void OnFrontDisconnected(int nReason);
     
     ///错误应答
     virtual void OnRspError(CTORATstpRspInfoField *pRspInfoField, int nRequestID, bool bIsLast) {};

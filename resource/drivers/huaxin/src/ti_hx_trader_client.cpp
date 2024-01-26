@@ -36,7 +36,17 @@ TiHxTraderClient::~TiHxTraderClient()
 ////////////////////////////////////////////////////////////////////////
 // 回调方法
 ////////////////////////////////////////////////////////////////////////
+///当客户端与交易后台建立起通信连接时（还未登录前），该方法被调用。
+void TiHxTraderClient::OnFrontConnected(){
+    LOG(INFO) << "[OnFrontConnected] ";
+    std::cout << "[OnFrontConnected] " << std::endl;
+    
+};
 
+void TiHxTraderClient::OnFrontDisconnected(int nReason){
+    LOG(INFO) << "[OnFrontDisconnected] nReason: " << nReason;
+    std::cout << "[OnFrontDisconnected] nReason: " << nReason << std::endl;
+};
 
 ////////////////////////////////////////////////////////////////////////
 // 私有工具方法
@@ -233,7 +243,7 @@ void TiHxTraderClient::connect(){
     }
     m_client = CTORATstpTraderApi::CreateTstpTraderApi();
     m_client->RegisterSpi(this);
-    m_client->RegisterFront("tcp://210.14.72.21:4400");
+    m_client->RegisterFront("tcp://210.14.72.16:9500");
     m_client->SubscribePrivateTopic(TORA_TERT_QUICK);
     m_client->SubscribePublicTopic(TORA_TERT_RESTART);
     m_client->Init();
