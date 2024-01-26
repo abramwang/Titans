@@ -16,16 +16,18 @@ public:
     typedef struct ConfigInfo
     {
         std::string szLocations;
-        std::string szLocations2;
 
         std::string szUser;
         std::string szPass;
         
-        std::string szSoftwareName;
-        std::string szSoftwareVersion;
+        std::string szUserProductInfo;
 
-        std::string szBranchCode;   //营业部编号
-        std::string szCustomerId;   //客户代码
+        std::string szDeviceID;
+        std::string szCertSerial;
+        std::string szProductInfo;
+
+        std::string szTerminalInfo;
+
         std::string szFundAccount;  //资金账号
         std::string szFundPass;     //资金账号密码
         std::string szShareholderIdSH;     //沪市股东号
@@ -75,7 +77,7 @@ public:
     virtual void OnRspGetConnectionInfo(CTORATstpConnectionInfoField *pConnectionInfoField, CTORATstpRspInfoField *pRspInfoField, int nRequestID) {};
     
     ///登录响应
-    virtual void OnRspUserLogin(CTORATstpRspUserLoginField *pRspUserLoginField, CTORATstpRspInfoField *pRspInfoField, int nRequestID) {};
+    virtual void OnRspUserLogin(CTORATstpRspUserLoginField *pRspUserLoginField, CTORATstpRspInfoField *pRspInfoField, int nRequestID);
     
     ///登出响应
     virtual void OnRspUserLogout(CTORATstpUserLogoutField *pUserLogoutField, CTORATstpRspInfoField *pRspInfoField, int nRequestID) {};

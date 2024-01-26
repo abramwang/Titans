@@ -40,7 +40,23 @@ TiHxTraderClient::~TiHxTraderClient()
 void TiHxTraderClient::OnFrontConnected(){
     LOG(INFO) << "[OnFrontConnected] ";
     std::cout << "[OnFrontConnected] " << std::endl;
+
+    CTORATstpReqUserLoginField req;
+
+    memset(&req, 0, sizeof(req));
+    strcpy(req.LogInAccount, m_config->szUser.c_str());
+    req.LogInAccountType = TORA_TSTP_LACT_UserID;
+
+    strcpy(req.Password, m_config->szPass.c_str());
+    strcpy(req.UserProductInfo, m_config->szUserProductInfo.c_str());
+    strcpy(req.TerminalInfo, m_config->szTerminalInfo.c_str());
     
+    int ret = m_client->ReqUserLogin(&req, ++nReqId);
+
+    if (ret != 0)
+    {   
+        printf("ReqUserLogin fail, ret[%d]\n", ret);
+    }
 };
 
 void TiHxTraderClient::OnFrontDisconnected(int nReason){
@@ -48,6 +64,10 @@ void TiHxTraderClient::OnFrontDisconnected(int nReason){
     std::cout << "[OnFrontDisconnected] nReason: " << nReason << std::endl;
 };
 
+void TiHxTraderClient::OnRspUserLogin(CTORATstpRspUserLoginField *pRspUserLoginField, CTORATstpRspInfoField *pRspInfoField, int nRequestID)
+{
+    std::cout << "[OnRspUserLogin] nRequestID: " << nRequestID << std::endl;
+};
 ////////////////////////////////////////////////////////////////////////
 // 私有工具方法
 ////////////////////////////////////////////////////////////////////////
@@ -62,19 +82,19 @@ int TiHxTraderClient::loadConfig(std::string iniFileName){
     _iniFile.load(iniFileName);
 
     m_config = new ConfigInfo();
-    m_config->szLocations   = string(_iniFile["ti_hx_trader_client"]["locations"]);
-    m_config->szLocations2   = string(_iniFile["ti_hx_trader_client"]["locations2"]);
+    m_config->szLocations           = string(_iniFile["ti_hx_trader_client"]["locations"]);
     
     m_config->szUser                = string(_iniFile["ti_hx_trader_client"]["user"]);
     m_config->szPass                = string(_iniFile["ti_hx_trader_client"]["pass"]);
 
-    m_config->szSoftwareName        = string(_iniFile["ti_hx_trader_client"]["software_name"]);
-    m_config->szSoftwareVersion     = string(_iniFile["ti_hx_trader_client"]["software_version"]);
-
-    m_config->szBranchCode     = string(_iniFile["ti_hx_trader_client"]["branch_code"]);
-    m_config->szCustomerId     = string(_iniFile["ti_hx_trader_client"]["customer_id"]);
-    m_config->szFundAccount     = string(_iniFile["ti_hx_trader_client"]["fund_account"]);
-    m_config->szFundPass     = string(_iniFile["ti_hx_trader_client"]["fund_pass"]);
+    m_config->szUserProductInfo     = string(_iniFile["ti_hx_trader_client"]["user_product_info"]);
+    m_config->szDeviceID            = string(_iniFile["ti_hx_trader_client"]["device_id"]);
+    m_config->szCertSerial          = string(_iniFile["ti_hx_trader_client"]["cert_serial"]);
+    m_config->szProductInfo         = string(_iniFile["ti_hx_trader_client"]["product_info"]);
+    m_config->szTerminalInfo        = string(_iniFile["ti_hx_trader_client"]["terminal_info"]);
+    
+    m_config->szFundAccount         = string(_iniFile["ti_hx_trader_client"]["fund_account"]);
+    m_config->szFundPass            = string(_iniFile["ti_hx_trader_client"]["fund_pass"]);
     m_config->szShareholderIdSH     = string(_iniFile["ti_hx_trader_client"]["shareholder_id_sh"]);
     m_config->szShareholderIdSZ     = string(_iniFile["ti_hx_trader_client"]["shareholder_id_sz"]);
 
@@ -82,8 +102,6 @@ int TiHxTraderClient::loadConfig(std::string iniFileName){
     if( m_config->szLocations.empty() |
         m_config->szUser.empty() |
         m_config->szPass.empty() |
-        m_config->szBranchCode.empty() |
-        m_config->szCustomerId.empty() |
         m_config->szFundAccount.empty() |
         m_config->szFundPass.empty() |
         m_config->szShareholderIdSH.empty() |
@@ -243,7 +261,7 @@ void TiHxTraderClient::connect(){
     }
     m_client = CTORATstpTraderApi::CreateTstpTraderApi();
     m_client->RegisterSpi(this);
-    m_client->RegisterFront("tcp://210.14.72.16:9500");
+    m_client->RegisterFront((char*)m_config->szLocations.c_str());
     m_client->SubscribePrivateTopic(TORA_TERT_QUICK);
     m_client->SubscribePublicTopic(TORA_TERT_RESTART);
     m_client->Init();
