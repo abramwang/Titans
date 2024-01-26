@@ -107,6 +107,44 @@ void TiHxTraderClient::OnRspQryShareholderAccount(CTORATstpShareholderAccountFie
     }
 }; 	
 
+void TiHxTraderClient::OnRspQryTradingAccount(CTORATstpTradingAccountField *pTradingAccountField, CTORATstpRspInfoField *pRspInfoField, int nRequestID, bool bIsLast)
+{
+    if (pRspInfoField->ErrorID != 0)
+    {
+        printf("OnRspQryTradingAccount fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, pRspInfoField->ErrorMsg);
+    }
+    if (bIsLast){
+        return;
+    }
+    json m_json_rsp = {
+        { "type", "OnRspQryTradingAccount"},
+        { "data", {
+            "DepartmentID", pTradingAccountField->DepartmentID,
+            "AccountID", pTradingAccountField->AccountID,
+            "CurrencyID", pTradingAccountField->CurrencyID,
+            "PreDeposit", pTradingAccountField->PreDeposit,
+            "UsefulMoney", pTradingAccountField->UsefulMoney,
+            "FetchLimit", pTradingAccountField->FetchLimit,
+            "PreUnDeliveredMoney", pTradingAccountField->PreUnDeliveredMoney,
+            "UnDeliveredMoney", pTradingAccountField->UnDeliveredMoney,
+            "Deposit", pTradingAccountField->Deposit,
+            "Withdraw", pTradingAccountField->Withdraw,
+            "FrozenCash", pTradingAccountField->FrozenCash,
+            "UnDeliveredFrozenCash", pTradingAccountField->UnDeliveredFrozenCash,
+            "FrozenCommission", pTradingAccountField->FrozenCommission,
+            "UnDeliveredFrozenCommission", pTradingAccountField->UnDeliveredFrozenCommission,
+            "Commission", pTradingAccountField->Commission,
+            "UnDeliveredCommission", pTradingAccountField->UnDeliveredCommission,
+            "AccountType", pTradingAccountField->AccountType,
+            "InvestorID", pTradingAccountField->InvestorID,
+            "BankID", pTradingAccountField->BankID,
+            "BankAccountID", pTradingAccountField->BankAccountID,
+        }}
+    };
+    std::cout << m_json_rsp.dump() << std::endl;
+    m_cb->OnCommonJsonRespones(&m_json_rsp, nRequestID, true, pRspInfoField->ErrorID, pRspInfoField->ErrorMsg);
+}; 
+
 ///报单录入响应
 void TiHxTraderClient::OnRspOrderInsert(CTORATstpInputOrderField *pInputOrderField, CTORATstpRspInfoField *pRspInfoField, int nRequestID)
 {
@@ -338,6 +376,10 @@ int TiHxTraderClient::QueryAsset()
         return -1;
     }
 
+    CTORATstpQryTradingAccountField req = {0};
+
+    
+	m_client->ReqQryTradingAccount(&req, ++nReqId);
     /*
     ATPClientSeqIDType seq_id = ++nReqId;;
 	ATPReqFundQueryMsg msg;
