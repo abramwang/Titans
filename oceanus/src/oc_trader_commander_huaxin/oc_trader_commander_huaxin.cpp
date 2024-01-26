@@ -247,17 +247,17 @@ int OcTraderCommanderHuaxin::loadConfig(std::string iniFileName){
 
     m_config = new ConfigInfo();
 
-    m_config->szIp        = string(_iniFile["oc_trader_commander_anxin"]["ip"]);
-    m_config->nPort       = _iniFile["oc_trader_commander_anxin"]["port"];
-    m_config->szAuth      = string(_iniFile["oc_trader_commander_anxin"]["auth"]);
+    m_config->szIp        = string(_iniFile["oc_trader_commander_huaxin"]["ip"]);
+    m_config->nPort       = _iniFile["oc_trader_commander_huaxin"]["port"];
+    m_config->szAuth      = string(_iniFile["oc_trader_commander_huaxin"]["auth"]);
 
-    m_config->nBlock          = _iniFile["oc_trader_commander_anxin"]["block"];
-    m_config->szCommandStreamKey     = string(_iniFile["oc_trader_commander_anxin"]["command_stream_key"]);
-    m_config->szCommandStreamGroup   = string(_iniFile["oc_trader_commander_anxin"]["command_stream_group"]);
-    m_config->szCommandConsumerId   = string(_iniFile["oc_trader_commander_anxin"]["command_consumer_id"]);
+    m_config->nBlock          = _iniFile["oc_trader_commander_huaxin"]["block"];
+    m_config->szCommandStreamKey     = string(_iniFile["oc_trader_commander_huaxin"]["command_stream_key"]);
+    m_config->szCommandStreamGroup   = string(_iniFile["oc_trader_commander_huaxin"]["command_stream_group"]);
+    m_config->szCommandConsumerId   = string(_iniFile["oc_trader_commander_huaxin"]["command_consumer_id"]);
     
-    m_config->szOrderKey         = string(_iniFile["oc_trader_commander_anxin"]["order_key"]);
-    m_config->szMatchKey         = string(_iniFile["oc_trader_commander_anxin"]["match_key"]);
+    m_config->szOrderKey         = string(_iniFile["oc_trader_commander_huaxin"]["order_key"]);
+    m_config->szMatchKey         = string(_iniFile["oc_trader_commander_huaxin"]["match_key"]);
     
     if( m_config->szIp.empty() |
         !m_config->nPort |

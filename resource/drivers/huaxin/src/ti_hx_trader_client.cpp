@@ -67,6 +67,14 @@ void TiHxTraderClient::OnFrontDisconnected(int nReason){
 void TiHxTraderClient::OnRspUserLogin(CTORATstpRspUserLoginField *pRspUserLoginField, CTORATstpRspInfoField *pRspInfoField, int nRequestID)
 {
     std::cout << "[OnRspUserLogin] nRequestID: " << nRequestID << std::endl;
+    if (pRspInfoField->ErrorID == 0)
+    {
+        printf("login success\n");
+    }
+    else
+    {
+        printf("login fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, pRspInfoField->ErrorMsg);
+    }
 };
 ////////////////////////////////////////////////////////////////////////
 // 私有工具方法
@@ -153,100 +161,79 @@ TI_OrderStatusType TiHxTraderClient::getOrderStatus(TTORATstpOrderStatusType sta
 
 int TiHxTraderClient::orderInsertStock(TiReqOrderInsert* req){
     req->nReqId = ++nReqId;
-    /*
-    ATPReqCashAuctionOrderMsg msg;
-    strncpy(msg.security_id, req->szSymbol, 9);                   // 证券代码
-    strncpy(msg.cust_id, m_config->szCustomerId.c_str(), 17);                 // 客户号ID
-    strncpy(msg.fund_account_id, m_config->szFundAccount.c_str(), 17);        // 资金账户ID
+
+    CTORATstpInputOrderField msg;
     if (!strcmp(req->szExchange, "SH"))
     {
-        msg.market_id = ATPMarketIDConst::kShangHai;             // 市场ID，上海
-        strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);               // 账户ID
+        msg.ExchangeID = TORA_TSTP_EXD_SSE;             // 市场ID，上海
+        //strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);               // 账户ID
     }
     if (!strcmp(req->szExchange, "SZ"))
     {
-        msg.market_id = ATPMarketIDConst::kShenZhen;             // 市场ID，上海
-        strncpy(msg.account_id, m_config->szShareholderIdSZ.c_str(), 13);               // 账户ID
+        msg.ExchangeID = TORA_TSTP_EXD_SZSE;             // 市场ID，上海
+        //strncpy(msg.account_id, m_config->szShareholderIdSZ.c_str(), 13);               // 账户ID
     }
+    strcpy(msg.SecurityID, req->szSymbol);               // 证券代码
+
     switch (req->nTradeSideType)
     {
     case TI_TradeSideType_Sell:
-        msg.side = ATPSideConst::kSell;   
+        msg.Direction = TORA_TSTP_D_Sell;   
         break;
     case TI_TradeSideType_Buy:
-        msg.side = ATPSideConst::kBuy;   
-        break;
-    default:
-        msg.side = ATPSideConst::kDefault;
+        msg.Direction = TORA_TSTP_D_Buy;   
         break;
     }
-    msg.order_type = ATPOrdTypeConst::kFixedNew;             // 订单类型，限价
-    msg.price = req->nOrderPrice * 10000;                    // 委托价格 N13(4)，21.0000元
-    msg.order_qty = req->nOrderVol * 100;                    // (需要 * 100才是股数) 申报数量N15(2)；股票为股、基金为份、上海债券默认为张（使用时请务必与券商确认），其他为张；1000.00股
-    msg.client_seq_id = nReqId;                              // 用户系统消息序号
-    msg.order_way = '0';                                     // 委托方式，自助委托
-    //msg.order_way = 'R';                                     // 委托方式，自助委托
-    strncpy(msg.password, "password1", 129);                 // 客户密码
-    msg.client_feature_code = g_client_feature_code;         // 终端识别码
+    msg.OrderPriceType = TORA_TSTP_OPT_LimitPrice;      // 订单类型，限价
+    msg.LimitPrice = req->nOrderPrice;                  // 委托价格 N13(4)，21.0000元
+    msg.VolumeTotalOriginal = req->nOrderVol;           //
+    msg.TimeCondition = TORA_TSTP_TC_GFD;
+    msg.VolumeCondition = TORA_TSTP_VC_AV;
 
-    std::shared_ptr<TiRtnOrderStatus> order_ptr = std::make_shared<TiRtnOrderStatus>();
-    memset(order_ptr.get(), 0, sizeof(TiRtnOrderStatus));
-    memcpy(order_ptr.get(), req, sizeof(TiReqOrderInsert));
-
-    m_order_req_map[order_ptr->nReqId] = order_ptr;
-
-    ATPRetCodeType ec = m_client->ReqCashAuctionOrder(&msg);
-    if (ec != ErrorCode::kSuccess)
-    {
-        std::cout << "Invoke Send error:" << ec << std::endl;
+    int ret = m_client->ReqOrderInsert(&msg, req->nReqId);
+    if (ret != 0)
+    {   
+        printf("ReqOrderInsert fail, ret[%d]\n", ret);
     }
-    */
     return nReqId;
 };
 int TiHxTraderClient::orderInsertEtf(TiReqOrderInsert* req){
     req->nReqId = ++nReqId;
-    /*
-	ATPReqETFRedemptionOrderMsg msg;
 
-	strncpy(msg.security_id, req->szSymbol,9);
-    strncpy(msg.cust_id, m_config->szCustomerId.c_str(), 17);                 // 客户号ID
-    strncpy(msg.fund_account_id, m_config->szFundAccount.c_str(), 17);        // 资金账户ID
+
+    CTORATstpInputOrderField msg;
     if (!strcmp(req->szExchange, "SH"))
     {
-        msg.market_id = ATPMarketIDConst::kShangHai;             // 市场ID，上海
-        strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);               // 账户ID
+        msg.ExchangeID = TORA_TSTP_EXD_SSE;             // 市场ID，上海
+        //strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);               // 账户ID
     }
     if (!strcmp(req->szExchange, "SZ"))
     {
-        msg.market_id = ATPMarketIDConst::kShenZhen;             // 市场ID，上海
-        strncpy(msg.account_id, m_config->szShareholderIdSZ.c_str(), 13);               // 账户ID
+        msg.ExchangeID = TORA_TSTP_EXD_SZSE;             // 市场ID，上海
+        //strncpy(msg.account_id, m_config->szShareholderIdSZ.c_str(), 13);               // 账户ID
     }
+    strcpy(msg.SecurityID, req->szSymbol);               // 证券代码
 
     switch (req->nTradeSideType)
     {
     case TI_TradeSideType_Purchase:
-        msg.side = ATPSideConst::kPurchase;   
+        msg.Direction = TORA_TSTP_D_ETFPur;   
         break;
     case TI_TradeSideType_Redemption:
-        msg.side = ATPSideConst::kRedeem;   
-        break;
-    default:
-        msg.side = ATPSideConst::kDefault;
+        msg.Direction = TORA_TSTP_D_ETFRed;   
         break;
     }
+    msg.OrderPriceType = TORA_TSTP_OPT_LimitPrice;      // 订单类型，限价
+    msg.LimitPrice = req->nOrderPrice;                  // 委托价格 N13(4)，21.0000元
+    msg.VolumeTotalOriginal = req->nOrderVol;           //
+    msg.TimeCondition = TORA_TSTP_TC_GFD;
+    msg.VolumeCondition = TORA_TSTP_VC_AV;
 
-	msg.order_qty = req->nOrderVol * 100;                    // (需要 * 100才是股数) 申报数量N15(2)；股票为股、基金为份、上海债券默认为张（使用时请务必与券商确认），其他为张；1000.00股
-    msg.client_seq_id = nReqId;                              // 用户系统消息序号
-    msg.order_way = '0';                                     // 委托方式，自助委托
-    
-    strncpy(msg.password, "password1", 129);                 // 客户密码
-
-    ATPRetCodeType ec = m_client->ReqETFRedemptionOrder(&msg);
-    if (ec != ErrorCode::kSuccess)
-    {
-        std::cout << "Invoke Send error:" << ec << std::endl;
+    int ret = m_client->ReqOrderInsert(&msg, req->nReqId);
+    if (ret != 0)
+    {   
+        printf("ReqOrderInsert fail, ret[%d]\n", ret);
     }
-    */
     return nReqId;
 };
 
