@@ -1,0 +1,147 @@
+[
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/main.cpp.o -c /opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/main.cpp",
+  "file": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/main.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/oc_quote_commander.cpp.o -c /opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/oc_quote_commander.cpp",
+  "file": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/oc_quote_commander.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/cc  -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -g   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/cJSON.c.o   -c /opt/git_project/Titans/resource/src/cJSON.c",
+  "file": "/opt/git_project/Titans/resource/src/cJSON.c"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/cc  -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -g   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/cJSON_Utils.c.o   -c /opt/git_project/Titans/resource/src/cJSON_Utils.c",
+  "file": "/opt/git_project/Titans/resource/src/cJSON_Utils.c"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/datetime.cpp.o -c /opt/git_project/Titans/resource/src/datetime.cpp",
+  "file": "/opt/git_project/Titans/resource/src/datetime.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/iniFile.cpp.o -c /opt/git_project/Titans/resource/src/iniFile.cpp",
+  "file": "/opt/git_project/Titans/resource/src/iniFile.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/redis_async_uv.cpp.o -c /opt/git_project/Titans/resource/src/redis_async_uv.cpp",
+  "file": "/opt/git_project/Titans/resource/src/redis_async_uv.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/redis_commander.cpp.o -c /opt/git_project/Titans/resource/src/redis_commander.cpp",
+  "file": "/opt/git_project/Titans/resource/src/redis_commander.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/redis_sync_handle.cpp.o -c /opt/git_project/Titans/resource/src/redis_sync_handle.cpp",
+  "file": "/opt/git_project/Titans/resource/src/redis_sync_handle.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/redis_uv.cpp.o -c /opt/git_project/Titans/resource/src/redis_uv.cpp",
+  "file": "/opt/git_project/Titans/resource/src/redis_uv.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/ti_book_depth.cpp.o -c /opt/git_project/Titans/resource/src/ti_book_depth.cpp",
+  "file": "/opt/git_project/Titans/resource/src/ti_book_depth.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/ti_book_depth_level.cpp.o -c /opt/git_project/Titans/resource/src/ti_book_depth_level.cpp",
+  "file": "/opt/git_project/Titans/resource/src/ti_book_depth_level.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/ti_book_engine.cpp.o -c /opt/git_project/Titans/resource/src/ti_book_engine.cpp",
+  "file": "/opt/git_project/Titans/resource/src/ti_book_engine.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/ti_ipc_api.cpp.o -c /opt/git_project/Titans/resource/src/ti_ipc_api.cpp",
+  "file": "/opt/git_project/Titans/resource/src/ti_ipc_api.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/ti_quote_cache.cpp.o -c /opt/git_project/Titans/resource/src/ti_quote_cache.cpp",
+  "file": "/opt/git_project/Titans/resource/src/ti_quote_cache.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/ti_quote_formater.cpp.o -c /opt/git_project/Titans/resource/src/ti_quote_formater.cpp",
+  "file": "/opt/git_project/Titans/resource/src/ti_quote_formater.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/ti_quote_history_client_local.cpp.o -c /opt/git_project/Titans/resource/src/ti_quote_history_client_local.cpp",
+  "file": "/opt/git_project/Titans/resource/src/ti_quote_history_client_local.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/ti_quote_ipc_client.cpp.o -c /opt/git_project/Titans/resource/src/ti_quote_ipc_client.cpp",
+  "file": "/opt/git_project/Titans/resource/src/ti_quote_ipc_client.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/ti_quote_ipc_publisher.cpp.o -c /opt/git_project/Titans/resource/src/ti_quote_ipc_publisher.cpp",
+  "file": "/opt/git_project/Titans/resource/src/ti_quote_ipc_publisher.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/ti_quote_match_reader.cpp.o -c /opt/git_project/Titans/resource/src/ti_quote_match_reader.cpp",
+  "file": "/opt/git_project/Titans/resource/src/ti_quote_match_reader.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/ti_quote_order_reader.cpp.o -c /opt/git_project/Titans/resource/src/ti_quote_order_reader.cpp",
+  "file": "/opt/git_project/Titans/resource/src/ti_quote_order_reader.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/ti_quote_parquet_reader.cpp.o -c /opt/git_project/Titans/resource/src/ti_quote_parquet_reader.cpp",
+  "file": "/opt/git_project/Titans/resource/src/ti_quote_parquet_reader.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/ti_quote_reader.cpp.o -c /opt/git_project/Titans/resource/src/ti_quote_reader.cpp",
+  "file": "/opt/git_project/Titans/resource/src/ti_quote_reader.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/ti_quote_snapshot_reader.cpp.o -c /opt/git_project/Titans/resource/src/ti_quote_snapshot_reader.cpp",
+  "file": "/opt/git_project/Titans/resource/src/ti_quote_snapshot_reader.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/ti_quote_worker.cpp.o -c /opt/git_project/Titans/resource/src/ti_quote_worker.cpp",
+  "file": "/opt/git_project/Titans/resource/src/ti_quote_worker.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/ti_quote_worker_pool.cpp.o -c /opt/git_project/Titans/resource/src/ti_quote_worker_pool.cpp",
+  "file": "/opt/git_project/Titans/resource/src/ti_quote_worker_pool.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/ti_quote_wrap.cpp.o -c /opt/git_project/Titans/resource/src/ti_quote_wrap.cpp",
+  "file": "/opt/git_project/Titans/resource/src/ti_quote_wrap.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/ti_thread.cpp.o -c /opt/git_project/Titans/resource/src/ti_thread.cpp",
+  "file": "/opt/git_project/Titans/resource/src/ti_thread.cpp"
+},
+{
+  "directory": "/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/buid",
+  "command": "/opt/rh/devtoolset-9/root/usr/bin/c++   -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/include -I/opt/git_project/Titans/oceanus/src/oc_ipc_quote_json_server/../../../resource/src  -std=c++17 -pthread  -O0 -Wall -g2 -ggdb   -o CMakeFiles/oc_ipc_quote_json_server.dir/opt/git_project/Titans/resource/src/ti_trader_formater.cpp.o -c /opt/git_project/Titans/resource/src/ti_trader_formater.cpp",
+  "file": "/opt/git_project/Titans/resource/src/ti_trader_formater.cpp"
+}
+]

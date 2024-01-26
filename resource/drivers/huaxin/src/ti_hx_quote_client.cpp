@@ -6,7 +6,6 @@
 #include "ti_quote_struct.h"
 #include "datetime.h"
 
-
 using namespace std;
 
 TiHxQuoteClient::TiHxQuoteClient(std::string configPath, TiQuoteCallback* userCb)
@@ -135,6 +134,7 @@ void TiHxQuoteClient::OnRspUserLogin(
     if(m_cb){
         m_cb->OnTradingDayRtn(m_trading_day, ex_str);
     }
+
     LOG(INFO) << "[OnRspUserLogin] ErrorID: "<< pRspInfo->ErrorID << " ex_str: " << ex_str << " ErrorMsg: " << pRspInfo->ErrorMsg;
 };
 
@@ -386,11 +386,19 @@ void TiHxQuoteClient::subData(const char* exchangeName, char* codeList[], size_t
     int ret = 0;
     if(!strcmp(exchangeName, "SH")){
         ret = m_sh_api->SubscribeMarketData(codeList, len, TORA_TSTP_EXD_SSE);
-        ret = m_sh_api->SubscribeIndex(codeList, len, TORA_TSTP_EXD_SSE);
-        ret = m_sh_api->SubscribeTransaction(codeList, len, TORA_TSTP_EXD_SSE);
         if (ret != 0)
         {
             printf("SubscribeMarketData fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+        }
+        ret = m_sh_api->SubscribeIndex(codeList, len, TORA_TSTP_EXD_SSE);
+        if (ret != 0)
+        {
+            printf("SubscribeIndex fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+        }
+        ret = m_sh_api->SubscribeTransaction(codeList, len, TORA_TSTP_EXD_SSE);
+        if (ret != 0)
+        {
+            printf("SubscribeTransaction fail, exchange[%s], ret[%d]\n", exchangeName, ret);
         }
     }
 

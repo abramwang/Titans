@@ -24,8 +24,11 @@ public:
     };
    
     virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){};
+    virtual void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData){};
 
-    virtual void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){};
+    virtual void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){
+        printf("[OnL2StockSnapshotRtn] %s, %s\n", pData->symbol, pData->time_str);    
+    };
     virtual void OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){
         printf("[OnL2StockMatchesRtn] %s, %s, %d, %f, %d, %c\n", pData->symbol, pData->time_str, pData->seq, pData->price, pData->volume, pData->bs_flag);
     };

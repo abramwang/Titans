@@ -10,6 +10,7 @@ __author__ = 'bo wang <bo.wang@sci-inv.cn>'
 from types import FunctionType
 
 __user_data__ = None
+__history_root__ = "/home/ti_data/"
 """
 __user_data__ = {
     "redis_conn": obj,
@@ -96,5 +97,4 @@ def ReadLoop(cb_:FunctionType):
                     __user_data__["response_key"], 
                     __user_data__["response_group"], 
                     entry_id)
-
 

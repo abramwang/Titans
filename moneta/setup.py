@@ -6,10 +6,10 @@ except ImportError:
 setup(
     name='pymoneta',  #
     author='bo.wang',  #
-    version='0.1.0',  #
+    version='0.3.1',  #
     license='MIT',
 
-    description='olla',  #
+    description='moneta',  #
     long_description='''long description''',
     author_email='wang.b@quantstage.com',  #
     url='https://www.quantstage.com',  #
@@ -21,6 +21,8 @@ setup(
 
     install_requires=[
         "redis >= 1.0.0",
+        "pandas >= 1.0.0",
+        "pyarrow >= 3.0.0",
     ],
     python_requires='>=3',
     classifiers=[
