@@ -123,6 +123,13 @@ def QueryAsset():
         }
     )
 
+def QueryPositions():
+    redis_conn.xadd(streamKey,
+        {
+            "QueryPositions": json.dumps({})
+        }
+    )
+
 def enterOrder():
     redis_conn.xadd(streamKey,
         {
@@ -140,5 +147,6 @@ def enterOrder():
         }
     )
 
-QueryAsset()
+#QueryAsset()
+QueryPositions()
 #enterOrder()

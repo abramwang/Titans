@@ -70,7 +70,7 @@ void TiHxTraderClient::OnRspUserLogin(CTORATstpRspUserLoginField *pRspUserLoginF
     std::cout << "[OnRspUserLogin] nRequestID: " << nRequestID << std::endl;
     if (pRspInfoField->ErrorID != 0)
     {
-        printf("OnRspUserLogin fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, pRspInfoField->ErrorMsg);
+        printf("OnRspUserLogin fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, TiEncodingTool::GbkToUtf8(pRspInfoField->ErrorMsg).c_str() );
         return;
     }
     printf("login success\n");
@@ -82,7 +82,7 @@ void TiHxTraderClient::OnRspQryShareholderAccount(CTORATstpShareholderAccountFie
 {
     if (pRspInfoField->ErrorID != 0)
     {
-        printf("OnRspQryShareholderAccount fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, pRspInfoField->ErrorMsg);
+        printf("OnRspQryShareholderAccount fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, TiEncodingTool::GbkToUtf8(pRspInfoField->ErrorMsg).c_str() );
         return;
     }
 
@@ -111,7 +111,7 @@ void TiHxTraderClient::OnRspQryTradingAccount(CTORATstpTradingAccountField *pTra
 {
     if (pRspInfoField->ErrorID != 0)
     {
-        printf("OnRspQryTradingAccount fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, pRspInfoField->ErrorMsg);
+        printf("OnRspQryTradingAccount fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, TiEncodingTool::GbkToUtf8(pRspInfoField->ErrorMsg).c_str() );
     }
     if (bIsLast){
         return;
@@ -142,7 +142,77 @@ void TiHxTraderClient::OnRspQryTradingAccount(CTORATstpTradingAccountField *pTra
         }}
     };
     std::cout << m_json_rsp.dump() << std::endl;
-    m_cb->OnCommonJsonRespones(&m_json_rsp, nRequestID, true, pRspInfoField->ErrorID, pRspInfoField->ErrorMsg);
+    m_cb->OnCommonJsonRespones(&m_json_rsp, nRequestID, true, pRspInfoField->ErrorID, TiEncodingTool::GbkToUtf8(pRspInfoField->ErrorMsg).c_str() );
+}; 
+
+void TiHxTraderClient::OnRspQryPosition(CTORATstpPositionField *pPositionField, CTORATstpRspInfoField *pRspInfoField, int nRequestID, bool bIsLast)
+{
+    printf("OnRspQryPosition, is_last[%d], req_id[%d]\n", bIsLast, nRequestID);
+    
+    if (pRspInfoField->ErrorID != 0)
+    {
+        printf("OnRspQryTradingAccount fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, TiEncodingTool::GbkToUtf8(pRspInfoField->ErrorMsg).c_str() );
+    }
+    if (bIsLast){
+        return;
+    }
+
+    json m_json_rsp = {
+        { "type", "OnRspQryPosition"},
+        { "data", {
+            "ExchangeID" , pPositionField->ExchangeID,
+            "InvestorID" , pPositionField->InvestorID,
+            "BusinessUnitID" , pPositionField->BusinessUnitID,
+            "MarketID" , pPositionField->MarketID,
+            "ShareholderID" , pPositionField->ShareholderID,
+            "TradingDay" , pPositionField->TradingDay,
+            "SecurityID" , pPositionField->SecurityID,
+            "SecurityName" , pPositionField->SecurityName,
+            "HistoryPos" , pPositionField->HistoryPos,
+            "HistoryPosFrozen" , pPositionField->HistoryPosFrozen,
+            "TodayBSPos" , pPositionField->TodayBSPos,
+            "TodayBSPosFrozen" , pPositionField->TodayBSPosFrozen,
+            "TodayPRPos" , pPositionField->TodayPRPos,
+            "TodayPRPosFrozen" , pPositionField->TodayPRPosFrozen,
+            "TodaySMPos" , pPositionField->TodaySMPos,
+            "TodaySMPosFrozen" , pPositionField->TodaySMPosFrozen,
+            "HistoryPosPrice" , pPositionField->HistoryPosPrice,
+            "TotalPosCost" , pPositionField->TotalPosCost,
+            "PrePosition" , pPositionField->PrePosition,
+            "AvailablePosition" , pPositionField->AvailablePosition,
+            "CurrentPosition" , pPositionField->CurrentPosition,
+            "OpenPosCost" , pPositionField->OpenPosCost,
+            "CreditBuyPos" , pPositionField->CreditBuyPos,
+            "CreditSellPos" , pPositionField->CreditSellPos,
+            "TodayCreditSellPos" , pPositionField->TodayCreditSellPos,
+            "CollateralOutPos" , pPositionField->CollateralOutPos,
+            "RepayUntradeVolume" , pPositionField->RepayUntradeVolume,
+            "RepayTransferUntradeVolume" , pPositionField->RepayTransferUntradeVolume,
+            "CollateralBuyUntradeAmount" , pPositionField->CollateralBuyUntradeAmount,
+            "CollateralBuyUntradeVolume" , pPositionField->CollateralBuyUntradeVolume,
+            "CreditBuyAmount" , pPositionField->CreditBuyAmount,
+            "CreditBuyUntradeAmount" , pPositionField->CreditBuyUntradeAmount,
+            "CreditBuyFrozenMargin" , pPositionField->CreditBuyFrozenMargin,
+            "CreditBuyInterestFee" , pPositionField->CreditBuyInterestFee,
+            "CreditBuyUntradeVolume" , pPositionField->CreditBuyUntradeVolume,
+            "CreditSellAmount" , pPositionField->CreditSellAmount,
+            "CreditSellUntradeAmount" , pPositionField->CreditSellUntradeAmount,
+            "CreditSellFrozenMargin" , pPositionField->CreditSellFrozenMargin,
+            "CreditSellInterestFee" , pPositionField->CreditSellInterestFee,
+            "CreditSellUntradeVolume" , pPositionField->CreditSellUntradeVolume,
+            "CollateralInPos" , pPositionField->CollateralInPos,
+            "CreditBuyFrozenCirculateMargin" , pPositionField->CreditBuyFrozenCirculateMargin,
+            "CreditSellFrozenCirculateMargin" , pPositionField->CreditSellFrozenCirculateMargin,
+            "CloseProfit" , pPositionField->CloseProfit,
+            "TodayTotalOpenVolume" , pPositionField->TodayTotalOpenVolume,
+            "TodayCommission" , pPositionField->TodayCommission,
+            "TodayTotalBuyAmount" , pPositionField->TodayTotalBuyAmount,
+            "TodayTotalSellAmount" , pPositionField->TodayTotalSellAmount,
+            "PreFrozen" , pPositionField->PreFrozen,
+        }}
+    };
+    std::cout << m_json_rsp.dump() << std::endl;
+    m_cb->OnCommonJsonRespones(&m_json_rsp, nRequestID, true, pRspInfoField->ErrorID, TiEncodingTool::GbkToUtf8(pRspInfoField->ErrorMsg).c_str() );
 }; 
 
 ///报单录入响应
@@ -380,21 +450,6 @@ int TiHxTraderClient::QueryAsset()
 
     
 	m_client->ReqQryTradingAccount(&req, ++nReqId);
-    /*
-    ATPClientSeqIDType seq_id = ++nReqId;;
-	ATPReqFundQueryMsg msg;
-
-    strncpy(msg.cust_id, m_config->szCustomerId.c_str(), 17);                 // 客户号ID
-    strncpy(msg.fund_account_id, m_config->szFundAccount.c_str(), 17);        // 资金账户ID
-    strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);               // 账户ID
-	msg.client_seq_id = seq_id;
-	strncpy(msg.password, m_config->szFundPass.c_str(),129);
-
-    
-    //strncpy(msg.account_id, m_config->szShareholderIdSZ.c_str(), 13);               // 账户ID
-
-    m_client->ReqFundQuery(&msg);
-    */
 
     return nReqId;
 };
@@ -447,21 +502,8 @@ int TiHxTraderClient::QueryPositions()
         LOG(INFO) << "[loadConfig] Do not have config info";
         return -1;
     }
-    /*
-    ATPClientSeqIDType seq_id = ++nReqId;;
-	ATPReqShareQueryMsg msg;
-	
-    strncpy(msg.cust_id, m_config->szCustomerId.c_str(), 17);                 // 客户号ID
-    strncpy(msg.fund_account_id, m_config->szFundAccount.c_str(), 17);        // 资金账户ID
-    strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);               // 账户ID
-	msg.client_seq_id = seq_id;
-	strncpy(msg.password, m_config->szFundPass.c_str(),129);
 
-	//APIAccountIDUnit api_account_unit;
-	//strncpy(api_account_unit.account_id,account_id.c_str(),13);
-	//msg.account_id_array.push_back(api_account_unit);
-
-    m_client->ReqShareQuery(&msg);
-    */
+    CTORATstpQryPositionField req = {0};
+    m_client->ReqQryPosition(&req, ++nReqId); 
     return nReqId;
 };
