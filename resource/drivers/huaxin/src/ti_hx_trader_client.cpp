@@ -215,6 +215,34 @@ void TiHxTraderClient::OnRspQryPosition(CTORATstpPositionField *pPositionField, 
     m_cb->OnCommonJsonRespones(&m_json_rsp, nRequestID, true, pRspInfoField->ErrorID, TiEncodingTool::GbkToUtf8(pRspInfoField->ErrorMsg).c_str() );
 }; 
 
+void TiHxTraderClient::OnRspQryOrder(CTORATstpOrderField *pOrderField, CTORATstpRspInfoField *pRspInfoField, int nRequestID, bool bIsLast)
+{
+    printf("OnRspQryOrder, is_last[%d], req_id[%d]\n", bIsLast, nRequestID);
+    
+    if (pRspInfoField->ErrorID != 0)
+    {
+        printf("OnRspQryOrder fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, TiEncodingTool::GbkToUtf8(pRspInfoField->ErrorMsg).c_str() );
+    }
+    if (bIsLast){
+        return;
+    }
+
+};
+
+void TiHxTraderClient::OnRspQryTrade(CTORATstpTradeField *pTradeField, CTORATstpRspInfoField *pRspInfoField, int nRequestID, bool bIsLast)
+{
+    printf("OnRspQryTrade, is_last[%d], req_id[%d]\n", bIsLast, nRequestID);
+    
+    if (pRspInfoField->ErrorID != 0)
+    {
+        printf("OnRspQryTrade fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, TiEncodingTool::GbkToUtf8(pRspInfoField->ErrorMsg).c_str() );
+    }
+    if (bIsLast){
+        return;
+    }
+}; 
+    
+
 ///报单录入响应
 void TiHxTraderClient::OnRspOrderInsert(CTORATstpInputOrderField *pInputOrderField, CTORATstpRspInfoField *pRspInfoField, int nRequestID)
 {
@@ -460,18 +488,13 @@ int TiHxTraderClient::QueryOrders()
         LOG(INFO) << "[loadConfig] Do not have config info";
         return -1;
     }
-    /*
-    ATPClientSeqIDType seq_id = ++nReqId;;
-	ATPReqOrderQueryMsg msg;
-
-    strncpy(msg.cust_id, m_config->szCustomerId.c_str(), 17);                 // 客户号ID
-    strncpy(msg.fund_account_id, m_config->szFundAccount.c_str(), 17);        // 资金账户ID
-    strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);               // 账户ID
-	msg.client_seq_id = seq_id;
-	strncpy(msg.password, m_config->szFundPass.c_str(),129);
-
-    m_client->ReqOrderQuery(&msg);
-    */
+    
+    CTORATstpQryOrderField req = {0};
+    int ret = m_client->ReqQryOrder(&req, ++nReqId); 
+    if (ret != 0)
+    {   
+        printf("ReqQryOrder fail, ret[%d]\n", ret);
+    }
     return nReqId;
 };
 
@@ -481,18 +504,13 @@ int TiHxTraderClient::QueryMatches()
         LOG(INFO) << "[loadConfig] Do not have config info";
         return -1;
     }
-    /*
-    ATPClientSeqIDType seq_id = ++nReqId;;
-	ATPReqTradeOrderQueryMsg msg;
-
-    strncpy(msg.cust_id, m_config->szCustomerId.c_str(), 17);                 // 客户号ID
-    strncpy(msg.fund_account_id, m_config->szFundAccount.c_str(), 17);        // 资金账户ID
-    strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);               // 账户ID
-	msg.client_seq_id = seq_id;
-	strncpy(msg.password, m_config->szFundPass.c_str(),129);
-
-    m_client->ReqTradeOrderQuery(&msg);
-    */
+    
+    CTORATstpQryTradeField req = {0};
+    int ret = m_client->ReqQryTrade(&req, ++nReqId); 
+    if (ret != 0)
+    {   
+        printf("QueryMatches fail, ret[%d]\n", ret);
+    }
     return nReqId;
 };
 
@@ -504,6 +522,10 @@ int TiHxTraderClient::QueryPositions()
     }
 
     CTORATstpQryPositionField req = {0};
-    m_client->ReqQryPosition(&req, ++nReqId); 
+    int ret = m_client->ReqQryPosition(&req, ++nReqId); 
+    if (ret != 0)
+    {   
+        printf("QueryPositions fail, ret[%d]\n", ret);
+    }
     return nReqId;
 };
