@@ -36,4 +36,4 @@ link_directories( "./" )
 
 add_executable( ${PROJECT_NAME} ${SRCS} )
 
-target_link_libraries(${PROJECT_NAME} -llev2mdapi -lfasttraderapi -ltraderapi -larrow -lparquet -luv -lhiredis -lglog -lrt)
+target_link_libraries(${PROJECT_NAME} -llev2mdapi -ltraderapi -larrow -lparquet -luv -lhiredis -lglog -lrt)

@@ -335,20 +335,22 @@ TI_OrderStatusType TiHxTraderClient::getOrderStatus(TTORATstpOrderStatusType sta
 int TiHxTraderClient::orderInsertStock(TiReqOrderInsert* req){
     req->nReqId = ++nReqId;
 
-    CTORATstpInputOrderField msg;
+    CTORATstpInputOrderField msg = {0};
     if (!strcmp(req->szExchange, "SH"))
     {
         msg.ExchangeID = TORA_TSTP_EXD_SSE;             // 市场ID，上海
-        strcpy(msg.ShareholderID, m_config->szShareholderIdSH.c_str());               // 股东号
-        strcpy(msg.InvestorID, m_config->szInvestorIDSH.c_str());                     // 投资者ID
+        strncpy(msg.ShareholderID, m_config->szShareholderIdSH.c_str(), 11);               // 股东号
+        strncpy(msg.InvestorID, m_config->szInvestorIDSH.c_str(), 16);                // 投资者ID
+        std::cout << "ShareholderID: " << msg.ShareholderID << std::endl;
+        std::cout << "InvestorID: " << msg.InvestorID << std::endl;
     }
     if (!strcmp(req->szExchange, "SZ"))
     {
         msg.ExchangeID = TORA_TSTP_EXD_SZSE;             // 市场ID，上海
-        strcpy(msg.ShareholderID, m_config->szShareholderIdSZ.c_str());               // 账户ID
-        strcpy(msg.InvestorID, m_config->szInvestorIDSZ.c_str());                     // 投资者ID
+        strncpy(msg.ShareholderID, m_config->szShareholderIdSZ.c_str(), 11);               // 账户ID
+        strncpy(msg.InvestorID, m_config->szInvestorIDSZ.c_str(), 16);                     // 投资者ID
     }
-    strcpy(msg.SecurityID, req->szSymbol);               // 证券代码
+    strncpy(msg.SecurityID, req->szSymbol, 31);               // 证券代码
 
     switch (req->nTradeSideType)
     {
@@ -364,6 +366,7 @@ int TiHxTraderClient::orderInsertStock(TiReqOrderInsert* req){
     msg.VolumeTotalOriginal = req->nOrderVol;           //
     msg.TimeCondition = TORA_TSTP_TC_GFD;
     msg.VolumeCondition = TORA_TSTP_VC_AV;
+    msg.OrderRef = req->nReqId;
 
     int ret = m_client->ReqOrderInsert(&msg, req->nReqId);
     if (ret != 0)
@@ -375,21 +378,22 @@ int TiHxTraderClient::orderInsertStock(TiReqOrderInsert* req){
 int TiHxTraderClient::orderInsertEtf(TiReqOrderInsert* req){
     req->nReqId = ++nReqId;
 
-
-    CTORATstpInputOrderField msg;
+    CTORATstpInputOrderField msg = {0};
     if (!strcmp(req->szExchange, "SH"))
     {
         msg.ExchangeID = TORA_TSTP_EXD_SSE;             // 市场ID，上海
-        strcpy(msg.ShareholderID, m_config->szShareholderIdSH.c_str());               // 股东号
-        strcpy(msg.InvestorID, m_config->szInvestorIDSH.c_str());                     // 投资者ID
+        strncpy(msg.ShareholderID, m_config->szShareholderIdSH.c_str(), 11);               // 股东号
+        strncpy(msg.InvestorID, m_config->szInvestorIDSH.c_str(), 16);                // 投资者ID
+        std::cout << "ShareholderID: " << msg.ShareholderID << std::endl;
+        std::cout << "InvestorID: " << msg.InvestorID << std::endl;
     }
     if (!strcmp(req->szExchange, "SZ"))
     {
         msg.ExchangeID = TORA_TSTP_EXD_SZSE;             // 市场ID，上海
-        strcpy(msg.ShareholderID, m_config->szShareholderIdSZ.c_str());               // 账户ID
-        strcpy(msg.InvestorID, m_config->szInvestorIDSZ.c_str());                     // 投资者ID
+        strncpy(msg.ShareholderID, m_config->szShareholderIdSZ.c_str(), 11);               // 账户ID
+        strncpy(msg.InvestorID, m_config->szInvestorIDSZ.c_str(), 16);                     // 投资者ID
     }
-    strcpy(msg.SecurityID, req->szSymbol);               // 证券代码
+    strncpy(msg.SecurityID, req->szSymbol, 31);               // 证券代码
 
     switch (req->nTradeSideType)
     {
@@ -425,6 +429,7 @@ void TiHxTraderClient::connect(){
     }
     m_client = CTORATstpTraderApi::CreateTstpTraderApi();
     m_client->RegisterSpi(this);
+    std::cout << "[connect] " << m_config->szLocations << std::endl;
     m_client->RegisterFront((char*)m_config->szLocations.c_str());
     m_client->SubscribePrivateTopic(TORA_TERT_QUICK);
     m_client->SubscribePublicTopic(TORA_TERT_RESTART);

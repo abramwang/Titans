@@ -130,6 +130,20 @@ def QueryPositions():
         }
     )
 
+def QueryOrders():
+    redis_conn.xadd(streamKey,
+        {
+            "QueryOrders": json.dumps({})
+        }
+    )
+
+def QueryMatches():
+    redis_conn.xadd(streamKey,
+        {
+            "QueryMatches": json.dumps({})
+        }
+    )
+
 def enterOrder():
     redis_conn.xadd(streamKey,
         {
@@ -140,13 +154,19 @@ def enterOrder():
                     "nTradeSideType" : 'B',
                     "nOffsetType" : 'O',
                     "nBusinessType" : 'S',
-                    "nOrderPrice" : 6.86,
-                    "nOrderVol" : 100000
+                    "nOrderPrice" : 7.01,
+                    "nOrderVol" : 400
                 }
             )
         }
     )
 
+
+QueryOrders()
+enterOrder()
+
+exit(0)
 #QueryAsset()
 QueryPositions()
-#enterOrder()
+QueryMatches()
+
