@@ -181,8 +181,9 @@ def enterOrder_SZ():
 
 #QueryOrders()
 #enterOrder()
-enterOrder_SZ()
+#enterOrder_SZ()
 
+QueryPositions()
 exit(0)
 #QueryAsset()
 QueryPositions()
