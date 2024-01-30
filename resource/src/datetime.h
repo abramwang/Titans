@@ -20,6 +20,8 @@ namespace datetime {
 
     long long get_timestamp_ms(unsigned int day_num, unsigned int time_num);
 
+    long long get_timestamp_ms(char* day_str, char* time_str);  //20240130 10:26:14
+
     long long get_timestamp_ms(long long datetime_num);
 
     void get_format_timestamp_ms(long long src_timestamp, char *dis_str_time, unsigned int dis_len);

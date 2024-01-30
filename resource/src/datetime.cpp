@@ -1,3 +1,4 @@
+#include <string.h>
 #include "datetime.h"
 
 unsigned int datetime::get_today(){
@@ -53,6 +54,29 @@ long long datetime::get_timestamp_ms(unsigned int day_num, unsigned int time_num
 
     time_t time1 = mktime(&tm_t);
     return time1 * 1000 + _msec;
+};
+
+long long datetime::get_timestamp_ms(char* day_str, char* time_str){
+    struct tm tm_t = {0};
+    unsigned int day_num = atoi(day_str);
+    tm_t.tm_year    = day_num / 10000 - 1900;
+    tm_t.tm_mon     = day_num / 100 - (day_num / 10000)*100 - 1; 
+    tm_t.tm_mday    = day_num - (day_num / 100)* 100;
+
+
+    char *token;
+
+    token = strtok(time_str, ":");
+    tm_t.tm_hour = atoi(token);
+
+    token = strtok(NULL, ":");
+    tm_t.tm_min = atoi(token);
+
+    token = strtok(NULL, ":");
+    tm_t.tm_sec = atoi(token);
+
+    time_t time1 = mktime(&tm_t);
+    return time1 * 1000;
 };
 
 long long datetime::get_timestamp_ms(long long datetime_num){

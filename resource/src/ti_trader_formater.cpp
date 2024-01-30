@@ -24,6 +24,7 @@ void TiTraderFormater::FormatOrderStatus(const TiRtnOrderStatus* pData, json& j)
         {"nOrderVol" , pData->nOrderVol},
         {"szReqTimestamp" , pData->nReqTimestamp ? datetime::get_format_timestamp_ms(pData->nReqTimestamp):""},
         {"szOrderId" , order_id},
+        {"szOrderStreamId" , pData->szOrderStreamId},
         {"nSubmitVol" , pData->nSubmitVol},
         {"nDealtPrice" , pData->nDealtPrice},
         {"nDealtVol" , pData->nDealtVol},
@@ -36,6 +37,35 @@ void TiTraderFormater::FormatOrderStatus(const TiRtnOrderStatus* pData, json& j)
         {"nFee" , pData->nFee},
         {"szErr" , pData->szErr},
     };
+    switch (pData->nStatus)
+    {
+    case TI_OrderStatusType_fail:
+        j["szStatus"] = "fail";
+        break;
+    case TI_OrderStatusType_removed:
+        j["szStatus"] = "removed";
+        break;
+    case TI_OrderStatusType_dealt:
+        j["szStatus"] = "dealt";
+        break;
+    case TI_OrderStatusType_unAccept:
+        j["szStatus"] = "unAccept";
+        break;
+    case TI_OrderStatusType_accepted:
+        j["szStatus"] = "accepted";
+        break;
+    case TI_OrderStatusType_queued:
+        j["szStatus"] = "queued";
+        break;
+    case TI_OrderStatusType_toRemove:
+        j["szStatus"] = "toRemove";
+        break;
+    case TI_OrderStatusType_removing:
+        j["szStatus"] = "removing";
+        break;
+    default:
+        break;
+    }
 };
 void TiTraderFormater::FormatOrderMatchEvent(const TiRtnOrderMatch* pData, json& j)
 {

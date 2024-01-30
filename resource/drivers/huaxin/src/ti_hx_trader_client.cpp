@@ -227,6 +227,86 @@ void TiHxTraderClient::OnRspQryOrder(CTORATstpOrderField *pOrderField, CTORATstp
         return;
     }
 
+    std::shared_ptr<TiRtnOrderStatus> order_ptr;
+
+    auto iter = m_order_map.find(pOrderField->FrontID);
+    if (iter == m_order_map.end())
+    {
+        iter = m_order_req_map.find(pOrderField->RequestID);
+        if (iter == m_order_req_map.end())
+        {
+            order_ptr = std::make_shared<TiRtnOrderStatus>();
+            memset(order_ptr.get(), 0, sizeof(TiRtnOrderStatus));
+            strcpy(order_ptr->szSymbol, pOrderField->SecurityID);
+            if (pOrderField->ExchangeID == TORA_TSTP_EXD_SSE) {
+                strcpy(order_ptr->szExchange, "SH");
+            } else if (pOrderField->ExchangeID == TORA_TSTP_EXD_SZSE) {
+                strcpy(order_ptr->szExchange, "SH");
+            } else {
+                strcpy(order_ptr->szExchange, "");
+            }
+
+            switch (pOrderField->Direction)
+            {
+            case TORA_TSTP_D_Sell:
+                order_ptr->nTradeSideType = TI_TradeSideType_Sell;
+                break;
+            case TORA_TSTP_D_Buy:
+                order_ptr->nTradeSideType = TI_TradeSideType_Buy;
+                break;
+            case TORA_TSTP_D_ETFPur:  
+                order_ptr->nTradeSideType = TI_TradeSideType_Purchase;
+                break;
+            case TORA_TSTP_D_ETFRed: 
+                order_ptr->nTradeSideType = TI_TradeSideType_Redemption;
+                break;
+            default:
+                break;
+            }
+
+            order_ptr->nBusinessType = TI_BusinessType_Stock;
+            order_ptr->nOrderPrice = pOrderField->LimitPrice;
+            order_ptr->nOrderVol = pOrderField->VolumeTotalOriginal;
+
+            m_order_map[order_ptr->nOrderId] = order_ptr;
+        }
+        else
+        {
+            order_ptr = iter->second;
+            m_order_req_map.erase(iter);
+            m_order_map[order_ptr->nOrderId] = order_ptr;
+        }
+    }else{
+        order_ptr = iter->second;
+    }
+
+    order_ptr->nReqId = pOrderField->RequestID;
+    order_ptr->nOrderId = pOrderField->FrontID;
+    strcpy(order_ptr->szOrderStreamId, pOrderField->OrderSysID);
+
+    order_ptr->nSubmitVol = pOrderField->VolumeTotalOriginal;
+    order_ptr->nDealtVol = pOrderField->VolumeTraded;
+    order_ptr->nStatus = getOrderStatus(pOrderField->OrderStatus);
+
+    printf("AcceptTime: %s %s\n", pOrderField->InsertDate, pOrderField->AcceptTime);
+    printf("CancelTime: %s %s\n", pOrderField->InsertDate, pOrderField->CancelTime);
+    printf("InsertTime: %s %s\n", pOrderField->InsertDate, pOrderField->InsertTime);
+
+    order_ptr->nInsertTimestamp = datetime::get_timestamp_ms(pOrderField->InsertDate, pOrderField->InsertTime);
+    std::cout << order_ptr->nLastUpdateTimestamp << std::endl;
+
+    if (order_ptr->nLastUpdateTimestamp == 0)
+    {
+        order_ptr->nLastUpdateTimestamp = order_ptr->nInsertTimestamp;
+    }
+    
+    
+
+    //order_ptr->nLastUpdateTimestamp = datetime::get_timestamp_ms(order_status_ack.transact_time);
+    //order_ptr->nUsedTime = order_ptr->nLastUpdateTimestamp - order_ptr->nInsertTimestamp;
+    
+
+    m_cb->OnRtnOrderStatusEvent(order_ptr.get());
 };
 
 void TiHxTraderClient::OnRspQryTrade(CTORATstpTradeField *pTradeField, CTORATstpRspInfoField *pRspInfoField, int nRequestID, bool bIsLast)
@@ -298,37 +378,29 @@ int TiHxTraderClient::loadConfig(std::string iniFileName){
 
 TI_OrderStatusType TiHxTraderClient::getOrderStatus(TTORATstpOrderStatusType status)
 {   
-    /*
     switch (status)
     {
-    case ATPOrdStatusConst::kNew:
+    case TORA_TSTP_OST_Unknown:
         return TI_OrderStatusType_unAccept;
-    case ATPOrdStatusConst::kPartiallyFilled:
+    case TORA_TSTP_OST_PartTraded:
         return TI_OrderStatusType_dealt;
-    case ATPOrdStatusConst::kFilled:
+    case TORA_TSTP_OST_AllTraded:
         return TI_OrderStatusType_dealt;
-    case ATPOrdStatusConst::kPartiallyFilledPartiallyCancelled:
+    case TORA_TSTP_OST_PartTradeCanceled:
         return TI_OrderStatusType_removed;
-    case ATPOrdStatusConst::kCancelled:
+    case TORA_TSTP_OST_AllCanceled:
         return TI_OrderStatusType_removed;
-    case ATPOrdStatusConst::kPartiallyCancelled:
-        return TI_OrderStatusType_removed;
-    case ATPOrdStatusConst::kReject:
+    case TORA_TSTP_OST_Rejected:
         return TI_OrderStatusType_fail;
-    case ATPOrdStatusConst::kUnSend:
-        return TI_OrderStatusType_unAccept;
-    case ATPOrdStatusConst::kSended:
+    case TORA_TSTP_OST_Cached:
         return TI_OrderStatusType_queued;
-    case ATPOrdStatusConst::kWaitCancelled:
+    case TORA_TSTP_OST_SendTradeEngine:
         return TI_OrderStatusType_queued;
-    case ATPOrdStatusConst::kPartiallyFilledWaitCancelled:
-        return TI_OrderStatusType_removing;
-    case ATPOrdStatusConst::kProcessed:
+    case TORA_TSTP_OST_Accepted:
         return TI_OrderStatusType_queued;
     default:
         return TI_OrderStatusType_unAccept;
     }
-    */
    return TI_OrderStatusType_unAccept;
 };
 

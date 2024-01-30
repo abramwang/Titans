@@ -99,7 +99,7 @@ void OcTraderCommanderHuaxin::OnRspQryOrder(const TiRspQryOrder* pData, bool isL
         (*iter)->OnRspQryOrder(pData, isLast);
     }
     */
-    return;
+    //return;
     if (m_config)
     {
         if(!m_config->szOrderKey.empty())
