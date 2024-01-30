@@ -92,7 +92,7 @@ public:
     virtual void OnRspOrderInsert(CTORATstpInputOrderField *pInputOrderField, CTORATstpRspInfoField *pRspInfoField, int nRequestID);
     
     ///报单回报
-    virtual void OnRtnOrder(CTORATstpOrderField *pOrderField) {};
+    virtual void OnRtnOrder(CTORATstpOrderField *pOrderField);
     
     ///报单错误回报
     virtual void OnErrRtnOrderInsert(CTORATstpInputOrderField *pInputOrderField, CTORATstpRspInfoField *pRspInfoField, int nRequestID) {};

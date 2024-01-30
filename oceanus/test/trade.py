@@ -154,16 +154,34 @@ def enterOrder():
                     "nTradeSideType" : 'B',
                     "nOffsetType" : 'O',
                     "nBusinessType" : 'S',
-                    "nOrderPrice" : 7.01,
+                    "nOrderPrice" : 6.89,
                     "nOrderVol" : 400
                 }
             )
         }
     )
 
+def enterOrder_SZ():
+    redis_conn.xadd(streamKey,
+        {
+            "enterOrder": json.dumps(
+                {
+                    "szSymbol" : "000001",
+                    "szExchange" : "SZ",
+                    "nTradeSideType" : 'B',
+                    "nOffsetType" : 'O',
+                    "nBusinessType" : 'S',
+                    "nOrderPrice" : 9.69,
+                    "nOrderVol" : 300
+                }
+            )
+        }
+    )
 
-QueryOrders()
+
+#QueryOrders()
 #enterOrder()
+enterOrder_SZ()
 
 exit(0)
 #QueryAsset()

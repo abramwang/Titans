@@ -341,9 +341,120 @@ void TiHxTraderClient::OnRspOrderInsert(CTORATstpInputOrderField *pInputOrderFie
         printf("order insert fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, TiEncodingTool::GbkToUtf8(pRspInfoField->ErrorMsg).c_str() );
     }
 
-    
+    std::shared_ptr<TiRtnOrderStatus> order_ptr;
 
+    auto iter = m_order_map.find(pInputOrderField->OrderRef);
+    if (iter == m_order_map.end())
+    {
+        order_ptr = std::make_shared<TiRtnOrderStatus>();
+        memset(order_ptr.get(), 0, sizeof(TiRtnOrderStatus));
+        strcpy(order_ptr->szSymbol, pInputOrderField->SecurityID);
+        if (pInputOrderField->ExchangeID == TORA_TSTP_EXD_SSE) {
+            strcpy(order_ptr->szExchange, "SH");
+        } else if (pInputOrderField->ExchangeID == TORA_TSTP_EXD_SZSE) {
+            strcpy(order_ptr->szExchange, "SZ");
+        } else {
+            strcpy(order_ptr->szExchange, "");
+        }
+
+        switch (pInputOrderField->Direction)
+        {
+        case TORA_TSTP_D_Sell:
+            order_ptr->nTradeSideType = TI_TradeSideType_Sell;
+            break;
+        case TORA_TSTP_D_Buy:
+            order_ptr->nTradeSideType = TI_TradeSideType_Buy;
+            break;
+        case TORA_TSTP_D_ETFPur:  
+            order_ptr->nTradeSideType = TI_TradeSideType_Purchase;
+            break;
+        case TORA_TSTP_D_ETFRed: 
+            order_ptr->nTradeSideType = TI_TradeSideType_Redemption;
+            break;
+        default:
+            break;
+        }
+
+        order_ptr->nBusinessType = TI_BusinessType_Stock;
+        order_ptr->nOrderPrice = pInputOrderField->LimitPrice;
+        order_ptr->nOrderVol = pInputOrderField->VolumeTotalOriginal;
+
+        m_order_map[order_ptr->nOrderId] = order_ptr;
+    }else{
+        order_ptr = iter->second;
+    }
+
+    order_ptr->nReqId = nRequestID;
+    order_ptr->nOrderId = pInputOrderField->OrderRef;
+    strcpy(order_ptr->szOrderStreamId, pInputOrderField->OrderSysID);
+    order_ptr->nSubmitVol = pInputOrderField->VolumeTotalOriginal;
+    order_ptr->nStatus = TI_OrderStatusType_unAccept;
+    order_ptr->nInsertTimestamp = datetime::get_now_timestamp_ms();
+    order_ptr->nLastUpdateTimestamp = datetime::get_now_timestamp_ms();
+    order_ptr->nUsedTime = order_ptr->nLastUpdateTimestamp - order_ptr->nInsertTimestamp;
+
+    m_cb->OnRtnOrderStatusEvent(order_ptr.get());
 };
+
+ void TiHxTraderClient::OnRtnOrder(CTORATstpOrderField *pOrderField)
+ {
+    std::shared_ptr<TiRtnOrderStatus> order_ptr;
+
+    auto iter = m_order_map.find(pOrderField->OrderRef);
+    if (iter == m_order_map.end())
+    {
+        order_ptr = std::make_shared<TiRtnOrderStatus>();
+        memset(order_ptr.get(), 0, sizeof(TiRtnOrderStatus));
+        strcpy(order_ptr->szSymbol, pOrderField->SecurityID);
+        if (pOrderField->ExchangeID == TORA_TSTP_EXD_SSE) {
+            strcpy(order_ptr->szExchange, "SH");
+        } else if (pOrderField->ExchangeID == TORA_TSTP_EXD_SZSE) {
+            strcpy(order_ptr->szExchange, "SZ");
+        } else {
+            strcpy(order_ptr->szExchange, "");
+        }
+
+        switch (pOrderField->Direction)
+        {
+        case TORA_TSTP_D_Sell:
+            order_ptr->nTradeSideType = TI_TradeSideType_Sell;
+            break;
+        case TORA_TSTP_D_Buy:
+            order_ptr->nTradeSideType = TI_TradeSideType_Buy;
+            break;
+        case TORA_TSTP_D_ETFPur:  
+            order_ptr->nTradeSideType = TI_TradeSideType_Purchase;
+            break;
+        case TORA_TSTP_D_ETFRed: 
+            order_ptr->nTradeSideType = TI_TradeSideType_Redemption;
+            break;
+        default:
+            break;
+        }
+
+        order_ptr->nBusinessType = TI_BusinessType_Stock;
+        order_ptr->nOrderPrice = pOrderField->LimitPrice;
+        order_ptr->nOrderVol = pOrderField->VolumeTotalOriginal;
+
+        m_order_map[order_ptr->nOrderId] = order_ptr;
+    }else{
+        order_ptr = iter->second;
+    }
+    
+    order_ptr->nReqId = pOrderField->RequestID;
+    order_ptr->nOrderId = pOrderField->OrderRef;
+    strcpy(order_ptr->szOrderStreamId, pOrderField->OrderSysID);
+
+    order_ptr->nSubmitVol = pOrderField->VolumeTotalOriginal;
+    order_ptr->nDealtVol = pOrderField->VolumeTraded;
+    order_ptr->nStatus = getOrderStatus(pOrderField->OrderStatus);
+
+    order_ptr->nInsertTimestamp = datetime::get_timestamp_ms(pOrderField->InsertDate, pOrderField->InsertTime);
+    order_ptr->nLastUpdateTimestamp = datetime::get_now_timestamp_ms();
+    order_ptr->nUsedTime = order_ptr->nLastUpdateTimestamp - order_ptr->nInsertTimestamp;
+
+    m_cb->OnRtnOrderStatusEvent(order_ptr.get());
+ };
 
     
 ////////////////////////////////////////////////////////////////////////
