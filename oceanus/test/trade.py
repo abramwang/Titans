@@ -163,7 +163,7 @@ def enterOrder():
 
 
 QueryOrders()
-enterOrder()
+#enterOrder()
 
 exit(0)
 #QueryAsset()

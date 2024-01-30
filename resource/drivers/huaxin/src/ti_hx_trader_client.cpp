@@ -11,11 +11,9 @@ TiHxTraderClient::TiHxTraderClient(std::string configPath, TiTraderCallback* use
     m_config = NULL;
     m_trading_day = 0;
     m_client = NULL;
-    //m_api = TraderApi::CreateTraderApi(2, "./", XTP_LOG_LEVEL_DEBUG);
-	//m_api->SetHeartBeatInterval(15);
-	//m_api->RegisterSpi(this);
 
     nSessionId = 0;
+    nOrderId = 1680000;
 
     m_cb = userCb;
 
@@ -229,82 +227,63 @@ void TiHxTraderClient::OnRspQryOrder(CTORATstpOrderField *pOrderField, CTORATstp
 
     std::shared_ptr<TiRtnOrderStatus> order_ptr;
 
-    auto iter = m_order_map.find(pOrderField->FrontID);
+    auto iter = m_order_map.find(pOrderField->OrderRef);
     if (iter == m_order_map.end())
     {
-        iter = m_order_req_map.find(pOrderField->RequestID);
-        if (iter == m_order_req_map.end())
-        {
-            order_ptr = std::make_shared<TiRtnOrderStatus>();
-            memset(order_ptr.get(), 0, sizeof(TiRtnOrderStatus));
-            strcpy(order_ptr->szSymbol, pOrderField->SecurityID);
-            if (pOrderField->ExchangeID == TORA_TSTP_EXD_SSE) {
-                strcpy(order_ptr->szExchange, "SH");
-            } else if (pOrderField->ExchangeID == TORA_TSTP_EXD_SZSE) {
-                strcpy(order_ptr->szExchange, "SH");
-            } else {
-                strcpy(order_ptr->szExchange, "");
-            }
-
-            switch (pOrderField->Direction)
-            {
-            case TORA_TSTP_D_Sell:
-                order_ptr->nTradeSideType = TI_TradeSideType_Sell;
-                break;
-            case TORA_TSTP_D_Buy:
-                order_ptr->nTradeSideType = TI_TradeSideType_Buy;
-                break;
-            case TORA_TSTP_D_ETFPur:  
-                order_ptr->nTradeSideType = TI_TradeSideType_Purchase;
-                break;
-            case TORA_TSTP_D_ETFRed: 
-                order_ptr->nTradeSideType = TI_TradeSideType_Redemption;
-                break;
-            default:
-                break;
-            }
-
-            order_ptr->nBusinessType = TI_BusinessType_Stock;
-            order_ptr->nOrderPrice = pOrderField->LimitPrice;
-            order_ptr->nOrderVol = pOrderField->VolumeTotalOriginal;
-
-            m_order_map[order_ptr->nOrderId] = order_ptr;
+        order_ptr = std::make_shared<TiRtnOrderStatus>();
+        memset(order_ptr.get(), 0, sizeof(TiRtnOrderStatus));
+        strcpy(order_ptr->szSymbol, pOrderField->SecurityID);
+        if (pOrderField->ExchangeID == TORA_TSTP_EXD_SSE) {
+            strcpy(order_ptr->szExchange, "SH");
+        } else if (pOrderField->ExchangeID == TORA_TSTP_EXD_SZSE) {
+            strcpy(order_ptr->szExchange, "SZ");
+        } else {
+            strcpy(order_ptr->szExchange, "");
         }
-        else
+
+        switch (pOrderField->Direction)
         {
-            order_ptr = iter->second;
-            m_order_req_map.erase(iter);
-            m_order_map[order_ptr->nOrderId] = order_ptr;
+        case TORA_TSTP_D_Sell:
+            order_ptr->nTradeSideType = TI_TradeSideType_Sell;
+            break;
+        case TORA_TSTP_D_Buy:
+            order_ptr->nTradeSideType = TI_TradeSideType_Buy;
+            break;
+        case TORA_TSTP_D_ETFPur:  
+            order_ptr->nTradeSideType = TI_TradeSideType_Purchase;
+            break;
+        case TORA_TSTP_D_ETFRed: 
+            order_ptr->nTradeSideType = TI_TradeSideType_Redemption;
+            break;
+        default:
+            break;
         }
+
+        order_ptr->nBusinessType = TI_BusinessType_Stock;
+        order_ptr->nOrderPrice = pOrderField->LimitPrice;
+        order_ptr->nOrderVol = pOrderField->VolumeTotalOriginal;
+
+        m_order_map[order_ptr->nOrderId] = order_ptr;
     }else{
         order_ptr = iter->second;
     }
 
     order_ptr->nReqId = pOrderField->RequestID;
-    order_ptr->nOrderId = pOrderField->FrontID;
+    order_ptr->nOrderId = pOrderField->OrderRef;
     strcpy(order_ptr->szOrderStreamId, pOrderField->OrderSysID);
 
     order_ptr->nSubmitVol = pOrderField->VolumeTotalOriginal;
     order_ptr->nDealtVol = pOrderField->VolumeTraded;
     order_ptr->nStatus = getOrderStatus(pOrderField->OrderStatus);
 
-    printf("AcceptTime: %s %s\n", pOrderField->InsertDate, pOrderField->AcceptTime);
-    printf("CancelTime: %s %s\n", pOrderField->InsertDate, pOrderField->CancelTime);
-    printf("InsertTime: %s %s\n", pOrderField->InsertDate, pOrderField->InsertTime);
-
     order_ptr->nInsertTimestamp = datetime::get_timestamp_ms(pOrderField->InsertDate, pOrderField->InsertTime);
-    std::cout << order_ptr->nLastUpdateTimestamp << std::endl;
 
     if (order_ptr->nLastUpdateTimestamp == 0)
     {
         order_ptr->nLastUpdateTimestamp = order_ptr->nInsertTimestamp;
     }
-    
-    
 
-    //order_ptr->nLastUpdateTimestamp = datetime::get_timestamp_ms(order_status_ack.transact_time);
-    //order_ptr->nUsedTime = order_ptr->nLastUpdateTimestamp - order_ptr->nInsertTimestamp;
-    
+    nOrderId = std::max(nOrderId, (order_ptr->nOrderId + 1));
 
     m_cb->OnRtnOrderStatusEvent(order_ptr.get());
 };
@@ -320,6 +299,32 @@ void TiHxTraderClient::OnRspQryTrade(CTORATstpTradeField *pTradeField, CTORATstp
     if (bIsLast){
         return;
     }
+
+    std::shared_ptr<TiRtnOrderMatch> match_ptr = std::make_shared<TiRtnOrderMatch>();
+    memset(match_ptr.get(), 0, sizeof(TiRtnOrderMatch));
+    match_ptr->nOrderId = pTradeField->OrderRef;
+    strncpy(match_ptr->szStreamId, pTradeField->OrderSysID, 64);
+    match_ptr->nMatchPrice = pTradeField->Price;
+    match_ptr->nMatchVol = pTradeField->Volume;
+    strcpy(match_ptr->szSymbol, pTradeField->SecurityID);
+
+    if (pTradeField->ExchangeID == TORA_TSTP_EXD_SSE) {
+        strcpy(match_ptr->szExchange, "SH");
+    } else if (pTradeField->ExchangeID == TORA_TSTP_EXD_SZSE) {
+        strcpy(match_ptr->szExchange, "SZ");
+    } else {
+        strcpy(match_ptr->szExchange, "");
+    }
+
+    match_ptr->nMatchTimestamp = datetime::get_timestamp_ms(pTradeField->TradeDate, pTradeField->TradeTime);
+    if (pTradeField->Direction == TORA_TSTP_D_Buy) {
+        match_ptr->nTradeSideType = TI_TradeSideType_Buy;
+    }
+    if (pTradeField->Direction == TORA_TSTP_D_Sell) {
+        match_ptr->nTradeSideType = TI_TradeSideType_Sell;
+    }
+    m_matches_map.insert(std::pair<int64_t, std::shared_ptr<TiRtnOrderMatch>>(match_ptr->nOrderId, match_ptr));
+
 }; 
     
 
@@ -335,6 +340,9 @@ void TiHxTraderClient::OnRspOrderInsert(CTORATstpInputOrderField *pInputOrderFie
     {
         printf("order insert fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, TiEncodingTool::GbkToUtf8(pRspInfoField->ErrorMsg).c_str() );
     }
+
+    
+
 };
 
     
@@ -438,7 +446,7 @@ int TiHxTraderClient::orderInsertStock(TiReqOrderInsert* req){
     msg.VolumeTotalOriginal = req->nOrderVol;           //
     msg.TimeCondition = TORA_TSTP_TC_GFD;
     msg.VolumeCondition = TORA_TSTP_VC_AV;
-    msg.OrderRef = req->nReqId;
+    msg.OrderRef = ++nOrderId;
 
     int ret = m_client->ReqOrderInsert(&msg, req->nReqId);
     if (ret != 0)
@@ -481,6 +489,7 @@ int TiHxTraderClient::orderInsertEtf(TiReqOrderInsert* req){
     msg.VolumeTotalOriginal = req->nOrderVol;           //
     msg.TimeCondition = TORA_TSTP_TC_GFD;
     msg.VolumeCondition = TORA_TSTP_VC_AV;
+    msg.OrderRef = ++nOrderId;
 
     int ret = m_client->ReqOrderInsert(&msg, req->nReqId);
     if (ret != 0)
@@ -536,9 +545,13 @@ TiRtnOrderStatus* TiHxTraderClient::getOrderStatus(int64_t req_id, int64_t order
     {
         return m_order_map[order_id].get();
     }
-    if (m_order_req_map.find(req_id) != m_order_map.end())
+    auto iter = m_order_map.begin();
+    for( ; iter != m_order_map.end(); iter++)
     {
-        return m_order_req_map[req_id].get();
+        if (iter->second->nReqId == req_id)
+        {
+            return iter->second.get();
+        }
     }
     return NULL;
 };

@@ -99,7 +99,10 @@ void OcTraderCommanderHuaxin::OnRspQryOrder(const TiRspQryOrder* pData, bool isL
         (*iter)->OnRspQryOrder(pData, isLast);
     }
     */
-    //return;
+    json j;
+    TiTraderFormater::FormatOrderStatus(pData, j);
+    std::cout << "OnRspQryOrder: " << j << std::endl;
+    return;
     if (m_config)
     {
         if(!m_config->szOrderKey.empty())
@@ -117,6 +120,9 @@ void OcTraderCommanderHuaxin::OnRspQryMatch(const TiRspQryMatch* pData, bool isL
         (*iter)->OnRspQryMatch(pData, isLast);
     }
     */
+    json j;
+    TiTraderFormater::FormatOrderMatchEvent(pData, j);
+    std::cout << "OnRtnOrderMatchEvent: " << j << std::endl;
     return;
     if (m_config)
     {

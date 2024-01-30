@@ -293,7 +293,7 @@ void TiAxTraderClient::OnRspOrderStatusInternalAck(const ATPRspOrderStatusAckMsg
             if (order_status_ack.market_id == ATPMarketIDConst::kShangHai) {
                 strcpy(order_ptr->szExchange, "SH");
             } else if (order_status_ack.market_id == ATPMarketIDConst::kShenZhen) {
-                strcpy(order_ptr->szExchange, "SH");
+                strcpy(order_ptr->szExchange, "SZ");
             } else {
                 strcpy(order_ptr->szExchange, "");
             }
@@ -375,7 +375,7 @@ void TiAxTraderClient::OnRspOrderStatusAck(const ATPRspOrderStatusAckMsg& order_
             if (order_status_ack.market_id == ATPMarketIDConst::kShangHai) {
                 strcpy(order_ptr->szExchange, "SH");
             } else if (order_status_ack.market_id == ATPMarketIDConst::kShenZhen) {
-                strcpy(order_ptr->szExchange, "SH");
+                strcpy(order_ptr->szExchange, "SZ");
             } else {
                 strcpy(order_ptr->szExchange, "");
             }
@@ -483,7 +483,7 @@ void TiAxTraderClient::OnRspCashAuctionTradeER(const ATPRspCashAuctionTradeERMsg
             if (cash_auction_trade_er.market_id == ATPMarketIDConst::kShangHai) {
                 strcpy(order_ptr->szExchange, "SH");
             } else if (cash_auction_trade_er.market_id == ATPMarketIDConst::kShenZhen) {
-                strcpy(order_ptr->szExchange, "SH");
+                strcpy(order_ptr->szExchange, "SZ");
             } else {
                 strcpy(order_ptr->szExchange, "");
             }
@@ -566,7 +566,7 @@ void TiAxTraderClient::OnRspETFRedemptionTradeER(const ATPRspETFRedemptionTradeE
             if (etf_redemption_trade_er.market_id == ATPMarketIDConst::kShangHai) {
                 strcpy(order_ptr->szExchange, "SH");
             } else if (etf_redemption_trade_er.market_id == ATPMarketIDConst::kShenZhen) {
-                strcpy(order_ptr->szExchange, "SH");
+                strcpy(order_ptr->szExchange, "SZ");
             } else {
                 strcpy(order_ptr->szExchange, "");
             }
