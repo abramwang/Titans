@@ -454,7 +454,42 @@ void TiHxTraderClient::OnRspOrderInsert(CTORATstpInputOrderField *pInputOrderFie
     order_ptr->nUsedTime = order_ptr->nLastUpdateTimestamp - order_ptr->nInsertTimestamp;
 
     m_cb->OnRtnOrderStatusEvent(order_ptr.get());
- };
+};
+
+void TiHxTraderClient::OnErrRtnOrderInsert(CTORATstpInputOrderField *pInputOrderField, CTORATstpRspInfoField *pRspInfoField, int nRequestID)
+{
+    OnRspOrderInsert(pInputOrderField, pRspInfoField, nRequestID);
+};
+
+void TiHxTraderClient::OnRtnTrade(CTORATstpTradeField *pTradeField)
+{
+    std::shared_ptr<TiRtnOrderMatch> match_ptr = std::make_shared<TiRtnOrderMatch>();
+    memset(match_ptr.get(), 0, sizeof(TiRtnOrderMatch));
+    match_ptr->nOrderId = pTradeField->OrderRef;
+    strncpy(match_ptr->szStreamId, pTradeField->OrderSysID, 64);
+    match_ptr->nMatchPrice = pTradeField->Price;
+    match_ptr->nMatchVol = pTradeField->Volume;
+    strcpy(match_ptr->szSymbol, pTradeField->SecurityID);
+
+    if (pTradeField->ExchangeID == TORA_TSTP_EXD_SSE) {
+        strcpy(match_ptr->szExchange, "SH");
+    } else if (pTradeField->ExchangeID == TORA_TSTP_EXD_SZSE) {
+        strcpy(match_ptr->szExchange, "SZ");
+    } else {
+        strcpy(match_ptr->szExchange, "");
+    }
+
+    match_ptr->nMatchTimestamp = datetime::get_timestamp_ms(pTradeField->TradeDate, pTradeField->TradeTime);
+    if (pTradeField->Direction == TORA_TSTP_D_Buy) {
+        match_ptr->nTradeSideType = TI_TradeSideType_Buy;
+    }
+    if (pTradeField->Direction == TORA_TSTP_D_Sell) {
+        match_ptr->nTradeSideType = TI_TradeSideType_Sell;
+    }
+    m_matches_map.insert(std::pair<int64_t, std::shared_ptr<TiRtnOrderMatch>>(match_ptr->nOrderId, match_ptr));
+
+    m_cb->OnRtnOrderMatchEvent(match_ptr.get());
+};
 
     
 ////////////////////////////////////////////////////////////////////////

@@ -95,10 +95,10 @@ public:
     virtual void OnRtnOrder(CTORATstpOrderField *pOrderField);
     
     ///报单错误回报
-    virtual void OnErrRtnOrderInsert(CTORATstpInputOrderField *pInputOrderField, CTORATstpRspInfoField *pRspInfoField, int nRequestID) {};
+    virtual void OnErrRtnOrderInsert(CTORATstpInputOrderField *pInputOrderField, CTORATstpRspInfoField *pRspInfoField, int nRequestID);
     
     ///成交回报
-    virtual void OnRtnTrade(CTORATstpTradeField *pTradeField) {};
+    virtual void OnRtnTrade(CTORATstpTradeField *pTradeField);
     
     ///撤单响应
     virtual void OnRspOrderAction(CTORATstpInputOrderActionField *pInputOrderActionField, CTORATstpRspInfoField *pRspInfoField, int nRequestID) {};
