@@ -183,6 +183,7 @@ private:
     int loadConfig(std::string iniFileName);
 
     TI_OrderStatusType getOrderStatus(TTORATstpOrderStatusType status);
+    std::string getExchange(TTORATstpExchangeIDType exchangeId);
 
     int orderInsertStock(TiReqOrderInsert* req);   //买卖
     int orderInsertEtf(TiReqOrderInsert* req);     //申赎

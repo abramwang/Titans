@@ -204,6 +204,18 @@ void OcTraderCommanderHuaxin::OnCommandRtn(const char* type, const char* command
         m_client->QueryMatches();
         return;
     }
+
+     if (!strcmp(type, "QueryETFFile"))
+    {
+        m_client->QueryETFFile();
+        return;
+    }
+
+    if (!strcmp(type, "QueryETFBasket"))
+    {
+        m_client->QueryETFBasket();
+        return;
+    }
     
 };
 

@@ -158,7 +158,7 @@ void TiHxTraderClient::OnRspQryPosition(CTORATstpPositionField *pPositionField, 
     json m_json_rsp = {
         { "type", "OnRspQryPosition"},
         { "data", {
-            "ExchangeID" , pPositionField->ExchangeID,
+            "ExchangeID" , getExchange(pPositionField->ExchangeID),
             "InvestorID" , pPositionField->InvestorID,
             "BusinessUnitID" , pPositionField->BusinessUnitID,
             "MarketID" , pPositionField->MarketID,
@@ -229,7 +229,7 @@ void TiHxTraderClient::OnRspQryETFFile(CTORATstpETFFileField *pETFFileField, CTO
         { "type", "OnRspQryETFFile"},
         { "data", {
             "TradingDay" , pETFFileField->TradingDay,
-            "ExchangeID" , pETFFileField->ExchangeID,
+            "ExchangeID" , getExchange(pETFFileField->ExchangeID),
             "ETFSecurityID" , pETFFileField->ETFSecurityID,
             "ETFCreRedSecurityID" , pETFFileField->ETFCreRedSecurityID,
             "CreationRedemptionUnit" , pETFFileField->CreationRedemptionUnit,
@@ -263,7 +263,7 @@ void TiHxTraderClient::OnRspQryETFBasket(CTORATstpETFBasketField *pETFBasketFiel
         { "type", "OnRspQryETFBasket"},
         { "data", {
             "TradingDay" , pETFBasketField->TradingDay,
-            "ExchangeID" , pETFBasketField->ExchangeID,
+            "ExchangeID" , getExchange(pETFBasketField->ExchangeID),
             "ETFSecurityID" , pETFBasketField->ETFSecurityID,
             "SecurityID" , pETFBasketField->SecurityID,
             "SecurityName" , TiEncodingTool::GbkToUtf8(pETFBasketField->SecurityName).c_str(),
@@ -300,13 +300,7 @@ void TiHxTraderClient::OnRspQryOrder(CTORATstpOrderField *pOrderField, CTORATstp
         order_ptr = std::make_shared<TiRtnOrderStatus>();
         memset(order_ptr.get(), 0, sizeof(TiRtnOrderStatus));
         strcpy(order_ptr->szSymbol, pOrderField->SecurityID);
-        if (pOrderField->ExchangeID == TORA_TSTP_EXD_SSE) {
-            strcpy(order_ptr->szExchange, "SH");
-        } else if (pOrderField->ExchangeID == TORA_TSTP_EXD_SZSE) {
-            strcpy(order_ptr->szExchange, "SZ");
-        } else {
-            strcpy(order_ptr->szExchange, "");
-        }
+        strcpy(order_ptr->szExchange, getExchange(pOrderField->ExchangeID).c_str());
 
         switch (pOrderField->Direction)
         {
@@ -374,14 +368,7 @@ void TiHxTraderClient::OnRspQryTrade(CTORATstpTradeField *pTradeField, CTORATstp
     match_ptr->nMatchPrice = pTradeField->Price;
     match_ptr->nMatchVol = pTradeField->Volume;
     strcpy(match_ptr->szSymbol, pTradeField->SecurityID);
-
-    if (pTradeField->ExchangeID == TORA_TSTP_EXD_SSE) {
-        strcpy(match_ptr->szExchange, "SH");
-    } else if (pTradeField->ExchangeID == TORA_TSTP_EXD_SZSE) {
-        strcpy(match_ptr->szExchange, "SZ");
-    } else {
-        strcpy(match_ptr->szExchange, "");
-    }
+    strcpy(match_ptr->szExchange, getExchange(pTradeField->ExchangeID).c_str());
 
     match_ptr->nMatchTimestamp = datetime::get_timestamp_ms(pTradeField->TradeDate, pTradeField->TradeTime);
     if (pTradeField->Direction == TORA_TSTP_D_Buy) {
@@ -416,13 +403,7 @@ void TiHxTraderClient::OnRspOrderInsert(CTORATstpInputOrderField *pInputOrderFie
         order_ptr = std::make_shared<TiRtnOrderStatus>();
         memset(order_ptr.get(), 0, sizeof(TiRtnOrderStatus));
         strcpy(order_ptr->szSymbol, pInputOrderField->SecurityID);
-        if (pInputOrderField->ExchangeID == TORA_TSTP_EXD_SSE) {
-            strcpy(order_ptr->szExchange, "SH");
-        } else if (pInputOrderField->ExchangeID == TORA_TSTP_EXD_SZSE) {
-            strcpy(order_ptr->szExchange, "SZ");
-        } else {
-            strcpy(order_ptr->szExchange, "");
-        }
+        strcpy(order_ptr->szExchange, getExchange(pInputOrderField->ExchangeID).c_str());
 
         switch (pInputOrderField->Direction)
         {
@@ -473,13 +454,7 @@ void TiHxTraderClient::OnRspOrderInsert(CTORATstpInputOrderField *pInputOrderFie
         order_ptr = std::make_shared<TiRtnOrderStatus>();
         memset(order_ptr.get(), 0, sizeof(TiRtnOrderStatus));
         strcpy(order_ptr->szSymbol, pOrderField->SecurityID);
-        if (pOrderField->ExchangeID == TORA_TSTP_EXD_SSE) {
-            strcpy(order_ptr->szExchange, "SH");
-        } else if (pOrderField->ExchangeID == TORA_TSTP_EXD_SZSE) {
-            strcpy(order_ptr->szExchange, "SZ");
-        } else {
-            strcpy(order_ptr->szExchange, "");
-        }
+        strcpy(order_ptr->szExchange, getExchange(pOrderField->ExchangeID).c_str());
 
         switch (pOrderField->Direction)
         {
@@ -537,14 +512,7 @@ void TiHxTraderClient::OnRtnTrade(CTORATstpTradeField *pTradeField)
     match_ptr->nMatchPrice = pTradeField->Price;
     match_ptr->nMatchVol = pTradeField->Volume;
     strcpy(match_ptr->szSymbol, pTradeField->SecurityID);
-
-    if (pTradeField->ExchangeID == TORA_TSTP_EXD_SSE) {
-        strcpy(match_ptr->szExchange, "SH");
-    } else if (pTradeField->ExchangeID == TORA_TSTP_EXD_SZSE) {
-        strcpy(match_ptr->szExchange, "SZ");
-    } else {
-        strcpy(match_ptr->szExchange, "");
-    }
+    strcpy(match_ptr->szExchange, getExchange(pTradeField->ExchangeID).c_str());
 
     match_ptr->nMatchTimestamp = datetime::get_timestamp_ms(pTradeField->TradeDate, pTradeField->TradeTime);
     if (pTradeField->Direction == TORA_TSTP_D_Buy) {
@@ -651,6 +619,17 @@ TI_OrderStatusType TiHxTraderClient::getOrderStatus(TTORATstpOrderStatusType sta
         return TI_OrderStatusType_unAccept;
     }
    return TI_OrderStatusType_unAccept;
+};
+
+std::string TiHxTraderClient::getExchange(TTORATstpExchangeIDType exchangeId)
+{
+    if (exchangeId == TORA_TSTP_EXD_SSE) {
+        return "SH";
+    } else if (exchangeId == TORA_TSTP_EXD_SZSE) {
+        return "SZ";
+    } else {
+        return "";
+    }
 };
 
 int TiHxTraderClient::orderInsertStock(TiReqOrderInsert* req){
@@ -920,7 +899,7 @@ int TiHxTraderClient::QueryETFBasket()
     int ret = m_client->ReqQryETFBasket(&req, ++nReqId); 
     if (ret != 0)
     {   
-        printf("QueryETFFile fail, ret[%d]\n", ret);
+        printf("QueryETFBasket fail, ret[%d]\n", ret);
     }
     return nReqId;
 };
