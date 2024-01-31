@@ -178,6 +178,40 @@ def enterOrder_SZ():
         }
     )
 
+def enterOrder_sell():
+    redis_conn.xadd(streamKey,
+        {
+            "enterOrder": json.dumps(
+                {
+                    "szSymbol" : "600000",
+                    "szExchange" : "SH",
+                    "nTradeSideType" : 'S',
+                    "nOffsetType" : 'O',
+                    "nBusinessType" : 'S',
+                    "nOrderPrice" : 6.78,
+                    "nOrderVol" : 300
+                }
+            )
+        }
+    )
+
+def enterOrder_sell_sz():
+    redis_conn.xadd(streamKey,
+        {
+            "enterOrder": json.dumps(
+                {
+                    "szSymbol" : "000001",
+                    "szExchange" : "SZ",
+                    "nTradeSideType" : 'S',
+                    "nOffsetType" : 'O',
+                    "nBusinessType" : 'S',
+                    "nOrderPrice" : 9.48,
+                    "nOrderVol" : 300
+                }
+            )
+        }
+    )
+
 def cancelOrder(order_id):
     redis_conn.xadd(streamKey,
         {
@@ -190,10 +224,12 @@ def cancelOrder(order_id):
     )
 
 
+#enterOrder_sell()
+enterOrder_sell_sz()
 #QueryOrders()
 #enterOrder()
 #enterOrder_SZ()
-cancelOrder(1680005)
+#cancelOrder(1680005)
 
 #QueryPositions()
 exit(0)
