@@ -225,11 +225,11 @@ def cancelOrder(order_id):
 
 
 #enterOrder_sell()
-#enterOrder_sell_sz()
+enterOrder_sell_sz()
 #QueryOrders()
 #enterOrder()
 #enterOrder_SZ()
-cancelOrder(1680011)
+#cancelOrder(1680011)
 
 #QueryPositions()
 exit(0)

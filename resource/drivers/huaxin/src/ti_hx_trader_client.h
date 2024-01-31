@@ -164,10 +164,10 @@ public:
     virtual void OnRspQryMarket(CTORATstpMarketField *pMarketField, CTORATstpRspInfoField *pRspInfoField, int nRequestID, bool bIsLast) {}; 
     
     ///查询ETF清单信息响应
-    virtual void OnRspQryETFFile(CTORATstpETFFileField *pETFFileField, CTORATstpRspInfoField *pRspInfoField, int nRequestID, bool bIsLast) {}; 
+    virtual void OnRspQryETFFile(CTORATstpETFFileField *pETFFileField, CTORATstpRspInfoField *pRspInfoField, int nRequestID, bool bIsLast); 
     
     ///查询ETF成份证券信息响应
-    virtual void OnRspQryETFBasket(CTORATstpETFBasketField *pETFBasketField, CTORATstpRspInfoField *pRspInfoField, int nRequestID, bool bIsLast) {}; 
+    virtual void OnRspQryETFBasket(CTORATstpETFBasketField *pETFBasketField, CTORATstpRspInfoField *pRspInfoField, int nRequestID, bool bIsLast); 
     
     ///查询深港通最小价差信息响应
     virtual void OnRspQrySZSEHKPriceTickInfo(CTORATstpSZSEHKPriceTickInfoField *pSZSEHKPriceTickInfoField, CTORATstpRspInfoField *pRspInfoField, int nRequestID, bool bIsLast) {}; 
@@ -197,6 +197,9 @@ public:
     int QueryOrders();
     int QueryMatches();
     int QueryPositions();
+
+    int QueryETFFile();
+    int QueryETFBasket();
     
 };
 

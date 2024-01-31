@@ -149,7 +149,7 @@ void TiHxTraderClient::OnRspQryPosition(CTORATstpPositionField *pPositionField, 
     
     if (pRspInfoField->ErrorID != 0)
     {
-        printf("OnRspQryTradingAccount fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, TiEncodingTool::GbkToUtf8(pRspInfoField->ErrorMsg).c_str() );
+        printf("OnRspQryPosition fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, TiEncodingTool::GbkToUtf8(pRspInfoField->ErrorMsg).c_str() );
     }
     if (bIsLast){
         return;
@@ -207,6 +207,73 @@ void TiHxTraderClient::OnRspQryPosition(CTORATstpPositionField *pPositionField, 
             "TodayTotalBuyAmount" , pPositionField->TodayTotalBuyAmount,
             "TodayTotalSellAmount" , pPositionField->TodayTotalSellAmount,
             "PreFrozen" , pPositionField->PreFrozen,
+        }}
+    };
+    std::cout << m_json_rsp.dump() << std::endl;
+    m_cb->OnCommonJsonRespones(&m_json_rsp, nRequestID, true, pRspInfoField->ErrorID, TiEncodingTool::GbkToUtf8(pRspInfoField->ErrorMsg).c_str() );
+}; 
+
+void TiHxTraderClient::OnRspQryETFFile(CTORATstpETFFileField *pETFFileField, CTORATstpRspInfoField *pRspInfoField, int nRequestID, bool bIsLast)
+{
+    printf("OnRspQryETFFile, is_last[%d], req_id[%d]\n", bIsLast, nRequestID);
+    
+    if (pRspInfoField->ErrorID != 0)
+    {
+        printf("OnRspQryETFFile fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, TiEncodingTool::GbkToUtf8(pRspInfoField->ErrorMsg).c_str() );
+    }
+    if (bIsLast){
+        return;
+    }
+
+    json m_json_rsp = {
+        { "type", "OnRspQryETFFile"},
+        { "data", {
+            "TradingDay" , pETFFileField->TradingDay,
+            "ExchangeID" , pETFFileField->ExchangeID,
+            "ETFSecurityID" , pETFFileField->ETFSecurityID,
+            "ETFCreRedSecurityID" , pETFFileField->ETFCreRedSecurityID,
+            "CreationRedemptionUnit" , pETFFileField->CreationRedemptionUnit,
+            "Maxcashratio" , pETFFileField->Maxcashratio,
+            "EstimateCashComponent" , pETFFileField->EstimateCashComponent,
+            "CashComponent" , pETFFileField->CashComponent,
+            "NAV" , pETFFileField->NAV,
+            "NAVperCU" , pETFFileField->NAVperCU,
+            "DividendPerCU" , pETFFileField->DividendPerCU,
+            "ETFCreRedType" , pETFFileField->ETFCreRedType,
+            "ETFSecurityName" , TiEncodingTool::GbkToUtf8(pETFFileField->ETFSecurityName).c_str(),
+        }}
+    };
+    std::cout << m_json_rsp.dump() << std::endl;
+    m_cb->OnCommonJsonRespones(&m_json_rsp, nRequestID, true, pRspInfoField->ErrorID, TiEncodingTool::GbkToUtf8(pRspInfoField->ErrorMsg).c_str() );
+}; 
+    
+void TiHxTraderClient::OnRspQryETFBasket(CTORATstpETFBasketField *pETFBasketField, CTORATstpRspInfoField *pRspInfoField, int nRequestID, bool bIsLast)
+{
+    printf("OnRspQryETFFile, is_last[%d], req_id[%d]\n", bIsLast, nRequestID);
+    
+    if (pRspInfoField->ErrorID != 0)
+    {
+        printf("OnRspQryETFFile fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, TiEncodingTool::GbkToUtf8(pRspInfoField->ErrorMsg).c_str() );
+    }
+    if (bIsLast){
+        return;
+    }
+
+    json m_json_rsp = {
+        { "type", "OnRspQryETFBasket"},
+        { "data", {
+            "TradingDay" , pETFBasketField->TradingDay,
+            "ExchangeID" , pETFBasketField->ExchangeID,
+            "ETFSecurityID" , pETFBasketField->ETFSecurityID,
+            "SecurityID" , pETFBasketField->SecurityID,
+            "SecurityName" , TiEncodingTool::GbkToUtf8(pETFBasketField->SecurityName).c_str(),
+            "Volume" , pETFBasketField->Volume,
+            "ETFCurrenceReplaceStatus" , pETFBasketField->ETFCurrenceReplaceStatus,
+            "Premium" , pETFBasketField->Premium,
+            "CreationReplaceAmount" , pETFBasketField->CreationReplaceAmount,
+            "RedemptionReplaceAmount" , pETFBasketField->RedemptionReplaceAmount,
+            "MarketID" , pETFBasketField->MarketID,
+            "ETFCreRedType" , pETFBasketField->ETFCreRedType,
         }}
     };
     std::cout << m_json_rsp.dump() << std::endl;
@@ -829,3 +896,32 @@ int TiHxTraderClient::QueryPositions()
     }
     return nReqId;
 };
+
+
+int TiHxTraderClient::QueryETFFile()
+{
+    if(!m_config){
+        LOG(INFO) << "[loadConfig] Do not have config info";
+        return -1;
+    }
+
+    CTORATstpQryETFFileField req = {0};
+    int ret = m_client->ReqQryETFFile(&req, ++nReqId); 
+    if (ret != 0)
+    {   
+        printf("QueryETFFile fail, ret[%d]\n", ret);
+    }
+    return nReqId;
+};
+
+int TiHxTraderClient::QueryETFBasket()
+{
+    CTORATstpQryETFBasketField req = {0};
+    int ret = m_client->ReqQryETFBasket(&req, ++nReqId); 
+    if (ret != 0)
+    {   
+        printf("QueryETFFile fail, ret[%d]\n", ret);
+    }
+    return nReqId;
+};
+
