@@ -217,7 +217,7 @@ def cancelOrder(order_id):
         {
             "cancelOrder": json.dumps(
                 {
-                    "nOrderId" : 1680007
+                    "nOrderId" : order_id
                 }
             )
         }
@@ -225,11 +225,11 @@ def cancelOrder(order_id):
 
 
 #enterOrder_sell()
-enterOrder_sell_sz()
+#enterOrder_sell_sz()
 #QueryOrders()
 #enterOrder()
 #enterOrder_SZ()
-#cancelOrder(1680005)
+cancelOrder(1680011)
 
 #QueryPositions()
 exit(0)
