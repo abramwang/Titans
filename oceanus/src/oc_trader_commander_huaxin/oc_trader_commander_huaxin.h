@@ -90,6 +90,7 @@ private:
     int loadConfig(std::string iniFileName);
     void resetStreamKey();
     void enterOrder(json &msg);
+    void cancelOrder(json &msg);
 
 public:
     double m_total_asset;   //总资产

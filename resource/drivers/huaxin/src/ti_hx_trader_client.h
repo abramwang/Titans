@@ -101,10 +101,10 @@ public:
     virtual void OnRtnTrade(CTORATstpTradeField *pTradeField);
     
     ///撤单响应
-    virtual void OnRspOrderAction(CTORATstpInputOrderActionField *pInputOrderActionField, CTORATstpRspInfoField *pRspInfoField, int nRequestID) {};
+    virtual void OnRspOrderAction(CTORATstpInputOrderActionField *pInputOrderActionField, CTORATstpRspInfoField *pRspInfoField, int nRequestID);
     
     ///撤单错误回报
-    virtual void OnErrRtnOrderAction(CTORATstpInputOrderActionField *pInputOrderActionField, CTORATstpRspInfoField *pRspInfoField, int nRequestID) {};
+    virtual void OnErrRtnOrderAction(CTORATstpInputOrderActionField *pInputOrderActionField, CTORATstpRspInfoField *pRspInfoField, int nRequestID);
     
     ///市场状态回报
     virtual void OnRtnMarketStatus(CTORATstpMarketStatusField *pMarketStatusField) {};

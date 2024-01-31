@@ -171,8 +171,19 @@ def enterOrder_SZ():
                     "nTradeSideType" : 'B',
                     "nOffsetType" : 'O',
                     "nBusinessType" : 'S',
-                    "nOrderPrice" : 9.69,
+                    "nOrderPrice" : 9.40,
                     "nOrderVol" : 300
+                }
+            )
+        }
+    )
+
+def cancelOrder(order_id):
+    redis_conn.xadd(streamKey,
+        {
+            "cancelOrder": json.dumps(
+                {
+                    "nOrderId" : 1680007
                 }
             )
         }
@@ -182,8 +193,9 @@ def enterOrder_SZ():
 #QueryOrders()
 #enterOrder()
 #enterOrder_SZ()
+cancelOrder(1680005)
 
-QueryPositions()
+#QueryPositions()
 exit(0)
 #QueryAsset()
 QueryPositions()

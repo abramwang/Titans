@@ -379,7 +379,7 @@ void TiHxTraderClient::OnRspOrderInsert(CTORATstpInputOrderField *pInputOrderFie
         order_ptr->nOrderPrice = pInputOrderField->LimitPrice;
         order_ptr->nOrderVol = pInputOrderField->VolumeTotalOriginal;
 
-        m_order_map[order_ptr->nOrderId] = order_ptr;
+        m_order_map[pInputOrderField->OrderRef] = order_ptr;
     }else{
         order_ptr = iter->second;
     }
@@ -436,7 +436,7 @@ void TiHxTraderClient::OnRspOrderInsert(CTORATstpInputOrderField *pInputOrderFie
         order_ptr->nOrderPrice = pOrderField->LimitPrice;
         order_ptr->nOrderVol = pOrderField->VolumeTotalOriginal;
 
-        m_order_map[order_ptr->nOrderId] = order_ptr;
+        m_order_map[pOrderField->OrderRef] = order_ptr;
     }else{
         order_ptr = iter->second;
     }
@@ -489,6 +489,34 @@ void TiHxTraderClient::OnRtnTrade(CTORATstpTradeField *pTradeField)
     m_matches_map.insert(std::pair<int64_t, std::shared_ptr<TiRtnOrderMatch>>(match_ptr->nOrderId, match_ptr));
 
     m_cb->OnRtnOrderMatchEvent(match_ptr.get());
+};
+
+///撤单响应
+void TiHxTraderClient::OnRspOrderAction(CTORATstpInputOrderActionField *pInputOrderActionField, CTORATstpRspInfoField *pRspInfoField, int nRequestID)
+{
+    std::cout << "[OnRspOrderAction] nRequestID: " << nRequestID << std::endl;
+    if (pRspInfoField->ErrorID == 0)
+    {
+        printf("OnRspOrderAction success\n");
+    }
+    else
+    {
+        printf("OnRspOrderAction fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, TiEncodingTool::GbkToUtf8(pRspInfoField->ErrorMsg).c_str() );
+    }
+};
+    
+///撤单错误回报
+void TiHxTraderClient::OnErrRtnOrderAction(CTORATstpInputOrderActionField *pInputOrderActionField, CTORATstpRspInfoField *pRspInfoField, int nRequestID)
+{
+    std::cout << "[OnErrRtnOrderAction] nRequestID: " << nRequestID << std::endl;
+    if (pRspInfoField->ErrorID == 0)
+    {
+        printf("OnErrRtnOrderAction success\n");
+    }
+    else
+    {
+        printf("OnErrRtnOrderAction fail, error_id[%d] error_msg[%s]\n", pRspInfoField->ErrorID, TiEncodingTool::GbkToUtf8(pRspInfoField->ErrorMsg).c_str() );
+    }
 };
 
     
@@ -682,6 +710,40 @@ int TiHxTraderClient::orderDelete(TiReqOrderDelete* req){
         return -1;
     }
 
+    TiRtnOrderStatus* order = getOrderStatus(-1, req->nOrderId);
+
+    auto iter = m_order_map.begin();
+    for (; iter != m_order_map.end(); iter++)
+    {
+
+        std::cout << iter->first << ":" << iter->second->szOrderStreamId << std::endl;
+        /* code */
+    }
+    
+    std::cout << order << std::endl;
+    if(!order)
+    {
+        return -1;
+    }
+
+    CTORATstpInputOrderActionField msg = {0};
+    strncpy(msg.OrderSysID, order->szOrderStreamId, 21);
+    msg.ActionFlag = TORA_TSTP_AF_Delete;
+
+    if (!strcmp(order->szExchange, "SH"))
+    {
+        msg.ExchangeID = TORA_TSTP_EXD_SSE;             // 市场ID，上海
+    }
+    if (!strcmp(order->szExchange, "SZ"))
+    {
+        msg.ExchangeID = TORA_TSTP_EXD_SZSE;             // 市场ID，上海                   // 投资者ID
+    }
+    
+    int ret = m_client->ReqOrderAction(&msg, ++nReqId);
+    if (ret != 0)
+    {   
+        printf("ReqQryOrder fail, ret[%d]\n", ret);
+    }
     return nReqId;
 };
 
@@ -711,10 +773,12 @@ int TiHxTraderClient::QueryAsset()
     }
 
     CTORATstpQryTradingAccountField req = {0};
-
     
-	m_client->ReqQryTradingAccount(&req, ++nReqId);
-
+	int ret = m_client->ReqQryTradingAccount(&req, ++nReqId);
+    if (ret != 0)
+    {   
+        printf("QueryAsset fail, ret[%d]\n", ret);
+    }
     return nReqId;
 };
 
