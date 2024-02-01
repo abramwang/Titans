@@ -224,8 +224,44 @@ def cancelOrder(order_id):
     )
 
 
+def enterOrder_ETF():
+    redis_conn.xadd(streamKey,
+        {
+            "enterOrder": json.dumps(
+                {
+                    "szSymbol" : "512820",
+                    "szExchange" : "SH",
+                    "nTradeSideType" : 'B',
+                    "nOffsetType" : 'O',
+                    "nBusinessType" : 'S',
+                    "nOrderPrice" : 1.144,
+                    "nOrderVol" : 300000
+                }
+            )
+        }
+    )
+
+def enterOrder_ETF_Redemption():
+    redis_conn.xadd(streamKey,
+        {
+            "enterOrder": json.dumps(
+                {
+                    "szSymbol" : "512820",
+                    "szExchange" : "SH",
+                    "nTradeSideType" : 'R',
+                    "nOffsetType" : 'O',
+                    "nBusinessType" : 'E',
+                    "nOrderPrice" : 1.134,
+                    "nOrderVol" : 300000
+                }
+            )
+        }
+    )
+
+#enterOrder_ETF()
+enterOrder_ETF_Redemption()
 #enterOrder_sell()
-enterOrder_sell_sz()
+#enterOrder_sell_sz()
 #QueryOrders()
 #enterOrder()
 #enterOrder_SZ()

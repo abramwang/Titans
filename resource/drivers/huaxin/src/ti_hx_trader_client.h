@@ -184,6 +184,7 @@ private:
 
     TI_OrderStatusType getOrderStatus(TTORATstpOrderStatusType status);
     std::string getExchange(TTORATstpExchangeIDType exchangeId);
+    void getOrderType(TTORATstpDirectionType src_direct, TI_TradeSideType* dis_side, TI_BusinessType* dis_business);
 
     int orderInsertStock(TiReqOrderInsert* req);   //买卖
     int orderInsertEtf(TiReqOrderInsert* req);     //申赎
