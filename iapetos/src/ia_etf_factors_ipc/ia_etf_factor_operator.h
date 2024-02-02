@@ -75,6 +75,7 @@ public:
 public: //行情回调
     void OnTradingDayRtn(const unsigned int day, const char* exchangeName){};
 
+    void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData){};
     void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){};
     void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData);
     void OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){};

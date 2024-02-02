@@ -139,7 +139,7 @@ void IaETFFactorCenter::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pD
 {
     if ((pData->time - m_cout_snap_time) > 15000)
     {
-        printf("[IaETFFactorCenter::OnL2StockSnapshotRtn] %s, %s, %d, %s, %f, %ld, %ld\n", 
+        printf("[IaETFFactorCenter::OnL2StockSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
             pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
         m_cout_snap_time = pData->time;
     }
