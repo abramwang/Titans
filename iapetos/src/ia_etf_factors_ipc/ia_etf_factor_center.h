@@ -48,7 +48,8 @@ protected:
     int64_t m_cout_snap_time;
 protected:
     bool                            m_output_factors_to_redis;   
-    RedisSyncHandle                 m_redis;                     //                 //
+    RedisSyncHandle                 m_redis;                     //
+    uv_timer_t                      m_timer;
 
     int loadConfig(std::string iniFileName);
     void init_operators(int thread_num);
@@ -69,7 +70,9 @@ public: //行情回调
     
     virtual void OnDepthOrderBookLevelRtn(const TiQuoteOrderBookField* pData){};
     virtual void OnFactorRtn(const char* symbol, const char* factor_name, const json* pFactor, void* data);
+    virtual void OnTimer();
 
+    static void onTimer(uv_timer_t* handle);
 public: 
     IaETFFactorCenter(int thread_num, uv_loop_t *loop, std::string configPath);
     virtual ~IaETFFactorCenter(){};

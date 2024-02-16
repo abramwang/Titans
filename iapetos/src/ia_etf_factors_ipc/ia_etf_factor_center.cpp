@@ -49,6 +49,10 @@ IaETFFactorCenter::IaETFFactorCenter(int thread_num, uv_loop_t *loop, std::strin
             m_quoteClient->run(m_config->szIpcQuoteTopic.c_str());
         }
     }
+
+    m_timer.data = this;
+    uv_timer_init(loop, &m_timer);
+    uv_timer_start(&m_timer, onTimer, 1000, 500);
 };
 
 
@@ -204,4 +208,28 @@ void IaETFFactorCenter::OnFactorRtn(const char* symbol, const char* factor_name,
             flag = m_redis.xadd(m_config->szUiFactorKey.c_str(), j.dump().c_str());
         }
     }        
+};
+
+
+void IaETFFactorCenter::OnTimer()
+{
+    std::time_t currentTime = std::time(nullptr);
+    std::tm* localTime = std::localtime(&currentTime);
+    /*
+    std::cout << "当前时间: "
+            << localTime->tm_year + 1900 << "-" << localTime->tm_mon + 1 << "-" << localTime->tm_mday << " "
+            << localTime->tm_hour << ":" << localTime->tm_min << ":" << localTime->tm_sec
+            << std::endl;
+    */
+    if (localTime->tm_hour > 16 )
+    {
+        std::cout << "terminate" << std::endl;
+        std::terminate();
+    }
+};
+
+void IaETFFactorCenter::onTimer(uv_timer_t* handle)
+{
+    IaETFFactorCenter* pThis = (IaETFFactorCenter*)handle->data;
+    pThis->OnTimer();
 };
