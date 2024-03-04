@@ -61,11 +61,8 @@ void TiQuoteParquetReader::loadAllArray(std::string file_path)
         memset(_req, 0, sizeof(uv_work_t));
         _req->data = _reqInfo;
 
-        //int flag = uv_queue_work(&m_read_loop, _req, TiQuoteParquetReader::init_read_array_work, TiQuoteParquetReader::after_read_array_work);
-        TiQuoteParquetReader::init_read_array_work(_req);
-        TiQuoteParquetReader::after_read_array_work(_req, 0);
-        //printf("uv_queue_work flag: %d\n", flag);
-    }
+        uv_queue_work(&m_read_loop, _req, TiQuoteParquetReader::init_read_array_work, TiQuoteParquetReader::after_read_array_work);
+            }
 
     uv_run(&m_read_loop, UV_RUN_DEFAULT);
 };

@@ -6,11 +6,11 @@
                 "${workspaceFolder}/**"
             ],
             "defines": [],
-            "compilerPath": "/opt/rh/devtoolset-9/root/usr/bin/gcc",
+            "compilerPath": "/usr/bin/gcc",
             "cStandard": "gnu17",
             "cppStandard": "gnu++14",
             "configurationProvider": "ms-vscode.cmake-tools",
-            "compileCommands": "${workspaceFolder}/oceanus/src/oc_trader_commander_huaxin/build/compile_commands.json"
+            "compileCommands": "${workspaceFolder}/iapetos/src/ia_etf_factors_ipc/build/compile_commands.json"
         }
     ],
     "version": 4
