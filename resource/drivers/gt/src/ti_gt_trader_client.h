@@ -69,6 +69,17 @@ public:
     // @param   errorMsg 如果有错误，通过errorMsg反馈错误信息
     virtual void onRtnLoginStatus(const char* accountId, EBrokerLoginStatus status, int brokerType, const char* errorMsg);
 
+
+    // 资金账号的信息
+    // @param   accountId 资金账户
+    // @param   nRequestId 客户自己维护的请求号
+    // @param   data 资金账号的具体信息，具体可参考XtStructs.h
+    // @param   isLast 是否为返回最后一条记录，一次请求的结果一般只有一条资金账号信息
+    // @param   error 反馈这次查询请求是否有错误
+    virtual void onReqAccountDetail(const char* accountId, int nRequestId, const CAccountDetail* data, bool isLast, const XtError& error);
+
+
+
 private:
     int loadConfig(std::string iniFileName);
 

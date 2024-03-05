@@ -73,7 +73,23 @@ void TiGtTraderClient::onRtnLoginStatus(const char* accountId, EBrokerLoginStatu
     default:
         break;
     }
+
+    m_client->reqAccountDetail(accountId, ++nReqId);
 }
+
+ // 资金账号信息
+void TiGtTraderClient::onReqAccountDetail(const char* accountId, int nRequestId, const CAccountDetail* data, bool isLast, const XtError& error)
+{
+    cout << "[onReqAccountDetail]  资金账号 :" << data->m_strAccountID
+        << "\n    账号状态:" << data->m_strStatus
+        << "\n    交易日:" << data->m_strTradingDate
+        << "\n    可用资金:" << data->m_dAvailable
+        << "\n    净资产:" << data->m_dAssureAsset
+        << "\n    总负债:" << data->m_dTotalDebit
+        << "\n    期初权益:" << data->m_dPreBalance
+        << endl;
+}
+
     
 ////////////////////////////////////////////////////////////////////////
 // 私有工具方法
