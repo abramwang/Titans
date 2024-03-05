@@ -31,6 +31,21 @@ TiGtTraderClient::~TiGtTraderClient()
     m_cb = NULL;
     nReqId = 0;
 };
+////////////////////////////////////////////////////////////////////////
+// 回调方法
+////////////////////////////////////////////////////////////////////////
+
+void TiGtTraderClient::work_cb(uv_work_t* req)
+{
+    std::cout << "TiGtTraderClient::work_cb" << std::endl;    
+    TiGtTraderClient* client = (TiGtTraderClient*)req->data;
+    client->m_client->join();
+};
+
+void TiGtTraderClient::after_work_cb(uv_work_t* req, int status)
+{
+    
+};
 
 ////////////////////////////////////////////////////////////////////////
 // 回调方法
@@ -90,6 +105,104 @@ void TiGtTraderClient::onReqAccountDetail(const char* accountId, int nRequestId,
         << endl;
 }
 
+void TiGtTraderClient::onOrder(int nRequestId, int orderId, const char* strRemark, const XtError& error)
+{
+    cout << "[onOrder] isSuccess: " << (error.isSuccess()?"true":"false")
+        << "\n    orderId:  " << orderId
+        << "\n    RequestId: " << nRequestId  
+        << "\n    errorMsg: " << error.errorMsg()
+        << endl;
+}
+
+void TiGtTraderClient::onRtnOrder(const COrderInfo* data)
+{
+    string orderStatus = "";
+    switch(data->m_eStatus)
+    {
+    case OCS_CHECKING:   orderStatus = "风控检查中";  break;
+    case OCS_APPROVING:  orderStatus = "审批中";  break;
+    case OCS_REJECTED:   orderStatus = "已驳回";  break;
+    case OCS_RUNNING:    orderStatus = "运行中";  break;
+    case OCS_CANCELING:  orderStatus = "撤销中";  break;
+    case OCS_FINISHED:   orderStatus = "已完成";  break;
+    case OCS_STOPPED:    orderStatus = "已撤销";  break;
+    }
+
+    cout << "[onRtnOrder]"
+        << "\n    下单ID: " << data->m_nOrderID
+        << "\n    m_startTime：" << data->m_startTime
+        << "\n    m_endTime: " << data->m_endTime
+        << "\n    指令状态：" << orderStatus
+        << "\n    成交量：" << data->m_dTradedVolume
+        << "\n    撤销者：" << data->m_canceler
+        << "\n    指令执行信息：" << data->m_strMsg
+        << endl;
+}
+
+void TiGtTraderClient::onRtnOrderDetail(const COrderDetail* data)
+{
+    string entrust_status;
+    switch(data->m_eOrderStatus)
+    {
+    case ENTRUST_STATUS_UNREPORTED:  entrust_status = "未报";  break;
+    case ENTRUST_STATUS_WAIT_REPORTING:  entrust_status = "待报"; break;
+    case ENTRUST_STATUS_REPORTED:        entrust_status = "已报"; break;
+    case ENTRUST_STATUS_REPORTED_CANCEL: entrust_status = "已报待撤";  break;
+    case ENTRUST_STATUS_PARTSUCC_CANCEL: entrust_status = "部成待撤";  break;
+    case ENTRUST_STATUS_PART_CANCEL:     entrust_status = "部撤";  break;
+    case ENTRUST_STATUS_CANCELED:        entrust_status = "已撤";  break;
+    case ENTRUST_STATUS_PART_SUCC:       entrust_status = "部成";  break;
+    case ENTRUST_STATUS_SUCCEEDED:       entrust_status = "已成";  break;
+    case ENTRUST_STATUS_JUNK:            entrust_status = "废单";  break;
+    }
+    if (data == NULL)
+    {
+        return;
+    }
+    cout << "[onRtnOrderDetail]"
+        << "\n    委托号：" << data->m_strOrderSysID
+        << "\n    委托状态：" << entrust_status
+        << "\n    已成交量：" << data->m_nTradedVolume 
+        << "\n    成交均价：" << data->m_dAveragePrice 
+        << "\n    成交额: " << data->m_dTradeAmount 
+        << "\n    市场ID：" << data->m_strExchangeID
+        << "\n    产品ID：" << data->m_strProductID
+        << "\n    股票/期货代码：" << data->m_strInstrumentID
+        << "\n    冻结保证金：" << data->m_dFrozenMargin
+        << "\n    冻结手续费：" << data->m_dFrozenCommission
+        << "\n    ErrorID：" << data->m_nErrorID
+        << "\n    ErrorMsg: " << data->m_strErrorMsg
+        << endl;
+
+}
+
+void TiGtTraderClient::onRtnDealDetail(const CDealDetail* data)
+{
+    if (data == NULL)
+    {
+        return;
+    }
+    cout << "[onRtnDealDetail]"
+        << "\n    orderId: " << data->m_nOrderID 
+        << "\n    成交量： " << data->m_nVolume
+        << "\n    成交额: " << data->m_dAmount
+        << "\n    成交均价： " << data->m_dAveragePrice
+        << endl;
+}
+
+void TiGtTraderClient::onRtnOrderError(const COrderError* data)
+{
+    if (data == NULL)
+    {
+        return;
+    }
+    cout << "[onRtnOrderError] orderId: " << data->m_nOrderID 
+        << "\n    error id: " << data->m_nErrorID
+        << "\n    errormsg: " << data->m_strErrorMsg
+        << "\n    m_nRequestID: " << data->m_nRequestID
+        << "\n    m_nOrderID: " << data->m_nOrderID
+        << endl;
+}
     
 ////////////////////////////////////////////////////////////////////////
 // 私有工具方法
@@ -131,6 +244,7 @@ int TiGtTraderClient::orderInsertStock(TiReqOrderInsert* req){
 int TiGtTraderClient::orderInsertEtf(TiReqOrderInsert* req){
     req->nReqId = ++nReqId;
 
+
     return nReqId;
 };
 
@@ -154,7 +268,12 @@ void TiGtTraderClient::connect(){
     m_client->setCallback(this);
     m_client->init("../config");
 
-    m_client->join_async();
+    //m_client->join_async();
+
+    memset(&m_work_req, 0, sizeof(uv_work_t));
+    m_work_req.data = this;
+
+    uv_queue_work(uv_default_loop(), &m_work_req, TiGtTraderClient::work_cb, TiGtTraderClient::after_work_cb);
 };
 
 

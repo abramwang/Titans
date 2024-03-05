@@ -2,11 +2,11 @@ import redis
 import json
 
 redis_pool = redis.ConnectionPool(
-    host='127.0.0.1', port= 20184, password= 'P7pO48Lw4AZTOLXKlR', db= 0)
+    host='121.36.210.85', port= 20184, password= 'P7pO48Lw4AZTOLXKlR', db= 0)
 redis_conn = redis.Redis(connection_pool= redis_pool)
 
 
-streamKey = "oc_trader_commander_huaxin.00043346"
+streamKey = "oc_trader_commander_gt.00043346"
 
 def querySymbolList():
     redis_conn.xadd(streamKey,
@@ -258,8 +258,8 @@ def enterOrder_ETF_Redemption():
         }
     )
 
-#enterOrder_ETF()
-enterOrder_ETF_Redemption()
+enterOrder_ETF()
+#enterOrder_ETF_Redemption()
 #enterOrder_sell()
 #enterOrder_sell_sz()
 #QueryOrders()
