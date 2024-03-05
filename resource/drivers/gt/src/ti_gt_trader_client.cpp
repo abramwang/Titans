@@ -36,23 +36,6 @@ TiGtTraderClient::~TiGtTraderClient()
 // 回调方法
 ////////////////////////////////////////////////////////////////////////
 
-void TiGtTraderClient::work_cb(uv_work_t* req)
-{
-    //std::cout << "TiGtTraderClient::work_cb" << std::endl;    
-    TiGtTraderClient* client = (TiGtTraderClient*)req->data;
-    client->m_client->join();
-    //std::cout << "TiGtTraderClient::over" << std::endl;   
-};
-
-void TiGtTraderClient::after_work_cb(uv_work_t* req, int status)
-{
-    
-};
-
-////////////////////////////////////////////////////////////////////////
-// 回调方法
-////////////////////////////////////////////////////////////////////////
-
 void TiGtTraderClient::onConnected(bool success, const char* errorMsg) 
 {
     cout << "[onConnected] server connect " << (success ? string("success") : string("failure, err: ") + errorMsg) << endl;
@@ -71,7 +54,6 @@ void TiGtTraderClient::onUserLogin(const char* userName, const char* password, i
 
 void TiGtTraderClient::onRtnLoginStatus(const char* accountId, EBrokerLoginStatus status, int brokerType, const char* errorMsg)
 {
-    return;
     cout << "[onRtnLoginStatus] account id: " << accountId << ", type: " << brokerType << ", status: " << status << endl;
 
     switch (brokerType)
@@ -146,8 +128,6 @@ void TiGtTraderClient::connect(){
         return;
     }
 
-    std::cout << "TiGtTraderClient::connect" << std::endl;    
-
     m_client = XtTraderApi::createXtTraderApi(m_config->szLocations.c_str());
     if (NULL == m_client)
     {
@@ -155,20 +135,10 @@ void TiGtTraderClient::connect(){
         return;
     }
 
-    std::cout << "TiGtTraderClient::connect" << std::endl;    
-
     m_client->setCallback(this);
     m_client->init("../config");
 
     m_client->join_async();
-
-    std::cout << "TiGtTraderClient::connect" << std::endl;    
-
-    return;
-    memset(&m_work_req, 0, sizeof(uv_work_t));
-    m_work_req.data = this;
-
-    uv_queue_work(uv_default_loop(), &m_work_req, TiGtTraderClient::work_cb, TiGtTraderClient::after_work_cb);
 };
 
 
