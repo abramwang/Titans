@@ -251,6 +251,37 @@ int TiGtTraderClient::loadConfig(std::string iniFileName)
     return 0;
 };
 
+TI_OrderStatusType TiGtTraderClient::getOrderStatus(EOrderCommandStatus status)
+{
+    switch(status)
+    {
+    case ENTRUST_STATUS_UNREPORTED:
+        return TI_OrderStatusType_unAccept;
+    case ENTRUST_STATUS_WAIT_REPORTING:
+        return TI_OrderStatusType_accepted;
+    case ENTRUST_STATUS_REPORTED:
+        return TI_OrderStatusType_accepted;
+    case ENTRUST_STATUS_REPORTED_CANCEL:
+        return TI_OrderStatusType_toRemove;
+    case ENTRUST_STATUS_PARTSUCC_CANCEL:
+        return TI_OrderStatusType_removing;
+    case ENTRUST_STATUS_PART_CANCEL:
+        return TI_OrderStatusType_removed;
+    case ENTRUST_STATUS_CANCELED:
+        return TI_OrderStatusType_removed;
+    case ENTRUST_STATUS_PART_SUCC:
+        return TI_OrderStatusType_queued;
+    case ENTRUST_STATUS_SUCCEEDED:
+        return TI_OrderStatusType_queued;
+    case ENTRUST_STATUS_JUNK:
+        return TI_OrderStatusType_fail;
+    default:
+        return TI_OrderStatusType_unAccept;
+    }
+   return TI_OrderStatusType_unAccept;
+};
+
+
 void TiGtTraderClient::connect(){
     if(!m_config){
         LOG(INFO) << "[loadConfig] Do not have config info";

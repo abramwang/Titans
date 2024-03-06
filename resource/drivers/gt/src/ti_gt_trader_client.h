@@ -113,8 +113,7 @@ public:
 private:
     int loadConfig(std::string iniFileName);
 
-    //TI_OrderStatusType getOrderStatus(TTORATstpOrderStatusType status);
-    //std::string getExchange(TTORATstpExchangeIDType exchangeId);
+    TI_OrderStatusType getOrderStatus(EOrderCommandStatus status);
     //void getOrderType(TTORATstpDirectionType src_direct, TI_TradeSideType* dis_side, TI_BusinessType* dis_business);
 
 public:
