@@ -151,11 +151,11 @@ def enterOrder():
                 {
                     "szSymbol" : "600000",
                     "szExchange" : "SH",
-                    "szAccount": ":1000951",
+                    "szAccount": "2001324",
                     "nTradeSideType" : 'B',
                     "nOffsetType" : 'O',
                     "nBusinessType" : 'S',
-                    "nOrderPrice" : 6.89,
+                    "nOrderPrice" : 7.19,
                     "nOrderVol" : 400
                 }
             )
@@ -169,11 +169,11 @@ def enterOrder_SZ():
                 {
                     "szSymbol" : "000001",
                     "szExchange" : "SZ",
-                    "szAccount": ":1000951",
+                    "szAccount": "2001324",
                     "nTradeSideType" : 'B',
                     "nOffsetType" : 'O',
                     "nBusinessType" : 'S',
-                    "nOrderPrice" : 9.40,
+                    "nOrderPrice" : 10.41,
                     "nOrderVol" : 300
                 }
             )
@@ -187,7 +187,7 @@ def enterOrder_sell():
                 {
                     "szSymbol" : "600000",
                     "szExchange" : "SH",
-                    "szAccount": ":1000951",
+                    "szAccount": "2001324",
                     "nTradeSideType" : 'S',
                     "nOffsetType" : 'O',
                     "nBusinessType" : 'S',
@@ -205,7 +205,7 @@ def enterOrder_sell_sz():
                 {
                     "szSymbol" : "000001",
                     "szExchange" : "SZ",
-                    "szAccount": ":1000951",
+                    "szAccount": "2001324",
                     "nTradeSideType" : 'S',
                     "nOffsetType" : 'O',
                     "nBusinessType" : 'S',
@@ -267,8 +267,8 @@ def enterOrder_ETF_Redemption():
 #enterOrder_sell()
 #enterOrder_sell_sz()
 #QueryOrders()
-enterOrder()
-#enterOrder_SZ()
+#enterOrder()
+enterOrder_SZ()
 #cancelOrder(1680011)
 
 #QueryPositions()
