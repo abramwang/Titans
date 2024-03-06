@@ -39,15 +39,15 @@ typedef int8_t TI_OrderStatusType;
 // struct TiRspQryMatch;           //  成交查询响应
 // struct TiReqQryPosition;        //  持仓查询请求
 // struct TiRspQryPosition;        //  持仓查询回调
-// struct TiRtnOrderStatus;  //  订单状态变化通知
+// struct TiRtnOrderStatus;        //  订单状态变化通知
 // struct TiRtnOrderMatch;         //  成交回调通知
 */
 
 /// 请求
 struct TiBase_Msg
 {
-    int32_t             nReqId;      //  请求ID（有客户端API维护的唯一ID）
-    int32_t             nUserInt;    //  用户自定义整型
+    int32_t         nReqId;      //  请求ID（有客户端API维护的唯一ID）
+    int32_t         nUserInt;    //  用户自定义整型
     TI_Text         szUseStr;    //  用户自定义字符串
     int64_t         nUserId;     //  用户帐号Id
     TI_ClientIdType szClientId;  //  客户端编号
@@ -59,11 +59,12 @@ struct TiReqOrderInsert : TiBase_Msg
 {
     TI_SymbolType    szSymbol;       //  证券合约代码
     TI_ExchangeType  szExchange;     //  交易所
-    TI_TradeSideType nTradeSideType;     //  交易类型 买、卖
+    TI_AccountType   szAccount;      //  资金帐号
+    TI_TradeSideType nTradeSideType; //  交易类型 买、卖
     TI_OffsetType    nOffsetType;    //  交易类型 开、平
     TI_BusinessType  nBusinessType;  //  业务类型
     double           nOrderPrice;    //  下单价
-    int32_t              nOrderVol;      //  下单量
+    int32_t          nOrderVol;      //  下单量
     int64_t          nReqTimestamp;  //  下单本地时间
 };
 
@@ -71,11 +72,11 @@ struct TiReqOrderInsert : TiBase_Msg
 struct TiRtnOrderStatus : TiReqOrderInsert
 {
     int64_t            nOrderId;              //  订单编号
-    int32_t                nSubmitVol;            //  提交申报量
+    int32_t            nSubmitVol;            //  提交申报量
     double             nDealtPrice;           //  成交价
-    int32_t                nDealtVol;             //  成交总量
-    int32_t                nTotalWithDrawnVol;    //  撤单总量
-    int32_t                nInValid;              //  废单数量
+    int32_t            nDealtVol;             //  成交总量
+    int32_t            nTotalWithDrawnVol;    //  撤单总量
+    int32_t            nInValid;              //  废单数量
     TI_OrderStatusType nStatus;               //  状态
     int64_t            nInsertTimestamp;      //  下单接受时间时间
     int64_t            nLastUpdateTimestamp;  //  最后更新时间戳
@@ -99,8 +100,8 @@ struct TiReqQryOrder : TiBase_Msg
 {
     TI_SymbolType   szSymbol;    //  证券合约代码
     TI_ExchangeType szExchange;  //  交易所
-    int32_t             nIndex;      //  起始位置(不填默认从头开始)
-    int32_t             nNum;        //  数量（不填默认查全部）
+    int32_t         nIndex;      //  起始位置(不填默认从头开始)
+    int32_t         nNum;        //  数量（不填默认查全部）
 };
 
 /// 成交查询请求
@@ -108,8 +109,8 @@ struct TiReqQryMatch : TiBase_Msg
 {
     TI_SymbolType   szSymbol;    //  证券合约代码
     TI_ExchangeType szExchange;  //  交易所
-    int32_t             nIndex;      //  起始位置(不填默认从头开始)
-    int32_t             nNum;        //  数量（不填默认查全部）
+    int32_t         nIndex;      //  起始位置(不填默认从头开始)
+    int32_t         nNum;        //  数量（不填默认查全部）
 };
 
 /// 持仓查询请求
@@ -122,7 +123,7 @@ struct TiReqQryPosition : TiBase_Msg
 struct TiRspQryPosition : TiBase_Msg
 {
     TI_SymbolType szSymbol;        //  证券合约代码
-    int32_t           nPosition;       //  持仓总量
+    int32_t       nPosition;       //  持仓总量
     double        nPrice;          //  持仓均价
     double        nProfit;         //  浮盈（不含手续费）
     double        nSettledProfit;  //  已结算的盈利（不含手续费）
@@ -137,6 +138,7 @@ struct TiRtnOrderMatch : TiBase_Msg
     int32_t          nMatchVol;          //  成交量
     TI_SymbolType    szSymbol;           //  证券代码
     TI_ExchangeType  szExchange;         //  交易所
+    TI_AccountType   szAccount;          //  资金帐号
     int64_t          nMatchTimestamp;    //  成交时间戳
     TI_TradeSideType nTradeSideType;     //  交易类型 买、卖
 };

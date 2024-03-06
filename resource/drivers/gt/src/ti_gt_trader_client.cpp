@@ -208,7 +208,8 @@ void TiGtTraderClient::onRtnOrderError(const COrderError* data)
 // 私有工具方法
 ////////////////////////////////////////////////////////////////////////
 
-int TiGtTraderClient::loadConfig(std::string iniFileName){
+int TiGtTraderClient::loadConfig(std::string iniFileName)
+{
     if(m_config){
         LOG(INFO) << "[loadConfig] Do not have config info";
         return -1;
@@ -233,19 +234,6 @@ int TiGtTraderClient::loadConfig(std::string iniFileName){
         return -1;
     }
     return 0;
-};
-
-
-int TiGtTraderClient::orderInsertStock(TiReqOrderInsert* req){
-    req->nReqId = ++nReqId;
-
-    return nReqId;
-};
-int TiGtTraderClient::orderInsertEtf(TiReqOrderInsert* req){
-    req->nReqId = ++nReqId;
-
-
-    return nReqId;
 };
 
 void TiGtTraderClient::connect(){
@@ -282,12 +270,48 @@ int TiGtTraderClient::orderInsert(TiReqOrderInsert* req){
         LOG(INFO) << "[loadConfig] Do not have config info";
         return -1;
     }
-    if(req->nBusinessType == TI_BusinessType_Stock){
-        return orderInsertStock(req);
-    }else if(req->nBusinessType == TI_BusinessType_ETF){
-        return orderInsertEtf(req);
+    
+    req->nReqId = ++nReqId;
+
+    COrdinaryOrder msg;
+
+    // 资金账号，必填参数。不填会被api打回，并且通过onOrder反馈失败
+    strcpy(msg.m_strAccountID, req->szAccount);
+    // 报单市场。必填字段。股票市场有"SH"/"SZ"，如果填空或填错都会被api直接打回
+    strcpy(msg.m_strMarket, req->szExchange);
+    // 报单合约代码，必填字段。
+    strcpy(msg.m_strInstrument, req->szSymbol);
+    // 报单委托量，必填字段。默认int最大值，填0或不填会被api打回
+    msg.m_nVolume = req->nOrderVol;
+    // 报单委托类型。必填字段。根据相应的业务选择，具体请参考XtDataType.h，默认为无效值(OPT_INVALID)。不填会被api打回
+    switch (req->nTradeSideType)
+    {
+    case TI_TradeSideType_Sell:
+        msg.m_eOperationType = OPT_SELL; 
+        break;
+    case TI_TradeSideType_Buy:
+        msg.m_eOperationType = OPT_BUY; 
+        break;
+    case TI_TradeSideType_Purchase:
+        msg.m_eOperationType = OPT_ETF_PURCHASE; 
+        break;
+    case TI_TradeSideType_Redemption:
+        msg.m_eOperationType = OPT_ETF_REDEMPTION; 
+        break;
     }
-    return -1;
+    // 报单价格类型，必填字段。默认为无效(PTRP_INVALID)，具体可参考XtDataType.h
+    msg.m_ePriceType = PRTP_FIX;
+    // 报单价格，默认为double最大值。当价格类型m_ePriceType为指定价PRTP_FIX时，必填字段。当价格类型为其他时填了也没用
+    msg.m_dPrice = req->nOrderPrice;
+    // 投机套保标志，选填字段。有"投机"/"套利"/"套保"方式。除期货三个方式都可选之外都是填“投机”。默认为“投机”
+    msg.m_eHedgeFlag = HEDGE_FLAG_SPECULATION;
+
+    // 投资备注
+    strcpy(msg.m_strRemark, "ti_gt_trader_client");
+        
+    m_client->order(&msg, nReqId);
+
+    return nReqId;
 };
 
 int TiGtTraderClient::orderDelete(TiReqOrderDelete* req){

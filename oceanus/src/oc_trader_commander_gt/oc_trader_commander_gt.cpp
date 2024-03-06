@@ -306,6 +306,7 @@ void OcTraderCommanderGt::enterOrder(json &msg)
     memset(&req, 0, sizeof(TiReqOrderInsert));
     strcpy(req.szSymbol, std::string(msg["szSymbol"]).c_str());
     strcpy(req.szExchange, std::string(msg["szExchange"]).c_str());
+    strcpy(req.szAccount, std::string(msg["szAccount"]).c_str());
     req.nTradeSideType = std::string(msg["nTradeSideType"]).c_str()[0];
     req.nBusinessType = std::string(msg["nBusinessType"]).c_str()[0];
     req.nOffsetType = std::string(msg["nOffsetType"]).c_str()[0];

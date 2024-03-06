@@ -117,11 +117,8 @@ private:
     //std::string getExchange(TTORATstpExchangeIDType exchangeId);
     //void getOrderType(TTORATstpDirectionType src_direct, TI_TradeSideType* dis_side, TI_BusinessType* dis_business);
 
-    int orderInsertStock(TiReqOrderInsert* req);   //买卖
-    int orderInsertEtf(TiReqOrderInsert* req);     //申赎
 public:
 	void connect();
-    void join();
     int orderInsert(TiReqOrderInsert* req);
     int orderDelete(TiReqOrderDelete* req);
     TiRtnOrderStatus* getOrderStatus(int64_t req_id, int64_t order_id);
