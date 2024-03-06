@@ -71,7 +71,15 @@
         "variant": "cpp",
         "charconv": "cpp",
         "codecvt": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "any": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "numbers": "cpp",
+        "ranges": "cpp",
+        "semaphore": "cpp",
+        "span": "cpp",
+        "stop_token": "cpp"
     },
     "cmake.sourceDirectory": "${workspaceFolder}/oceanus/src/oc_ipc_quote_demo",
     "editor.fontFamily": "Menlo, Consolas, Monaco, 'Courier New', monospace",
