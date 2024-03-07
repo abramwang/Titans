@@ -20,6 +20,8 @@ typedef char TI_BusinessType;
 
 const char TI_BrokerType_Stock     = 'S';  // 股票账户
 const char TI_BrokerType_Future    = 'F';  // 期货账户
+const char TI_BrokerType_Option    = 'O';  // 期权账户
+const char TI_BrokerType_Credit    = 'C';  // 信用账户
 typedef char TI_BrokerType;
 
 const int8_t TI_OrderStatusType_fail     = -10;

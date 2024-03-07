@@ -73,23 +73,29 @@ void TiGtTraderClient::onRtnLoginStatus(const char* accountId, EBrokerLoginStatu
 {
     cout << "[onRtnLoginStatus] account id: " << accountId << ", type: " << brokerType << ", status: " << status << endl;
 
+    TI_BrokerType ti_broker_type;
     switch (brokerType)
     {
     case AT_STOCK:
-        m_config->m_strStockAccount = accountId;
+        ti_broker_type = TI_BrokerType_Stock;
         break;
     case AT_FUTURE:
-        m_config->m_strFutureAccount = accountId;
+        ti_broker_type = TI_BrokerType_Future;
         break;
     case AT_STOCK_OPTION:
-        m_config->m_strOptionAccount = accountId;
+        ti_broker_type = TI_BrokerType_Option;
         break;
     case AT_CREDIT:
-        m_config->m_strCreditAccount = accountId;
+        ti_broker_type = TI_BrokerType_Credit;
         break;
     default:
         break;
     }
+    TI_AccountType account_id = {0};
+    strncpy(account_id, accountId, sizeof(account_id));
+
+    std::shared_ptr<TiGtTraderAccount> account_ptr = std::make_shared<TiGtTraderAccount>(ti_broker_type, account_id, m_cb);
+    m_account_map[account_id] = account_ptr;
 
     m_client->reqAccountDetail(accountId, ++nReqId);
 }
@@ -97,8 +103,65 @@ void TiGtTraderClient::onRtnLoginStatus(const char* accountId, EBrokerLoginStatu
  // 资金账号信息
 void TiGtTraderClient::onReqAccountDetail(const char* accountId, int nRequestId, const CAccountDetail* data, bool isLast, const XtError& error)
 {
-    std::thread::id threadId = std::this_thread::get_id();
-    std::cout << "TiGtTraderClient::onReqAccountDetail" << "Current thread ID: " << threadId << std::endl;
+    json rspData = {
+        {"type", "onReqAccountDetail"},
+        {"account_id", accountId},
+        {"data", {
+            {"account_id", data->m_strAccountID},
+            {"account_type", data->m_nAccountType},
+            {"status", data->m_strStatus},
+            {"trading_date", data->m_strTradingDate},
+
+            {"frozen_margin", data->m_dFrozenMargin},
+            {"frozen_cash", data->m_dFrozenCash},
+            {"frozen_commission", data->m_dFrozenCommission},
+            {"risk", data->m_dRisk},
+            {"nav", data->m_dNav},
+            {"pre_balance", data->m_dPreBalance},
+            {"balance", data->m_dBalance},
+            {"available", data->m_dAvailable},
+            {"commission", data->m_dCommission},
+            {"position_profit", data->m_dPositionProfit},
+            {"close_profit", data->m_dCloseProfit},
+            {"cash_in", data->m_dCashIn},
+            {"curr_margin", data->m_dCurrMargin},
+            {"instrument_value", data->m_dInstrumentValue},
+            {"deposit", data->m_dDeposit},
+            {"withdraw", data->m_dWithdraw},
+            {"credit", data->m_dCredit},
+            {"mortgage", data->m_dMortgage},
+            {"stock_value", data->m_dStockValue},
+            {"loan_value", data->m_dLoanValue},
+            {"fund_value", data->m_dFundValue},
+            {"repurchase_value", data->m_dRepurchaseValue},
+            {"long_value", data->m_dLongValue},
+            {"short_value", data->m_dShortValue},
+            {"net_value", data->m_dNetValue},
+            {"assure_asset", data->m_dAssureAsset},
+            {"total_debit", data->m_dTotalDebit},
+            {"premium_net_expense", data->m_dPremiumNetExpense},
+            {"enable_margin", data->m_dEnableMargin},
+            {"fetch_balance", data->m_dFetchBalance},
+            {"dual_status", data->m_eDualStatus},
+            {"available_sh", data->m_dAvailableSH},
+            {"available_sz", data->m_dAvailableSZ},
+            {"account_key", data->m_strAccountKey},
+            {"product_id", data->m_nProductId},
+            {"used_margin", data->m_dUsedMargin},
+            {"royalty", data->m_dRoyalty},
+            {"product_name", data->m_strProductName},
+            {"days_profit", data->m_dDaysProfit}
+        }}
+    };
+    
+    auto account_iter = m_account_map.find(accountId);
+    if (account_iter != m_account_map.end())
+    {
+        account_iter->second->OnCommonJsonRespones(&rspData, nRequestId, data, isLast, error.errorMsg());
+    }
+    
+
+    /* 
     cout << "[onReqAccountDetail]  资金账号 :" << data->m_strAccountID
         << "\n    账号状态:" << data->m_strStatus
         << "\n    交易日:" << data->m_strTradingDate
@@ -107,6 +170,7 @@ void TiGtTraderClient::onReqAccountDetail(const char* accountId, int nRequestId,
         << "\n    总负债:" << data->m_dTotalDebit
         << "\n    期初权益:" << data->m_dPreBalance
         << endl;
+    */
 }
 
 void TiGtTraderClient::onOrder(int nRequestId, int orderId, const char* strRemark, const XtError& error)

@@ -14,7 +14,7 @@ public:
     virtual ~TiGtTraderAccount();
 
 public:
-    void OnCommonJsonRespones(const json* rspData, int req_id, bool isLast, int err, const char* err_str){};     //非交易逻辑的统一实现接口
+    void OnCommonJsonRespones(const json* rspData, int req_id, bool isLast, int err, const char* err_str);     //非交易逻辑的统一实现接口
     
     void OnRspOrderDelete(const TiRspOrderDelete* pData){};
     
