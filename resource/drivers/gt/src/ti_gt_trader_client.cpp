@@ -14,7 +14,6 @@ TiGtTraderClient::TiGtTraderClient(std::string configPath, TiTraderCallback* use
     m_trading_day = 0;
     m_client = NULL;
 
-    nSessionId = 0;
     nOrderId = 1680000;
 
     m_cb = userCb;

@@ -18,6 +18,10 @@ const char TI_BusinessType_Stock  = 'S';  // 股票买卖业务
 const char TI_BusinessType_ETF    = 'E';  // etf申赎业务
 typedef char TI_BusinessType;
 
+const char TI_BrokerType_Stock     = 'S';  // 股票账户
+const char TI_BrokerType_Future    = 'F';  // 期货账户
+typedef char TI_BrokerType;
+
 const int8_t TI_OrderStatusType_fail     = -10;
 const int8_t TI_OrderStatusType_removed  = -9;
 const int8_t TI_OrderStatusType_dealt    = -8;

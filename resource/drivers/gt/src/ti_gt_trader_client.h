@@ -12,6 +12,8 @@
 #include "ti_trader_client.h"
 #include "ti_trader_callback.h"
 
+#include "ti_gt_trader_account.h"
+
 using namespace xti;
 
 class TiGtTraderClient: 
@@ -39,9 +41,9 @@ private:
     uv_work_t m_work_req;
 
     XtTraderApi* m_client;
-    std::map<int32_t, int32_t> m_report_sync;
-    unsigned long long nSessionId;
     int64_t nOrderId;
+
+    std::unordered_map<std::string, std::shared_ptr<TiGtTraderAccount>> m_account_map;  //account_id, account
 
     json m_json_rsp;
     std::unordered_map<int64_t, std::shared_ptr<TiRtnOrderStatus>> m_order_map;         //order_id, order_status
@@ -114,8 +116,7 @@ private:
     int loadConfig(std::string iniFileName);
 
     TI_OrderStatusType getOrderStatus(EOrderCommandStatus status);
-    //void getOrderType(TTORATstpDirectionType src_direct, TI_TradeSideType* dis_side, TI_BusinessType* dis_business);
-
+    
 public:
 	void connect();
     int orderInsert(TiReqOrderInsert* req);
