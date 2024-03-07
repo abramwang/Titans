@@ -105,6 +105,7 @@ void TiGtTraderClient::onReqAccountDetail(const char* accountId, int nRequestId,
 {
     json rspData = {
         {"type", "onReqAccountDetail"},
+        {"apt_type", "gt"},
         {"account_id", accountId},
         {"data", {
             {"account_id", data->m_strAccountID},
