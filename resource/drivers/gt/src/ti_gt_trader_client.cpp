@@ -232,8 +232,19 @@ void TiGtTraderClient::onRtnOrder(const COrderInfo* data)
 
     TiRtnOrderStatus* order = account_iter->second->getOrderStatus(data->m_nOrderID);
     
-   
 }
+
+void TiGtTraderClient::onDirectOrder(int nRequestId, const char* strOrderSysID, const char* strRemark, const XtError& error)
+{
+    std::thread::id threadId = std::this_thread::get_id();
+    std::cout << "TiGtTraderClient::onDirectOrder" << "Current thread ID: " << threadId << std::endl;
+    cout << "[onDirectOrder] isSuccess: " << (error.isSuccess()?"true":"false")
+        << "\n    strOrderSysID:  " << strOrderSysID
+        << "\n    RequestId: " << nRequestId  
+        << "\n    strRemark: " << strRemark  
+        << "\n    errorMsg: " << error.errorMsg()
+        << endl;
+};
 
 void TiGtTraderClient::onRtnOrderDetail(const COrderDetail* data)
 {

@@ -69,6 +69,9 @@ namespace xti
         double      m_dRoyalty;                 ///< 权利金支出 用于股票期权
         char        m_strProductName[64];       ///< 迅投产品名称
         double      m_dDaysProfit;              ///< 当日盈亏
+        char        m_strAccountName[64];       ///< 账号名称
+        char        m_strBrokerID[16];          ///< 经纪公司编号
+        char        m_strBrokerName[64];        ///< 经纪公司名称
 
     };
 
@@ -134,13 +137,15 @@ namespace xti
     {
         COrderInfo();
         ~COrderInfo();
-        char                            m_strAccountID[32];  ///< 资金账号
+        char                            m_strAccountID[256];  ///< 资金账号
         int                             m_nAccountType;      ///< 账号类型
         int                             m_nOrderID;          ///< 指令ID
         int                             m_startTime;         ///< 下达时间
         int                             m_endTime;           ///< 结束时间
         EOrderCommandStatus             m_eStatus;           ///< 状态
         double                          m_dTradedVolume;     ///< 成交量
+        double                          m_dTradedPrice;      ///< 成交均价
+        double                          m_dTradedAmount;     ///< 成交金额
         char                            m_strMsg[256];       ///< 指令执行信息
         char                            m_canceler[32];      ///< 撤销者
         EXTBrokerType                   m_eBrokerType;       ///< 账号类型
@@ -157,7 +162,7 @@ namespace xti
         double                          m_dMinAmountPerOrder;       ///< 委托最小金额  
         EOperationType                  m_eOperationType;           ///< 下单操作：买入卖出  
         EStopTradeForOwnHiLow           m_nStopTradeForOwnHiLow;    ///< 涨跌停控制  
-        char                            m_strAccountKey[64];        ///< 账号key
+        char                            m_strAccountKey[1024];        ///< 账号key
     };
 
     ///< 委托信息
@@ -1184,6 +1189,7 @@ namespace xti
         EXtExDivdendType m_eExDivdendType;                                  ///< 除权除息标志
         double          m_dOptExercisePrice;                                ///< 期权行权价
         int             m_nCallOrPut;                                       ///< 合约种类(个股期权：0认购，1认沽)
+        double          m_dMarginUnit;                                      ///< 保证金单位
     };
 
     ///< 查询可下单量

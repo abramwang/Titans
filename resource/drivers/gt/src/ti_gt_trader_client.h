@@ -94,6 +94,8 @@ public:
     // @param   data 具体信息有COrderInfo携带
     virtual void onRtnOrder(const COrderInfo* data);
 
+    virtual void onDirectOrder(int nRequestId, const char* strOrderSysID, const char* strRemark, const XtError& error);
+
     // 委托回报的主推信息
     // @param   data COrderDetail
     virtual void onRtnOrderDetail(const COrderDetail* data);
