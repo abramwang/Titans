@@ -9,7 +9,6 @@ class TiGtTraderAccount:
 private:
     TiTraderCallback* m_cb;
 
-    std::unordered_map<int64_t, std::shared_ptr<TiRtnOrderStatus>> m_order_req_map;     //req_id, order_status
     std::unordered_map<int64_t, std::shared_ptr<TiRtnOrderStatus>> m_order_map;         //order_id, order_status
     std::multimap<int64_t, std::shared_ptr<TiRtnOrderMatch>> m_matches_map;             //order_id, m_matches_map
 
@@ -30,8 +29,9 @@ public:
     void OnRtnOrderMatchEvent(const TiRtnOrderMatch* pData){};
 
 public:
-    int enterOrder(const TiReqOrderInsert* req);
-    TiRtnOrderStatus* getOrderStatus(int64_t req_id, int64_t order_id);
+    void enterOrder(std::shared_ptr<TiRtnOrderStatus> order);
+    
+    TiRtnOrderStatus* getOrderStatus(int64_t order_id);
 
 };
 

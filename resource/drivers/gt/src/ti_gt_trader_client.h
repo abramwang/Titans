@@ -41,8 +41,8 @@ private:
     uv_work_t m_work_req;
 
     XtTraderApi* m_client;
-    int64_t nOrderId;
 
+    std::unordered_map<int64_t, std::shared_ptr<TiRtnOrderStatus>> m_order_req_map;     //req_id, order_status
     std::unordered_map<std::string, std::shared_ptr<TiGtTraderAccount>> m_account_map;  //account_id, account
 
     TiTraderCallback* m_cb;
@@ -112,6 +112,7 @@ private:
     int loadConfig(std::string iniFileName);
 
     TI_OrderStatusType getOrderStatus(EOrderCommandStatus status);
+    TI_TradeSideType getTradeSide(EOperationType operation);
     
 public:
 	void connect();

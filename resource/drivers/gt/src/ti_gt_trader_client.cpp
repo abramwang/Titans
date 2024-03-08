@@ -14,8 +14,6 @@ TiGtTraderClient::TiGtTraderClient(std::string configPath, TiTraderCallback* use
     m_trading_day = 0;
     m_client = NULL;
 
-    nOrderId = 1680000;
-
     m_cb = userCb;
 
     loadConfig(configPath);
@@ -182,17 +180,25 @@ void TiGtTraderClient::onOrder(int nRequestId, int orderId, const char* strRemar
         << "\n    RequestId: " << nRequestId  
         << "\n    errorMsg: " << error.errorMsg()
         << endl;
-}
 
-void TiGtTraderClient::onRtnOrder(const COrderInfo* data)
-{
-    auto account_iter = m_account_map.find(data->m_strAccountID);
+    auto iter = m_order_req_map.find(nRequestId);
+    if (iter == m_order_req_map.end())
+
+    {
+        return;
+    }
+    iter->second->nOrderId = orderId;
+    strcpy(iter->second->szErr, error.errorMsg());
+    auto account_iter = m_account_map.find(iter->second->szAccount);
     if (account_iter == m_account_map.end())
     {
         return;
     }
-    
+    account_iter->second->enterOrder(iter->second);
+}
 
+void TiGtTraderClient::onRtnOrder(const COrderInfo* data)
+{
     string orderStatus = "";
     switch(data->m_eStatus)
     {
@@ -216,10 +222,43 @@ void TiGtTraderClient::onRtnOrder(const COrderInfo* data)
         << "\n    撤销者：" << data->m_canceler
         << "\n    指令执行信息：" << data->m_strMsg
         << endl;
+
+
+    auto account_iter = m_account_map.find(data->m_strAccountID);
+    if (account_iter == m_account_map.end())
+    {
+        return;
+    }
+
+    TiRtnOrderStatus* order = account_iter->second->getOrderStatus(data->m_nOrderID);
+    
+   
 }
 
 void TiGtTraderClient::onRtnOrderDetail(const COrderDetail* data)
 {
+    auto account_iter = m_account_map.find(data->m_strAccountID);
+    if (account_iter == m_account_map.end())
+    {
+        return;
+    }
+
+    TiRtnOrderStatus* order = account_iter->second->getOrderStatus(data->m_nOrderID);
+
+    strcpy(order->szExchange, data->m_strExchangeID);
+    strcpy(order->szSymbol, data->m_strInstrumentID);
+
+    order->nOrderPrice = data->m_dLimitPrice;
+    order->nOrderVol = data->m_nTotalVolume;
+    order->nSubmitVol = data->m_nTotalVolume;
+    order->nDealtPrice = data->m_dAveragePrice;
+    order->nDealtVol = data->m_nTradedVolume;
+    
+
+    //order->nTradeSideType = getTradeSide(data->);
+    
+
+
     string entrust_status;
     switch(data->m_eOrderStatus)
     {
@@ -351,6 +390,22 @@ TI_OrderStatusType TiGtTraderClient::getOrderStatus(EOrderCommandStatus status)
    return TI_OrderStatusType_unAccept;
 };
 
+TI_TradeSideType TiGtTraderClient::getTradeSide(EOperationType operation)
+{
+    switch(operation)
+    {
+    case OPT_BUY:
+        return TI_TradeSideType_Buy;
+    case OPT_SELL:
+        return TI_TradeSideType_Sell;
+    case OPT_ETF_PURCHASE:
+        return TI_TradeSideType_Purchase;
+    case OPT_ETF_REDEMPTION:
+        return TI_TradeSideType_Redemption;
+    default:
+        return TI_TradeSideType_Default;
+    }
+};
 
 void TiGtTraderClient::connect(){
     if(!m_config){
@@ -432,7 +487,9 @@ int TiGtTraderClient::orderInsert(TiReqOrderInsert* req){
     // 投资备注
     strcpy(msg.m_strRemark, "ti_gt_trader_client");
     
-    account_iter->second->enterOrder(req);
+    std::shared_ptr<TiRtnOrderStatus> order = std::make_shared<TiRtnOrderStatus>();
+    memcpy(order.get(), req, sizeof(TiReqOrderInsert));
+    m_order_req_map[order->nOrderId] = order;
 
     m_client->order(&msg, nReqId);
 

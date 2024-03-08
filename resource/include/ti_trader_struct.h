@@ -4,6 +4,7 @@
 #include "ti_common_struct.h"
 #pragma pack(1)
 
+const char TI_TradeSideType_Default    = '0';  // 默认
 const char TI_TradeSideType_Sell       = 'S';  // 卖出
 const char TI_TradeSideType_Buy        = 'B';  // 买入
 const char TI_TradeSideType_Purchase   = 'P';  // 申购
