@@ -161,7 +161,6 @@ void TiGtTraderClient::onReqAccountDetail(const char* accountId, int nRequestId,
         account_iter->second->OnCommonJsonRespones(&rspData, nRequestId, data, isLast, error.errorMsg());
     }
     
-
     /* 
     cout << "[onReqAccountDetail]  资金账号 :" << data->m_strAccountID
         << "\n    账号状态:" << data->m_strStatus
@@ -187,6 +186,13 @@ void TiGtTraderClient::onOrder(int nRequestId, int orderId, const char* strRemar
 
 void TiGtTraderClient::onRtnOrder(const COrderInfo* data)
 {
+    auto account_iter = m_account_map.find(data->m_strAccountID);
+    if (account_iter == m_account_map.end())
+    {
+        return;
+    }
+    
+
     string orderStatus = "";
     switch(data->m_eStatus)
     {
@@ -380,6 +386,13 @@ int TiGtTraderClient::orderInsert(TiReqOrderInsert* req){
         LOG(INFO) << "[loadConfig] Do not have config info";
         return -1;
     }
+
+    auto account_iter = m_account_map.find(req->szAccount);
+    if (account_iter == m_account_map.end())
+    {
+        return -1;
+    }
+
     
     req->nReqId = ++nReqId;
 
@@ -418,7 +431,9 @@ int TiGtTraderClient::orderInsert(TiReqOrderInsert* req){
 
     // 投资备注
     strcpy(msg.m_strRemark, "ti_gt_trader_client");
-        
+    
+    account_iter->second->enterOrder(req);
+
     m_client->order(&msg, nReqId);
 
     return nReqId;
@@ -431,38 +446,12 @@ int TiGtTraderClient::orderDelete(TiReqOrderDelete* req){
     }
 
     TiRtnOrderStatus* order = getOrderStatus(-1, req->nOrderId);
-
-    auto iter = m_order_map.begin();
-    for (; iter != m_order_map.end(); iter++)
-    {
-
-        std::cout << iter->first << ":" << iter->second->szOrderStreamId << std::endl;
-        /* code */
-    }
     
-    std::cout << order << std::endl;
-    if(!order)
-    {
-        return -1;
-    }
-
     return nReqId;
 };
 
 TiRtnOrderStatus* TiGtTraderClient::getOrderStatus(int64_t req_id, int64_t order_id)
 {
-    if (m_order_map.find(order_id) != m_order_map.end())
-    {
-        return m_order_map[order_id].get();
-    }
-    auto iter = m_order_map.begin();
-    for( ; iter != m_order_map.end(); iter++)
-    {
-        if (iter->second->nReqId == req_id)
-        {
-            return iter->second.get();
-        }
-    }
     return NULL;
 };
 

@@ -45,10 +45,6 @@ private:
 
     std::unordered_map<std::string, std::shared_ptr<TiGtTraderAccount>> m_account_map;  //account_id, account
 
-    json m_json_rsp;
-    std::unordered_map<int64_t, std::shared_ptr<TiRtnOrderStatus>> m_order_map;         //order_id, order_status
-    std::multimap<int64_t, std::shared_ptr<TiRtnOrderMatch>> m_matches_map;             //order_id, m_matches_map
-
     TiTraderCallback* m_cb;
 public:
     TiGtTraderClient(std::string configPath, TiTraderCallback* userCb);
