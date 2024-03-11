@@ -3,6 +3,7 @@
 #include "iniFile.h"
 #include "datetime.h"
 #include "ti_encoding_tool.h"
+#include "ti_trader_formater.h"
 #include <thread>
 
 
@@ -171,69 +172,6 @@ void TiGtTraderClient::onReqAccountDetail(const char* accountId, int nRequestId,
     */
 }
 
-void TiGtTraderClient::onOrder(int nRequestId, int orderId, const char* strRemark, const XtError& error)
-{
-    std::thread::id threadId = std::this_thread::get_id();
-    std::cout << "TiGtTraderClient::onOrder" << "Current thread ID: " << threadId << std::endl;
-    cout << "[onOrder] isSuccess: " << (error.isSuccess()?"true":"false")
-        << "\n    orderId:  " << orderId
-        << "\n    RequestId: " << nRequestId  
-        << "\n    errorMsg: " << error.errorMsg()
-        << endl;
-
-    auto iter = m_order_req_map.find(nRequestId);
-    if (iter == m_order_req_map.end())
-
-    {
-        return;
-    }
-    iter->second->nOrderId = orderId;
-    strcpy(iter->second->szErr, error.errorMsg());
-    auto account_iter = m_account_map.find(iter->second->szAccount);
-    if (account_iter == m_account_map.end())
-    {
-        return;
-    }
-    account_iter->second->enterOrder(iter->second);
-}
-
-void TiGtTraderClient::onRtnOrder(const COrderInfo* data)
-{
-    string orderStatus = "";
-    switch(data->m_eStatus)
-    {
-    case OCS_CHECKING:   orderStatus = "风控检查中";  break;
-    case OCS_APPROVING:  orderStatus = "审批中";  break;
-    case OCS_REJECTED:   orderStatus = "已驳回";  break;
-    case OCS_RUNNING:    orderStatus = "运行中";  break;
-    case OCS_CANCELING:  orderStatus = "撤销中";  break;
-    case OCS_FINISHED:   orderStatus = "已完成";  break;
-    case OCS_STOPPED:    orderStatus = "已撤销";  break;
-    }
-
-    std::thread::id threadId = std::this_thread::get_id();
-    std::cout << "TiGtTraderClient::onRtnOrder" << "Current thread ID: " << threadId << std::endl;
-    cout << "[onRtnOrder]"
-        << "\n    下单ID: " << data->m_nOrderID
-        << "\n    m_startTime：" << data->m_startTime
-        << "\n    m_endTime: " << data->m_endTime
-        << "\n    指令状态：" << orderStatus
-        << "\n    成交量：" << data->m_dTradedVolume
-        << "\n    撤销者：" << data->m_canceler
-        << "\n    指令执行信息：" << data->m_strMsg
-        << endl;
-
-
-    auto account_iter = m_account_map.find(data->m_strAccountID);
-    if (account_iter == m_account_map.end())
-    {
-        return;
-    }
-
-    TiRtnOrderStatus* order = account_iter->second->getOrderStatus(data->m_nOrderID);
-    
-}
-
 void TiGtTraderClient::onDirectOrder(int nRequestId, const char* strOrderSysID, const char* strRemark, const XtError& error)
 {
     std::thread::id threadId = std::this_thread::get_id();
@@ -258,16 +196,43 @@ void TiGtTraderClient::onRtnOrderDetail(const COrderDetail* data)
 
     strcpy(order->szExchange, data->m_strExchangeID);
     strcpy(order->szSymbol, data->m_strInstrumentID);
+    strcpy(order->szAccount, data->m_strAccountID);
 
     order->nOrderPrice = data->m_dLimitPrice;
     order->nOrderVol = data->m_nTotalVolume;
     order->nSubmitVol = data->m_nTotalVolume;
     order->nDealtPrice = data->m_dAveragePrice;
     order->nDealtVol = data->m_nTradedVolume;
+    order->nStatus = convertOrderStatus(data->m_eOrderStatus);
+
+    if (order->nStatus < 0)
+    {
+        if (order->nStatus == TI_OrderStatusType_fail){
+            order->nInValid = order->nTotalWithDrawnVol = order->nOrderVol - order->nDealtVol;
+        }else{
+            order->nTotalWithDrawnVol = order->nOrderVol - order->nDealtVol;
+        }
+    }
+
+    order->nInsertTimestamp = datetime::get_timestamp_ms(atoi(data->m_strInsertDate), atoi(data->m_strInsertTime)*1000);
+    order->nLastUpdateTimestamp = datetime::get_now_timestamp_ms();
+    order->nUsedTime = order->nLastUpdateTimestamp - order->nInsertTimestamp;
+
+    order->nDealtVol = data->m_nTradedVolume;
+    strcpy(order->szOrderStreamId, data->m_strOrderSysID);
+    order->nFee = data->m_dFrozenCommission;
+
+    std::cout << datetime::get_format_timestamp_ms(order->nInsertTimestamp) << std::endl;
+    std::cout << datetime::get_format_timestamp_ms(order->nLastUpdateTimestamp) << std::endl;
+    std::cout << datetime::get_format_time_duration_ms(order->nUsedTime) << std::endl;
+
     
+    json out;
+    TiTraderFormater::FormatOrderStatus(order, out);
+
+    std::cout << out << std::endl;
 
     //order->nTradeSideType = getTradeSide(data->);
-    
 
 
     string entrust_status;
@@ -371,20 +336,22 @@ int TiGtTraderClient::loadConfig(std::string iniFileName)
     return 0;
 };
 
-TI_OrderStatusType TiGtTraderClient::getOrderStatus(EOrderCommandStatus status)
+TI_OrderStatusType TiGtTraderClient::convertOrderStatus(EEntrustStatus status)
 {
     switch(status)
     {
+    case ENTRUST_STATUS_WAIT_END:
+        return TI_OrderStatusType_queued;
     case ENTRUST_STATUS_UNREPORTED:
         return TI_OrderStatusType_unAccept;
     case ENTRUST_STATUS_WAIT_REPORTING:
-        return TI_OrderStatusType_accepted;
+        return TI_OrderStatusType_unAccept;
     case ENTRUST_STATUS_REPORTED:
         return TI_OrderStatusType_accepted;
     case ENTRUST_STATUS_REPORTED_CANCEL:
         return TI_OrderStatusType_toRemove;
     case ENTRUST_STATUS_PARTSUCC_CANCEL:
-        return TI_OrderStatusType_removing;
+        return TI_OrderStatusType_toRemove;
     case ENTRUST_STATUS_PART_CANCEL:
         return TI_OrderStatusType_removed;
     case ENTRUST_STATUS_CANCELED:
@@ -392,16 +359,26 @@ TI_OrderStatusType TiGtTraderClient::getOrderStatus(EOrderCommandStatus status)
     case ENTRUST_STATUS_PART_SUCC:
         return TI_OrderStatusType_queued;
     case ENTRUST_STATUS_SUCCEEDED:
-        return TI_OrderStatusType_queued;
+        return TI_OrderStatusType_dealt;
     case ENTRUST_STATUS_JUNK:
         return TI_OrderStatusType_fail;
+    case ENTRUST_STATUS_ACCEPT:
+        return TI_OrderStatusType_accepted;
+    case ENTRUST_STATUS_CONFIRMED:
+        return TI_OrderStatusType_accepted;
+    case ENTRUST_STATUS_DETERMINED:
+        return TI_OrderStatusType_accepted;
+    case ENTRUST_STATUS_PREPARE_ORDER:
+        return TI_OrderStatusType_accepted;
+    case ENTRUST_STATUS_PREPARE_CANCELED:
+        return TI_OrderStatusType_removed;
     default:
         return TI_OrderStatusType_unAccept;
     }
    return TI_OrderStatusType_unAccept;
 };
 
-TI_TradeSideType TiGtTraderClient::getTradeSide(EOperationType operation)
+TI_TradeSideType TiGtTraderClient::convertTradeSide(EOperationType operation)
 {
     switch(operation)
     {
@@ -502,7 +479,7 @@ int TiGtTraderClient::orderInsert(TiReqOrderInsert* req){
     memcpy(order.get(), req, sizeof(TiReqOrderInsert));
     m_order_req_map[order->nOrderId] = order;
 
-    m_client->order(&msg, nReqId);
+    m_client->directOrder(&msg, nReqId);
 
     return nReqId;
 };

@@ -173,7 +173,7 @@ def enterOrder_SZ():
                     "nTradeSideType" : 'B',
                     "nOffsetType" : 'O',
                     "nBusinessType" : 'S',
-                    "nOrderPrice" : 10.41,
+                    "nOrderPrice" : 10.48,
                     "nOrderVol" : 300
                 }
             )

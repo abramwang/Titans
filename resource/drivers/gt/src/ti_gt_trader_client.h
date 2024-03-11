@@ -83,16 +83,6 @@ public:
     // @param   error 反馈这次查询请求是否有错误
     virtual void onReqAccountDetail(const char* accountId, int nRequestId, const CAccountDetail* data, bool isLast, const XtError& error);
 
-    // 三种报单方式的回调
-    // @param   nRequestId 客户自己维护的请求号
-    // @param   orderID 服务器反馈的指令号，成功为大于0的整数，失败统一为-1
-    // @param   strRemark 下单时填写的投资备注
-    // @param   error 反馈报单信息，error的isSuccess可判断是否报单成功
-    virtual void onOrder(int nRequestId, int orderID, const char* strRemark, const XtError& error);
-
-    // 指令状态的主推信息
-    // @param   data 具体信息有COrderInfo携带
-    virtual void onRtnOrder(const COrderInfo* data);
 
     virtual void onDirectOrder(int nRequestId, const char* strOrderSysID, const char* strRemark, const XtError& error);
 
@@ -113,8 +103,8 @@ public:
 private:
     int loadConfig(std::string iniFileName);
 
-    TI_OrderStatusType getOrderStatus(EOrderCommandStatus status);
-    TI_TradeSideType getTradeSide(EOperationType operation);
+    TI_OrderStatusType convertOrderStatus(EEntrustStatus status);
+    TI_TradeSideType convertTradeSide(EOperationType operation);
     
 public:
 	void connect();
