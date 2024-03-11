@@ -3,6 +3,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 #include <uv.h>
 
 #include "XtDataType.h"
@@ -109,6 +110,7 @@ private:
     
 public:
 	void connect();
+    int orderInsertBatch(std::vector<TiReqOrderInsert> &req_vec, std::string account_id);
     int orderInsert(TiReqOrderInsert* req);
     int orderDelete(TiReqOrderDelete* req);
     TiRtnOrderStatus* getOrderStatus(int64_t req_id, int64_t order_id);

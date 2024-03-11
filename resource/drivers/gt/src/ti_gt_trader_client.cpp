@@ -225,16 +225,17 @@ void TiGtTraderClient::onRtnOrderDetail(const COrderDetail* data)
 
     //order->nInsertTimestamp = datetime::get_timestamp_ms(atoi(data->m_strInsertDate), atoi(data->m_strInsertTime)*1000);
     order->nLastUpdateTimestamp = datetime::get_now_timestamp_ms();
-    order->nUsedTime = order->nLastUpdateTimestamp - order->nReqTimestamp;
+    order->nUsedTime = order->nInsertTimestamp - order->nReqTimestamp;
 
     order->nDealtVol = data->m_nTradedVolume;
     strcpy(order->szOrderStreamId, data->m_strOrderSysID);
     order->nFee = data->m_dFrozenCommission;
 
     std::cout << datetime::get_format_timestamp_ms(order->nInsertTimestamp) << std::endl;
-    std::cout << datetime::get_format_timestamp_ms(order->nLastUpdateTimestamp) << std::endl;
+    //std::cout << datetime::get_format_timestamp_ms(order->nLastUpdateTimestamp) << std::endl;
     std::cout << datetime::get_format_time_duration_ms(order->nUsedTime) << std::endl;
 
+    return;
     
     json out;
     TiTraderFormater::FormatOrderStatus(order, out);
@@ -283,6 +284,7 @@ void TiGtTraderClient::onRtnOrderDetail(const COrderDetail* data)
 
 void TiGtTraderClient::onRtnDealDetail(const CDealDetail* data)
 {
+    return;
     if (data == NULL)
     {
         return;
@@ -432,6 +434,60 @@ void TiGtTraderClient::connect(){
     uv_queue_work(uv_default_loop(), &m_work_req, TiGtTraderClient::work_cb, TiGtTraderClient::after_work_cb);
 };
 
+int TiGtTraderClient::orderInsertBatch(std::vector<TiReqOrderInsert> &req_vec, std::string account_id)
+{
+    if(!m_config){
+        LOG(INFO) << "[loadConfig] Do not have config info";
+        return -1;
+    }
+
+    auto account_iter = m_account_map.find(account_id);
+    if (account_iter == m_account_map.end())
+    {
+        return -1;
+    }
+
+    ++nReqId;
+
+    COrdinaryGroupOrder msg;
+
+    strcpy(msg.m_strAccountID, account_id.c_str());
+
+    msg.m_ePriceType            = PRTP_FIX;
+    msg.m_eHedgeFlag            = HEDGE_FLAG_SPECULATION;
+    msg.m_eOverFreqOrderMode    = OFQ_QUEUE;
+
+    for(size_t i = 0; i <= req_vec.size(); i++)
+    {
+        req_vec[i].nReqId = nReqId;
+        strcpy(msg.m_strMarket[i], req_vec[i].szExchange);
+        strcpy(msg.m_strInstrument[i], req_vec[i].szSymbol);
+        msg.m_nVolume[i] = req_vec[i].nOrderVol;
+        msg.m_dPrice[i] = req_vec[i].nOrderPrice;
+        switch (req_vec[i].nTradeSideType)
+        {
+        case TI_TradeSideType_Sell:
+            msg.m_eOperationType[i] = OPT_SELL; 
+            break;
+        case TI_TradeSideType_Buy:
+            msg.m_eOperationType[i] = OPT_BUY; 
+            break;
+        case TI_TradeSideType_Purchase:
+            msg.m_eOperationType[i] = OPT_ETF_PURCHASE; 
+            break;
+        case TI_TradeSideType_Redemption:
+            msg.m_eOperationType[i] = OPT_ETF_REDEMPTION; 
+            break;
+        }
+    }
+    msg.m_nOrderNum = req_vec.size();
+    // 投资备注
+    strcpy(msg.m_strRemark, "ti_gt_trader_client");
+
+
+    m_client->order(&msg, nReqId);
+    return nReqId;
+};
 
 int TiGtTraderClient::orderInsert(TiReqOrderInsert* req){
     if(!m_config){
