@@ -90,6 +90,7 @@ private:
     int loadConfig(std::string iniFileName);
     void resetStreamKey();
     void enterOrder(json &msg);
+    void enterOrders(json &msg);
     void cancelOrder(json &msg);
 
 public:

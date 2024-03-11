@@ -153,6 +153,13 @@ void OcTraderCommanderGt::OnCommandRtn(const char* type, const char* command)
         return;
     }
 
+    if (!strcmp(type, "enterOrders"))
+    {
+        json j = json::parse(command);
+        enterOrders(j);
+        return;
+    }
+
     if (!strcmp(type, "cancelOrder"))
     {
         json j = json::parse(command);
@@ -314,6 +321,35 @@ void OcTraderCommanderGt::enterOrder(json &msg)
     req.nOrderVol = msg["nOrderVol"];
 
     m_client->orderInsert(&req);
+};
+
+void OcTraderCommanderGt::enterOrders(json &msg)
+{
+    std::cout << "enterOrders: " << std::endl;
+    if(!msg.is_array())
+    {
+       return;
+    }
+    std::vector<TiReqOrderInsert> req_vec;
+    std::string account_id;
+    for (auto iter = msg.begin(); iter != msg.end(); iter++)
+    {
+        TiReqOrderInsert req;
+        memset(&req, 0, sizeof(TiReqOrderInsert));
+        strcpy(req.szSymbol, std::string((*iter)["szSymbol"]).c_str());
+        strcpy(req.szExchange, std::string((*iter)["szExchange"]).c_str());
+        strcpy(req.szAccount, std::string((*iter)["szAccount"]).c_str());
+        req.nTradeSideType = std::string((*iter)["nTradeSideType"]).c_str()[0];
+        req.nBusinessType = std::string((*iter)["nBusinessType"]).c_str()[0];
+        req.nOffsetType = std::string((*iter)["nOffsetType"]).c_str()[0];
+        req.nOrderPrice = (*iter)["nOrderPrice"];
+        req.nOrderVol = (*iter)["nOrderVol"];
+        
+        req_vec.push_back(req);
+
+        account_id = (*iter)["szAccount"];
+    }
+    m_client->orderInsertBatch(req_vec, account_id);
 };
 
 

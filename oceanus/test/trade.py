@@ -179,6 +179,26 @@ def enterOrder_SZ():
             )
         }
     )
+def enterOrderGroup_SZ():
+    orders = []
+    for i in range(100):
+        orders.append(
+            {
+                "szSymbol" : "000001",
+                "szExchange" : "SZ",
+                "szAccount": "2001324",
+                "nTradeSideType" : 'B',
+                "nOffsetType" : 'O',
+                "nBusinessType" : 'S',
+                "nOrderPrice" : 10.48,
+                "nOrderVol" : 300
+            }
+        )
+    redis_conn.xadd(streamKey,
+        {
+            "enterOrders": json.dumps(orders)
+        }
+    )
 
 def enterOrder_sell():
     redis_conn.xadd(streamKey,
@@ -268,11 +288,12 @@ def enterOrder_ETF_Redemption():
 #enterOrder_sell_sz()
 #QueryOrders()
 #enterOrder()
-enterOrder_SZ()
+#enterOrder_SZ()
+#for i in range(100):
+#    enterOrder_SZ()
 #cancelOrder(1680011)
 
-for i in range(100):
-    enterOrder_SZ()
+enterOrderGroup_SZ()
 
 #QueryPositions()
 exit(0)

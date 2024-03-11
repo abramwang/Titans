@@ -436,6 +436,7 @@ void TiGtTraderClient::connect(){
 
 int TiGtTraderClient::orderInsertBatch(std::vector<TiReqOrderInsert> &req_vec, std::string account_id)
 {
+    std::cout << "orderInsertBatch: " << account_id << std::endl;
     if(!m_config){
         LOG(INFO) << "[loadConfig] Do not have config info";
         return -1;
@@ -446,6 +447,8 @@ int TiGtTraderClient::orderInsertBatch(std::vector<TiReqOrderInsert> &req_vec, s
     {
         return -1;
     }
+
+    std::cout << "orderInsertBatch: " << req_vec.size() << std::endl;
 
     ++nReqId;
 
@@ -459,7 +462,7 @@ int TiGtTraderClient::orderInsertBatch(std::vector<TiReqOrderInsert> &req_vec, s
 
     for(size_t i = 0; i <= req_vec.size(); i++)
     {
-        req_vec[i].nReqId = nReqId;
+        //req_vec[i].nReqId = nReqId;
         strcpy(msg.m_strMarket[i], req_vec[i].szExchange);
         strcpy(msg.m_strInstrument[i], req_vec[i].szSymbol);
         msg.m_nVolume[i] = req_vec[i].nOrderVol;
