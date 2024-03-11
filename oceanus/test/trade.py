@@ -271,6 +271,9 @@ def enterOrder_ETF_Redemption():
 enterOrder_SZ()
 #cancelOrder(1680011)
 
+#for i in range(500):
+#    enterOrder_SZ()
+
 #QueryPositions()
 exit(0)
 #QueryAsset()

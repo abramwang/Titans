@@ -19,6 +19,7 @@ TiGtTraderClient::TiGtTraderClient(std::string configPath, TiTraderCallback* use
 
     loadConfig(configPath);
     nReqId = 100;   //跳过xtp client设置成交模式的区段
+    nOrderId = 5186;
 };
 
 
@@ -174,14 +175,22 @@ void TiGtTraderClient::onReqAccountDetail(const char* accountId, int nRequestId,
 
 void TiGtTraderClient::onDirectOrder(int nRequestId, const char* strOrderSysID, const char* strRemark, const XtError& error)
 {
-    std::thread::id threadId = std::this_thread::get_id();
-    std::cout << "TiGtTraderClient::onDirectOrder" << "Current thread ID: " << threadId << std::endl;
-    cout << "[onDirectOrder] isSuccess: " << (error.isSuccess()?"true":"false")
-        << "\n    strOrderSysID:  " << strOrderSysID
-        << "\n    RequestId: " << nRequestId  
-        << "\n    strRemark: " << strRemark  
-        << "\n    errorMsg: " << error.errorMsg()
-        << endl;
+    auto order_iter = m_order_req_map.find(nRequestId);
+    if (order_iter == m_order_req_map.end())
+    {
+        return;
+    }
+    order_iter->second->nInsertTimestamp = datetime::get_now_timestamp_ms();
+    
+    nOrderId++;
+    order_iter->second->nOrderId = nOrderId;
+    strcpy(order_iter->second->szOrderStreamId, strOrderSysID);
+    auto account_iter = m_account_map.find(order_iter->second->szAccount);
+    if (account_iter == m_account_map.end())
+    {
+        return;
+    }
+    account_iter->second->enterOrder(order_iter->second);
 };
 
 void TiGtTraderClient::onRtnOrderDetail(const COrderDetail* data)
@@ -192,7 +201,7 @@ void TiGtTraderClient::onRtnOrderDetail(const COrderDetail* data)
         return;
     }
 
-    TiRtnOrderStatus* order = account_iter->second->getOrderStatus(data->m_nOrderID);
+    TiRtnOrderStatus* order = account_iter->second->getOrderStatus(data->m_strOrderSysID);
 
     strcpy(order->szExchange, data->m_strExchangeID);
     strcpy(order->szSymbol, data->m_strInstrumentID);
@@ -214,9 +223,9 @@ void TiGtTraderClient::onRtnOrderDetail(const COrderDetail* data)
         }
     }
 
-    order->nInsertTimestamp = datetime::get_timestamp_ms(atoi(data->m_strInsertDate), atoi(data->m_strInsertTime)*1000);
+    //order->nInsertTimestamp = datetime::get_timestamp_ms(atoi(data->m_strInsertDate), atoi(data->m_strInsertTime)*1000);
     order->nLastUpdateTimestamp = datetime::get_now_timestamp_ms();
-    order->nUsedTime = order->nLastUpdateTimestamp - order->nInsertTimestamp;
+    order->nUsedTime = order->nLastUpdateTimestamp - order->nReqTimestamp;
 
     order->nDealtVol = data->m_nTradedVolume;
     strcpy(order->szOrderStreamId, data->m_strOrderSysID);
@@ -477,7 +486,8 @@ int TiGtTraderClient::orderInsert(TiReqOrderInsert* req){
     
     std::shared_ptr<TiRtnOrderStatus> order = std::make_shared<TiRtnOrderStatus>();
     memcpy(order.get(), req, sizeof(TiReqOrderInsert));
-    m_order_req_map[order->nOrderId] = order;
+    m_order_req_map[order->nReqId] = order;
+    order->nReqTimestamp = datetime::get_now_timestamp_ms();
 
     m_client->directOrder(&msg, nReqId);
 
@@ -490,7 +500,7 @@ int TiGtTraderClient::orderDelete(TiReqOrderDelete* req){
         return -1;
     }
 
-    TiRtnOrderStatus* order = getOrderStatus(-1, req->nOrderId);
+    //TiRtnOrderStatus* order = getOrderStatus(-1, req->nOrderId);
     
     return nReqId;
 };

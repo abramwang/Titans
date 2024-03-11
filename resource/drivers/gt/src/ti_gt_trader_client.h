@@ -35,6 +35,7 @@ public:
     
 private:
     int nReqId;
+    int64_t nOrderId;
     ConfigInfo* m_config;
     unsigned int m_trading_day;
 
