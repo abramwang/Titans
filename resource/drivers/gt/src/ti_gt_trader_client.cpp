@@ -173,6 +173,40 @@ void TiGtTraderClient::onReqAccountDetail(const char* accountId, int nRequestId,
     */
 }
 
+void TiGtTraderClient::onOrder(int nRequestId, int orderID, const char* strRemark, const XtError& error)
+{
+    cout << "[onOrder] isSuccess: " << (error.isSuccess()?"true":"false")
+        << "\n    orderId:  " << orderID
+        << "\n    RequestId: " << nRequestId  
+        << "\n    errorMsg: " << error.errorMsg()
+        << endl;
+};
+
+void TiGtTraderClient::onRtnOrder(const COrderInfo* data)
+{
+    string orderStatus = "";
+    switch(data->m_eStatus)
+    {
+    case OCS_CHECKING:   orderStatus = "风控检查中";  break;
+    case OCS_APPROVING:  orderStatus = "审批中";  break;
+    case OCS_REJECTED:   orderStatus = "已驳回";  break;
+    case OCS_RUNNING:    orderStatus = "运行中";  break;
+    case OCS_CANCELING:  orderStatus = "撤销中";  break;
+    case OCS_FINISHED:   orderStatus = "已完成";  break;
+    case OCS_STOPPED:    orderStatus = "已撤销";  break;
+    }
+
+    cout << "[onRtnOrder]"
+        << "\n    下单ID: " << data->m_nOrderID
+        << "\n    m_startTime：" << data->m_startTime
+        << "\n    m_endTime: " << data->m_endTime
+        << "\n    指令状态：" << orderStatus
+        << "\n    成交量：" << data->m_dTradedVolume
+        << "\n    撤销者：" << data->m_canceler
+        << "\n    指令执行信息：" << data->m_strMsg
+        << endl;
+};
+
 void TiGtTraderClient::onDirectOrder(int nRequestId, const char* strOrderSysID, const char* strRemark, const XtError& error)
 {
     auto order_iter = m_order_req_map.find(nRequestId);

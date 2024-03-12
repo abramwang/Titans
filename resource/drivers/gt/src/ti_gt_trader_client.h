@@ -86,6 +86,9 @@ public:
     virtual void onReqAccountDetail(const char* accountId, int nRequestId, const CAccountDetail* data, bool isLast, const XtError& error);
 
 
+    virtual void onOrder(int nRequestId, int orderID, const char* strRemark, const XtError& error);
+    virtual void onRtnOrder(const COrderInfo* data);
+
     virtual void onDirectOrder(int nRequestId, const char* strOrderSysID, const char* strRemark, const XtError& error);
 
     // 委托回报的主推信息
