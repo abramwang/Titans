@@ -9,9 +9,10 @@ class TiGtTraderAccount:
 private:
     TiTraderCallback* m_cb;
 
-    std::unordered_map<std::string, std::shared_ptr<TiRtnOrderStatus>> m_order_sys_map;     //nOrderSysID, order_status
-    std::unordered_map<int64_t, std::shared_ptr<TiRtnOrderStatus>> m_order_map;             //order_id, order_status
-    std::multimap<int64_t, std::shared_ptr<TiRtnOrderMatch>> m_matches_map;                 //order_id, m_matches_map
+    std::unordered_map<std::string, std::shared_ptr<TiRtnOrderStatus>>  m_order_sys_map;     //nOrderSysID, order_status
+    std::unordered_map<int64_t, std::shared_ptr<TiRtnOrderStatus>>      m_order_map;         //order_id, order_status
+    std::multimap<int64_t, std::shared_ptr<TiRtnOrderStatus>>           m_order_batch_map;   //order_id, batch_order_status
+    std::multimap<int64_t, std::shared_ptr<TiRtnOrderMatch>>            m_matches_map;       //order_id, m_matches_map
 
 public:
     TiGtTraderAccount(TI_BrokerType broker_type, TI_AccountType account, TiTraderCallback* userCb);
@@ -31,8 +32,10 @@ public:
 
 public:
     void enterOrder(std::shared_ptr<TiRtnOrderStatus> order);
+    void enterBatchOrder(std::shared_ptr<TiRtnOrderStatus> order);
     
     TiRtnOrderStatus* getOrderStatus(int64_t order_id);
+    TiRtnOrderStatus* getOrderStatus(int64_t order_id, std::string symbol);
     TiRtnOrderStatus* getOrderStatus(std::string order_stream_id);
 
 };

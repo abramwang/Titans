@@ -1,5 +1,5 @@
 #include "ti_gt_trader_account.h"
-
+#include "datetime.h"
 #include <iostream>
 
 TiGtTraderAccount::TiGtTraderAccount(TI_BrokerType broker_type, TI_AccountType account, TiTraderCallback* userCb)
@@ -13,16 +13,21 @@ TiGtTraderAccount::~TiGtTraderAccount()
 
 };
 
-
 void TiGtTraderAccount::OnCommonJsonRespones(const json* rspData, int req_id, bool isLast, int err, const char* err_str)
 {
     std::cout << *rspData << std::endl;
 };
 
-void TiGtTraderAccount::enterOrder(std::shared_ptr<TiRtnOrderStatus> order)
+void TiGtTraderAccount::enterOrder(std::shared_ptr<TiRtnOrderStatus> order_ptr)
 {
-   m_order_map[order->nOrderId] = order;
-   m_order_sys_map[order->szOrderStreamId] = order;
+    m_order_map[order_ptr->nOrderId] = order_ptr;
+    m_order_sys_map[order_ptr->szOrderStreamId] = order_ptr;
+};
+
+void TiGtTraderAccount::enterBatchOrder(std::shared_ptr<TiRtnOrderStatus> order_ptr)
+{
+    std::cout << "enterBatchOrder: " << order_ptr->nOrderId << ", " << order_ptr->szSymbol << std::endl;
+    m_order_batch_map.insert(std::pair<int64_t, std::shared_ptr<TiRtnOrderStatus>>(order_ptr->nOrderId, order_ptr));
 };
 
 TiRtnOrderStatus* TiGtTraderAccount::getOrderStatus(int64_t order_id)
@@ -32,11 +37,19 @@ TiRtnOrderStatus* TiGtTraderAccount::getOrderStatus(int64_t order_id)
     {
         return iter->second.get();
     }
-    std::shared_ptr<TiRtnOrderStatus> order_ptr = std::make_shared<TiRtnOrderStatus>();
-    memset(order_ptr.get(), 0, sizeof(TiRtnOrderStatus));
-    order_ptr->nOrderId = order_id;
-    m_order_map[order_ptr->nOrderId] = order_ptr;
-    return order_ptr.get();
+    return NULL;
+};
+
+TiRtnOrderStatus* TiGtTraderAccount::getOrderStatus(int64_t order_id, std::string symbol)
+{
+    auto range = m_order_batch_map.equal_range(order_id);
+    for (auto it = range.first; it != range.second; ++it) {
+        if (it->second->szSymbol == symbol)
+        {
+            return it->second.get();
+        }
+    }
+    return NULL;
 };
 
 TiRtnOrderStatus* TiGtTraderAccount::getOrderStatus(std::string order_stream_id)
@@ -49,6 +62,7 @@ TiRtnOrderStatus* TiGtTraderAccount::getOrderStatus(std::string order_stream_id)
     std::shared_ptr<TiRtnOrderStatus> order_ptr = std::make_shared<TiRtnOrderStatus>();
     memset(order_ptr.get(), 0, sizeof(TiRtnOrderStatus));
     strcpy(order_ptr->szOrderStreamId, order_stream_id.c_str());
+    order_ptr->nInsertTimestamp = datetime::get_now_timestamp_ms();
     m_order_sys_map[order_ptr->szOrderStreamId] = order_ptr;
     return order_ptr.get();
 };

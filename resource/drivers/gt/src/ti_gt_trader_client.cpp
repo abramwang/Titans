@@ -180,6 +180,21 @@ void TiGtTraderClient::onOrder(int nRequestId, int orderID, const char* strRemar
         << "\n    RequestId: " << nRequestId  
         << "\n    errorMsg: " << error.errorMsg()
         << endl;
+    
+    auto range = m_order_batch_req_map.equal_range(nRequestId);
+
+    for (auto it = range.first; it != range.second; ++it) {
+        it->second->nInsertTimestamp = datetime::get_now_timestamp_ms();
+        it->second->nOrderId = orderID;
+
+        auto account_iter = m_account_map.find(it->second->szAccount);
+        if (account_iter == m_account_map.end())
+        {
+            return;
+        }
+        account_iter->second->enterBatchOrder(it->second);
+    }
+
 };
 
 void TiGtTraderClient::onRtnOrder(const COrderInfo* data)
@@ -204,6 +219,7 @@ void TiGtTraderClient::onRtnOrder(const COrderInfo* data)
         << "\n    成交量：" << data->m_dTradedVolume
         << "\n    撤销者：" << data->m_canceler
         << "\n    指令执行信息：" << data->m_strMsg
+        << "\n    指令执行信息：" << data->m_strRemark
         << endl;
 };
 
@@ -234,8 +250,10 @@ void TiGtTraderClient::onRtnOrderDetail(const COrderDetail* data)
     {
         return;
     }
-
-    TiRtnOrderStatus* order = account_iter->second->getOrderStatus(data->m_strOrderSysID);
+    TiRtnOrderStatus* order = account_iter->second->getOrderStatus(data->m_nOrderID, data->m_strInstrumentID);
+    if(!order){
+        order = account_iter->second->getOrderStatus(data->m_strOrderSysID);
+    }
 
     strcpy(order->szExchange, data->m_strExchangeID);
     strcpy(order->szSymbol, data->m_strInstrumentID);
@@ -265,8 +283,10 @@ void TiGtTraderClient::onRtnOrderDetail(const COrderDetail* data)
     strcpy(order->szOrderStreamId, data->m_strOrderSysID);
     order->nFee = data->m_dFrozenCommission;
 
+
+    std::cout << data->m_strRemark << " " << data->m_nOrderID << " " << data->m_strInstrumentID << " " << data->m_strInstrumentName << std::endl;
     std::cout << datetime::get_format_timestamp_ms(order->nInsertTimestamp) << std::endl;
-    //std::cout << datetime::get_format_timestamp_ms(order->nLastUpdateTimestamp) << std::endl;
+    std::cout << datetime::get_format_timestamp_ms(order->nLastUpdateTimestamp) << std::endl;
     std::cout << datetime::get_format_time_duration_ms(order->nUsedTime) << std::endl;
 
     return;
@@ -496,7 +516,7 @@ int TiGtTraderClient::orderInsertBatch(std::vector<TiReqOrderInsert> &req_vec, s
 
     for(size_t i = 0; i <= req_vec.size(); i++)
     {
-        //req_vec[i].nReqId = nReqId;
+        req_vec[i].nReqId = nReqId;
         strcpy(msg.m_strMarket[i], req_vec[i].szExchange);
         strcpy(msg.m_strInstrument[i], req_vec[i].szSymbol);
         msg.m_nVolume[i] = req_vec[i].nOrderVol;
@@ -516,11 +536,14 @@ int TiGtTraderClient::orderInsertBatch(std::vector<TiReqOrderInsert> &req_vec, s
             msg.m_eOperationType[i] = OPT_ETF_REDEMPTION; 
             break;
         }
+        std::shared_ptr<TiRtnOrderStatus> order_ptr = std::make_shared<TiRtnOrderStatus>();
+        memcpy(order_ptr.get(), &req_vec[i], sizeof(TiReqOrderInsert));
+        m_order_batch_req_map.insert(std::pair<int64_t, std::shared_ptr<TiRtnOrderStatus>>(nReqId, order_ptr));
+        order_ptr->nReqTimestamp = datetime::get_now_timestamp_ms();
     }
     msg.m_nOrderNum = req_vec.size();
     // 投资备注
-    strcpy(msg.m_strRemark, "ti_gt_trader_client");
-
+    sprintf(msg.m_strRemark, "ti_gt_trader_client.order_batch.%d", nReqId);
 
     m_client->order(&msg, nReqId);
     return nReqId;

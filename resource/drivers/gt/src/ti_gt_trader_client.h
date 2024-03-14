@@ -45,6 +45,7 @@ private:
     XtTraderApi* m_client;
 
     std::unordered_map<int64_t, std::shared_ptr<TiRtnOrderStatus>> m_order_req_map;     //req_id, order_status
+    std::multimap<int64_t, std::shared_ptr<TiRtnOrderStatus>> m_order_batch_req_map;    //req_id, batch_order_status
     std::unordered_map<std::string, std::shared_ptr<TiGtTraderAccount>> m_account_map;  //account_id, account
 
     TiTraderCallback* m_cb;
