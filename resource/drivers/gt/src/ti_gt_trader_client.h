@@ -85,7 +85,7 @@ public:
     // @param   isLast 是否为返回最后一条记录，一次请求的结果一般只有一条资金账号信息
     // @param   error 反馈这次查询请求是否有错误
     virtual void onReqAccountDetail(const char* accountId, int nRequestId, const CAccountDetail* data, bool isLast, const XtError& error);
-
+    virtual void onReqSecuAccount(const char* accountID, int nRequestId, const char* accountKey, const CSecuAccount* data, bool isLast, const XtError& error);
 
     virtual void onOrder(int nRequestId, int orderID, const char* strRemark, const XtError& error);
     virtual void onRtnOrder(const COrderInfo* data);

@@ -105,7 +105,7 @@ void TiGtTraderClient::onReqAccountDetail(const char* accountId, int nRequestId,
 {
     json rspData = {
         {"type", "onReqAccountDetail"},
-        {"apt_type", "gt"},
+        {"api_type", "gt"},
         {"account_id", accountId},
         {"data", {
             {"account_id", data->m_strAccountID},
@@ -158,9 +158,12 @@ void TiGtTraderClient::onReqAccountDetail(const char* accountId, int nRequestId,
     auto account_iter = m_account_map.find(accountId);
     if (account_iter != m_account_map.end())
     {
-        account_iter->second->OnCommonJsonRespones(&rspData, nRequestId, data, isLast, error.errorMsg());
+        account_iter->second->OnCommonJsonRespones(&rspData, nRequestId, isLast, error.errorID(), error.errorMsg());
+
+        nReqId ++;
+        m_client->reqSecuAccount(accountId, nReqId);
     }
-    
+
     /* 
     cout << "[onReqAccountDetail]  资金账号 :" << data->m_strAccountID
         << "\n    账号状态:" << data->m_strStatus
@@ -171,7 +174,32 @@ void TiGtTraderClient::onReqAccountDetail(const char* accountId, int nRequestId,
         << "\n    期初权益:" << data->m_dPreBalance
         << endl;
     */
-}
+};
+
+void TiGtTraderClient::onReqSecuAccount(const char* accountID, int nRequestId, const char* accountKey, const CSecuAccount* data, bool isLast, const XtError& error)
+{
+    std::cout << "[onReqSecuAccount]:" << isLast << " " << accountID << " " << nRequestId << " " << accountKey << " " << data  << " " << data->m_strExchangeID << std::endl;
+    if(!data){
+        return;
+    }
+    std::string main_flag = data->m_eMainFlag == MAIN_FLAG_VICE ? "vice" : "main";
+    json rspData = {
+        {"type", "onBatchReqSecuAccount"},
+        {"api_type", "gt"},
+        {"account_id", accountID},
+        {"data", {
+            {"exchange", data->m_strExchangeID},
+            {"security_account", data->m_strSecuAccount},
+            {"main_flag", main_flag },
+        }}
+    };
+
+    auto account_iter = m_account_map.find(accountID);
+    if (account_iter != m_account_map.end())
+    {
+        account_iter->second->OnCommonJsonRespones(&rspData, nRequestId, isLast, error.errorID(), error.errorMsg());
+    }
+};
 
 void TiGtTraderClient::onOrder(int nRequestId, int orderID, const char* strRemark, const XtError& error)
 {
@@ -277,7 +305,7 @@ void TiGtTraderClient::onRtnOrderDetail(const COrderDetail* data)
 
     //order->nInsertTimestamp = datetime::get_timestamp_ms(atoi(data->m_strInsertDate), atoi(data->m_strInsertTime)*1000);
     order->nLastUpdateTimestamp = datetime::get_now_timestamp_ms();
-    order->nUsedTime = order->nInsertTimestamp - order->nReqTimestamp;
+    order->nUsedTime = order->nLastUpdateTimestamp - order->nReqTimestamp;
 
     order->nDealtVol = data->m_nTradedVolume;
     strcpy(order->szOrderStreamId, data->m_strOrderSysID);
@@ -543,7 +571,7 @@ int TiGtTraderClient::orderInsertBatch(std::vector<TiReqOrderInsert> &req_vec, s
     }
     msg.m_nOrderNum = req_vec.size();
     // 投资备注
-    sprintf(msg.m_strRemark, "ti_gt_trader_client.order_batch.%d", nReqId);
+    sprintf(msg.m_strRemark, "ti_gt_trader_client.order_batch");
 
     m_client->order(&msg, nReqId);
     return nReqId;
