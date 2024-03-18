@@ -8,7 +8,7 @@ __all__ = [
 __author__ = 'bo wang <bo.wang@sci-inv.cn>'
 
 
-__history_root__ = "/home/ti_data/"
+__history_root__ = "http://172.17.0.1"
 
 """
 通过 按市场和日期存储的数据获取数据
@@ -26,8 +26,6 @@ def GetDayBar(asset_type_:str, symbols_, start_date_, end_date_):
 
     
     file_path = f"{__history_root__}/ti_bar_data/ti.1d.{asset_type_}.parquet"
-    if not os.path.exists(file_path):
-        return -1
     
     symbols_list = []
     if type(symbols_).__name__ == "str":
@@ -62,8 +60,6 @@ def GetBar(date_, exchange_:str, symbols_, period_ = "1m"):
         _date = date_
     
     file_path = f"{__history_root__}/ti_bar_data/ti.{period_}.{exchange_}.{_date}.parquet"
-    if not os.path.exists(file_path):
-        return -1
     
     symbols_list = []
     if type(symbols_).__name__ == "str":
@@ -93,8 +89,6 @@ def GetMarket(date_, exchange_:str, symbols_, dateType_:str, columns_:list = [] 
         _date = date_
     
     file_path = f"{__history_root__}/ti_market_data/ti.{dateType_}.{exchange_}.{_date}.parquet"
-    if not os.path.exists(file_path):
-        return -1
     
     symbols_list = []
     if type(symbols_).__name__ == "str":
@@ -141,10 +135,9 @@ def GetBarBySymbol(exchange_:str, symbol_:str, period_:str, start_time_, end_tim
     year_group = date_range.groupby(date_range.year)
     for year in year_group:
         file_path = f"{__history_root__}/ti_bar_data_by_symbol/ti.{period_}.{exchange_}.{year}.{symbol_}.parquet"
-        if not os.path.exists(file_path):
-            continue
+        #if not os.path.exists(file_path):
+        #    continue
         file_list.append(file_path)
-    
 
     if not file_list:
         return -1
