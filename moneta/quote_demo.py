@@ -10,8 +10,15 @@ def cb(type_, data_):
     print(type_, data_)
     
 def main():
+    data.SetRootPath("http://172.17.0.1")
+
+    df = data.GetBaseData(["600000", "000001"], "ex_factor")
+    print(df)
+
+    return
     #df = data.GetBar(datetime(2024,1,16), "SH", "600000", "1m")
     #df = data.GetBar(20240116, "SH", "600000", "1m")
+    
     #df = data.GetMarket(20240116, "BNB", "*", "trades")
 
     #df = data.GetMarket("20230309", "SZ", "*", "matches", columns_=["timestamp", "exchange", "symbol", "price", "volume"])

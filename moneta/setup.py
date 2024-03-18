@@ -23,6 +23,8 @@ setup(
         "redis >= 1.0.0",
         "pandas >= 1.0.0",
         "pyarrow >= 3.0.0",
+        "requests >= 2.0.0",
+        "lxml >= 5.0.0",
     ],
     python_requires='>=3',
     classifiers=[

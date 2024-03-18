@@ -3,12 +3,21 @@
 
 __version__ = '0.1.0'
 __all__ = [
-    'GetDayBar', 'GetBar', 'GetMarket'
+    'SetRootPath', 'GetDayBar', 'GetBar', 'GetMarket', 'GetBaseData'
 ]
 __author__ = 'bo wang <bo.wang@sci-inv.cn>'
 
 
 __history_root__ = "http://172.17.0.1"
+__history_root_type__ = "URL"
+
+
+# 设置数据存储的根目录
+def SetRootPath(root):
+    global __history_root__, __history_root_type__
+    __history_root__ = root
+    from pymoneta.data.tools import check_string
+    __history_root_type__ = check_string(__history_root__)
 
 """
 通过 按市场和日期存储的数据获取数据
@@ -152,3 +161,35 @@ def GetBarBySymbol(exchange_:str, symbol_:str, period_:str, start_time_, end_tim
     df = df[df["timestamp"] < end_time]
 
     return df
+
+#获取基础数据
+def GetBaseData(symbols_, data_name):
+    global __history_root__, __history_root_type__
+    if not __history_root__:
+        return -1
+    import os
+    import pandas as pd
+    from pymoneta.data.tools import get_file_list_in_path
+   
+    file_list = get_file_list_in_path(f"{__history_root__}/ti_setting_data")
+
+    data_file = f"ti.{data_name}.parquet"
+    if data_file not in file_list:
+        return -1
+    file_path = f"{__history_root__}/ti_setting_data/{data_file}"
+
+    df = pd.read_parquet(file_path)
+
+    symbols_list = []
+    if type(symbols_).__name__ == "str":
+        if symbols_ == "*":
+            symbols_list = []
+        else:
+            symbols_list = [symbols_]
+    elif type(symbols_).__name__ == "list":
+        symbols_list = symbols_
+
+    if "symbol" in df.index.names:
+        return df[df.index.get_level_values("symbol").isin(symbols_list)]
+    else:
+        return df
