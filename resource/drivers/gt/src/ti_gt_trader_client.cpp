@@ -159,9 +159,8 @@ void TiGtTraderClient::onReqAccountDetail(const char* accountId, int nRequestId,
     if (account_iter != m_account_map.end())
     {
         account_iter->second->OnCommonJsonRespones(&rspData, nRequestId, isLast, error.errorID(), error.errorMsg());
-
-        nReqId ++;
-        m_client->reqSecuAccount(accountId, nReqId);
+        //nReqId ++;
+        //m_client->reqSecuAccount(accountId, nReqId);
     }
 
     /* 
@@ -273,6 +272,11 @@ void TiGtTraderClient::onDirectOrder(int nRequestId, const char* strOrderSysID, 
 
 void TiGtTraderClient::onRtnOrderDetail(const COrderDetail* data)
 {
+    if (data == NULL)
+    {
+        return;
+    }
+
     auto account_iter = m_account_map.find(data->m_strAccountID);
     if (account_iter == m_account_map.end())
     {
@@ -303,7 +307,6 @@ void TiGtTraderClient::onRtnOrderDetail(const COrderDetail* data)
         }
     }
 
-    //order->nInsertTimestamp = datetime::get_timestamp_ms(atoi(data->m_strInsertDate), atoi(data->m_strInsertTime)*1000);
     order->nLastUpdateTimestamp = datetime::get_now_timestamp_ms();
     order->nUsedTime = order->nLastUpdateTimestamp - order->nReqTimestamp;
 
@@ -311,74 +314,39 @@ void TiGtTraderClient::onRtnOrderDetail(const COrderDetail* data)
     strcpy(order->szOrderStreamId, data->m_strOrderSysID);
     order->nFee = data->m_dFrozenCommission;
 
-
-    std::cout << data->m_strRemark << " " << data->m_nOrderID << " " << data->m_strInstrumentID << " " << data->m_strInstrumentName << std::endl;
-    std::cout << datetime::get_format_timestamp_ms(order->nInsertTimestamp) << std::endl;
-    std::cout << datetime::get_format_timestamp_ms(order->nLastUpdateTimestamp) << std::endl;
-    std::cout << datetime::get_format_time_duration_ms(order->nUsedTime) << std::endl;
-
+    m_cb->OnRtnOrderStatusEvent(order);
     return;
-    
-    json out;
-    TiTraderFormater::FormatOrderStatus(order, out);
-
-    std::cout << out << std::endl;
-
-    //order->nTradeSideType = getTradeSide(data->);
-
-
-    string entrust_status;
-    switch(data->m_eOrderStatus)
-    {
-    case ENTRUST_STATUS_UNREPORTED:  entrust_status = "未报";  break;
-    case ENTRUST_STATUS_WAIT_REPORTING:  entrust_status = "待报"; break;
-    case ENTRUST_STATUS_REPORTED:        entrust_status = "已报"; break;
-    case ENTRUST_STATUS_REPORTED_CANCEL: entrust_status = "已报待撤";  break;
-    case ENTRUST_STATUS_PARTSUCC_CANCEL: entrust_status = "部成待撤";  break;
-    case ENTRUST_STATUS_PART_CANCEL:     entrust_status = "部撤";  break;
-    case ENTRUST_STATUS_CANCELED:        entrust_status = "已撤";  break;
-    case ENTRUST_STATUS_PART_SUCC:       entrust_status = "部成";  break;
-    case ENTRUST_STATUS_SUCCEEDED:       entrust_status = "已成";  break;
-    case ENTRUST_STATUS_JUNK:            entrust_status = "废单";  break;
-    }
-    if (data == NULL)
-    {
-        return;
-    }
-    std::thread::id threadId = std::this_thread::get_id();
-    std::cout << "TiGtTraderClient::onRtnOrderDetail" << "Current thread ID: " << threadId << std::endl;
-    cout << "[onRtnOrderDetail]"
-        << "\n    委托号：" << data->m_strOrderSysID
-        << "\n    委托状态：" << entrust_status
-        << "\n    已成交量：" << data->m_nTradedVolume 
-        << "\n    成交均价：" << data->m_dAveragePrice 
-        << "\n    成交额: " << data->m_dTradeAmount 
-        << "\n    市场ID：" << data->m_strExchangeID
-        << "\n    产品ID：" << data->m_strProductID
-        << "\n    股票/期货代码：" << data->m_strInstrumentID
-        << "\n    冻结保证金：" << data->m_dFrozenMargin
-        << "\n    冻结手续费：" << data->m_dFrozenCommission
-        << "\n    ErrorID：" << data->m_nErrorID
-        << "\n    ErrorMsg: " << data->m_strErrorMsg
-        << endl;
-
 }
 
 void TiGtTraderClient::onRtnDealDetail(const CDealDetail* data)
 {
-    return;
     if (data == NULL)
     {
         return;
     }
-    std::thread::id threadId = std::this_thread::get_id();
-    std::cout << "TiGtTraderClient::onRtnDealDetail" << "Current thread ID: " << threadId << std::endl;
-    cout << "[onRtnDealDetail]"
-        << "\n    orderId: " << data->m_nOrderID 
-        << "\n    成交量： " << data->m_nVolume
-        << "\n    成交额: " << data->m_dAmount
-        << "\n    成交均价： " << data->m_dAveragePrice
-        << endl;
+
+    auto account_iter = m_account_map.find(data->m_strAccountID);
+    if (account_iter == m_account_map.end())
+    {
+        return;
+    }
+    TiRtnOrderStatus* order_ptr = account_iter->second->getOrderStatus(data->m_strOrderSysID);
+    
+    std::shared_ptr<TiRtnOrderMatch> match_ptr = std::make_shared<TiRtnOrderMatch>();
+    memset(match_ptr.get(), 0, sizeof(TiRtnOrderMatch));
+    match_ptr->nOrderId = order_ptr->nOrderId;
+    strncpy(match_ptr->szStreamId, data->m_strOrderSysID, 64);
+    match_ptr->nMatchPrice = data->m_dAveragePrice;
+    match_ptr->nMatchVol = data->m_nVolume;
+    strcpy(match_ptr->szSymbol, data->m_strInstrumentID);
+    strcpy(match_ptr->szExchange, data->m_strExchangeID);
+
+    match_ptr->nMatchTimestamp = datetime::get_timestamp_ms(atoi(data->m_strTradeDate), atoi(data->m_strTradeTime)*1000);
+    match_ptr->nTradeSideType = convertTradeSide(data->m_nDirection);
+
+    account_iter->second->enterMatch(match_ptr);
+
+    m_cb->OnRtnOrderMatchEvent(match_ptr.get());
 }
 
 void TiGtTraderClient::onRtnOrderError(const COrderError* data)
@@ -468,7 +436,7 @@ TI_OrderStatusType TiGtTraderClient::convertOrderStatus(EEntrustStatus status)
     default:
         return TI_OrderStatusType_unAccept;
     }
-   return TI_OrderStatusType_unAccept;
+    return TI_OrderStatusType_unAccept;
 };
 
 TI_TradeSideType TiGtTraderClient::convertTradeSide(EOperationType operation)
@@ -483,6 +451,19 @@ TI_TradeSideType TiGtTraderClient::convertTradeSide(EOperationType operation)
         return TI_TradeSideType_Purchase;
     case OPT_ETF_REDEMPTION:
         return TI_TradeSideType_Redemption;
+    default:
+        return TI_TradeSideType_Default;
+    }
+};
+
+TI_TradeSideType TiGtTraderClient::convertTradeSide(EEntrustBS direction)
+{
+    switch(direction)
+    {
+    case ENTRUST_BUY:
+        return TI_TradeSideType_Buy;
+    case ENTRUST_SELL:
+        return TI_TradeSideType_Sell;
     default:
         return TI_TradeSideType_Default;
     }

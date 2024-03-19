@@ -111,6 +111,7 @@ private:
 
     TI_OrderStatusType convertOrderStatus(EEntrustStatus status);
     TI_TradeSideType convertTradeSide(EOperationType operation);
+    TI_TradeSideType convertTradeSide(EEntrustBS direction);
     
 public:
 	void connect();

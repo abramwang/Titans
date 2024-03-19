@@ -26,8 +26,12 @@ void TiGtTraderAccount::enterOrder(std::shared_ptr<TiRtnOrderStatus> order_ptr)
 
 void TiGtTraderAccount::enterBatchOrder(std::shared_ptr<TiRtnOrderStatus> order_ptr)
 {
-    std::cout << "enterBatchOrder: " << order_ptr->nOrderId << ", " << order_ptr->szSymbol << std::endl;
     m_order_batch_map.insert(std::pair<int64_t, std::shared_ptr<TiRtnOrderStatus>>(order_ptr->nOrderId, order_ptr));
+};
+
+void TiGtTraderAccount::enterMatch(std::shared_ptr<TiRtnOrderMatch> match_ptr)
+{
+    m_matches_map.insert(std::pair<std::string, std::shared_ptr<TiRtnOrderMatch>>(match_ptr->szStreamId, match_ptr));
 };
 
 TiRtnOrderStatus* TiGtTraderAccount::getOrderStatus(int64_t order_id)
@@ -39,6 +43,7 @@ TiRtnOrderStatus* TiGtTraderAccount::getOrderStatus(int64_t order_id)
     }
     return NULL;
 };
+
 
 TiRtnOrderStatus* TiGtTraderAccount::getOrderStatus(int64_t order_id, std::string symbol)
 {
