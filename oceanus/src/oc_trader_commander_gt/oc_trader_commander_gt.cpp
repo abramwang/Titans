@@ -323,6 +323,7 @@ void OcTraderCommanderGt::enterOrder(json &msg)
     req.nOffsetType = std::string(msg["nOffsetType"]).c_str()[0];
     req.nOrderPrice = msg["nOrderPrice"];
     req.nOrderVol = msg["nOrderVol"];
+    strcpy(req.szUseStr, "oc_trader_commander_gt");
 
     m_client->orderInsert(&req);
 };
@@ -348,6 +349,7 @@ void OcTraderCommanderGt::enterOrders(json &msg)
         req.nOffsetType = std::string((*iter)["nOffsetType"]).c_str()[0];
         req.nOrderPrice = (*iter)["nOrderPrice"];
         req.nOrderVol = (*iter)["nOrderVol"];
+        strcpy(req.szUseStr, "oc_trader_commander_gt");
         
         req_vec.push_back(req);
 

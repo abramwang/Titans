@@ -45,6 +45,7 @@ void TiTraderFormater::FormatOrderStatus(const TiRtnOrderStatus* pData, json& j)
         {"szInsertTime" , datetime::get_format_timestamp_ms(pData->nInsertTimestamp)},
         {"szLastUpdateTime" , datetime::get_format_timestamp_ms(pData->nLastUpdateTimestamp)},
         {"szUsedTime" , datetime::get_format_time_duration_ms(pData->nUsedTime)},
+        {"szUseStr" , pData->szUseStr},
         {"nFee" , pData->nFee},
         {"szErr" , pData->szErr},
     };

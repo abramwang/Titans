@@ -661,14 +661,15 @@ int TiGtTraderClient::orderInsertBatch(std::vector<TiReqOrderInsert> &req_vec, s
             msg.m_eOperationType[i] = OPT_ETF_REDEMPTION; 
             break;
         }
+        // 投资备注
+        strcpy(msg.m_strRemark, req_vec[i].szUseStr);
+
         std::shared_ptr<TiRtnOrderStatus> order_ptr = std::make_shared<TiRtnOrderStatus>();
         memcpy(order_ptr.get(), &req_vec[i], sizeof(TiReqOrderInsert));
         m_order_batch_req_map.insert(std::pair<int64_t, std::shared_ptr<TiRtnOrderStatus>>(nReqId, order_ptr));
         order_ptr->nReqTimestamp = datetime::get_now_timestamp_ms();
     }
     msg.m_nOrderNum = req_vec.size();
-    // 投资备注
-    sprintf(msg.m_strRemark, "ti_gt_trader_client.order_batch");
 
     m_client->order(&msg, nReqId);
     return nReqId;
@@ -723,7 +724,7 @@ int TiGtTraderClient::orderInsert(TiReqOrderInsert* req){
     msg.m_eHedgeFlag = HEDGE_FLAG_SPECULATION;
 
     // 投资备注
-    strcpy(msg.m_strRemark, "ti_gt_trader_client");
+    strcpy(msg.m_strRemark, req->szUseStr);
     
     std::shared_ptr<TiRtnOrderStatus> order = std::make_shared<TiRtnOrderStatus>();
     memcpy(order.get(), req, sizeof(TiReqOrderInsert));
