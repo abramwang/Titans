@@ -3,8 +3,8 @@
 
 #include "ti_trader_callback.h"
 
-class TiGtTraderAccount: 
-    public TiTraderCallback
+class TiGtTraderAccount
+    : public TiTraderCallback
 {
 private:
     TiTraderCallback* m_cb;
@@ -29,7 +29,6 @@ public:
 
     void OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData){};
     void OnRtnOrderMatchEvent(const TiRtnOrderMatch* pData){};
-
 public:
     void enterOrder(std::shared_ptr<TiRtnOrderStatus> order_ptr);
     void enterBatchOrder(std::shared_ptr<TiRtnOrderStatus> order_ptr);

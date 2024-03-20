@@ -200,6 +200,89 @@ void TiGtTraderClient::onReqSecuAccount(const char* accountID, int nRequestId, c
     }
 };
 
+void TiGtTraderClient::onReqOrderDetail(const char* accountID, int nRequestId, const COrderDetail* data, bool isLast, const XtError& error)
+{
+    std::cout << "[onReqOrderDetail]:" << isLast << " " << accountID << " " << nRequestId << " " << data << std::endl;
+
+    if (data == NULL)
+    {
+        return;
+    }
+
+    auto account_iter = m_account_map.find(data->m_strAccountID);
+    if (account_iter == m_account_map.end())
+    {
+        return;
+    }
+    TiRtnOrderStatus* order = account_iter->second->getOrderStatus(data->m_nOrderID, data->m_strInstrumentID);
+    if(!order){
+        order = account_iter->second->getOrderStatus(data->m_strOrderSysID);
+    }
+
+    strcpy(order->szExchange, data->m_strExchangeID);
+    strcpy(order->szSymbol, data->m_strInstrumentID);
+    strcpy(order->szAccount, data->m_strAccountID);
+
+    order->nOrderPrice = data->m_dLimitPrice;
+    order->nOrderVol = data->m_nTotalVolume;
+    order->nSubmitVol = data->m_nTotalVolume;
+    order->nDealtPrice = data->m_dAveragePrice;
+    order->nDealtVol = data->m_nTradedVolume;
+    order->nStatus = convertOrderStatus(data->m_eOrderStatus);
+
+    if (order->nStatus < 0)
+    {
+        if (order->nStatus == TI_OrderStatusType_fail){
+            order->nInValid = order->nTotalWithDrawnVol = order->nOrderVol - order->nDealtVol;
+        }else{
+            order->nTotalWithDrawnVol = order->nOrderVol - order->nDealtVol;
+        }
+    }
+
+    order->nLastUpdateTimestamp = datetime::get_now_timestamp_ms();
+
+    order->nUsedTime = order->nReqTimestamp?(order->nLastUpdateTimestamp - order->nReqTimestamp):(order->nLastUpdateTimestamp - order->nInsertTimestamp);
+
+    order->nDealtVol = data->m_nTradedVolume;
+    strcpy(order->szOrderStreamId, data->m_strOrderSysID);
+    order->nFee = data->m_dFrozenCommission;
+
+    m_cb->OnRspQryOrder(order, isLast);
+};
+
+void TiGtTraderClient::onReqDealDetail(const char* accountID, int nRequestId, const CDealDetail* data, bool isLast, const XtError& error)
+{
+    std::cout << "[onReqDealDetail]:" << isLast << " " << accountID << " " << nRequestId << " " << data << std::endl;
+
+    if (data == NULL)
+    {
+        return;
+    }
+
+    auto account_iter = m_account_map.find(data->m_strAccountID);
+    if (account_iter == m_account_map.end())
+    {
+        return;
+    }
+    TiRtnOrderStatus* order_ptr = account_iter->second->getOrderStatus(data->m_strOrderSysID);
+    
+    std::shared_ptr<TiRtnOrderMatch> match_ptr = std::make_shared<TiRtnOrderMatch>();
+    memset(match_ptr.get(), 0, sizeof(TiRtnOrderMatch));
+    match_ptr->nOrderId = order_ptr->nOrderId;
+    strncpy(match_ptr->szStreamId, data->m_strOrderSysID, 64);
+    match_ptr->nMatchPrice = data->m_dAveragePrice;
+    match_ptr->nMatchVol = data->m_nVolume;
+    strcpy(match_ptr->szSymbol, data->m_strInstrumentID);
+    strcpy(match_ptr->szExchange, data->m_strExchangeID);
+
+    match_ptr->nMatchTimestamp = datetime::get_timestamp_ms(atoi(data->m_strTradeDate), atoi(data->m_strTradeTime)*1000);
+    match_ptr->nTradeSideType = convertTradeSide(data->m_nDirection);
+
+    account_iter->second->enterMatch(match_ptr);
+
+    m_cb->OnRspQryMatch(match_ptr.get(), isLast);
+};
+
 void TiGtTraderClient::onOrder(int nRequestId, int orderID, const char* strRemark, const XtError& error)
 {
     cout << "[onOrder] isSuccess: " << (error.isSuccess()?"true":"false")
@@ -308,7 +391,7 @@ void TiGtTraderClient::onRtnOrderDetail(const COrderDetail* data)
     }
 
     order->nLastUpdateTimestamp = datetime::get_now_timestamp_ms();
-    order->nUsedTime = order->nLastUpdateTimestamp - order->nReqTimestamp;
+    order->nUsedTime = order->nReqTimestamp?(order->nLastUpdateTimestamp - order->nReqTimestamp):(order->nLastUpdateTimestamp - order->nInsertTimestamp);
 
     order->nDealtVol = data->m_nTradedVolume;
     strcpy(order->szOrderStreamId, data->m_strOrderSysID);
@@ -625,8 +708,6 @@ int TiGtTraderClient::orderDelete(TiReqOrderDelete* req){
         return -1;
     }
 
-    //TiRtnOrderStatus* order = getOrderStatus(-1, req->nOrderId);
-    
     return nReqId;
 };
 
@@ -651,6 +732,13 @@ int TiGtTraderClient::QueryOrders()
         LOG(INFO) << "[loadConfig] Do not have config info";
         return -1;
     }
+
+    ++nReqId;
+    auto account_iter = m_account_map.begin();
+    for (; account_iter != m_account_map.end(); account_iter++)
+    {
+        m_client->reqOrderDetail(account_iter->first.c_str(), nReqId);
+    }
     
     return nReqId;
 };
@@ -660,6 +748,13 @@ int TiGtTraderClient::QueryMatches()
     if(!m_config){
         LOG(INFO) << "[loadConfig] Do not have config info";
         return -1;
+    }
+
+    ++nReqId;
+    auto account_iter = m_account_map.begin();
+    for (; account_iter != m_account_map.end(); account_iter++)
+    {
+        m_client->reqDealDetail(account_iter->first.c_str(), nReqId);
     }
     
     return nReqId;
