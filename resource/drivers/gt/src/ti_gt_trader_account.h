@@ -14,6 +14,7 @@ private:
     std::multimap<int64_t, std::shared_ptr<TiRtnOrderStatus>>           m_order_batch_map;   //order_id, batch_order_status
     std::multimap<std::string, std::shared_ptr<TiRtnOrderMatch>>        m_matches_map;       //nOrderSysID, m_matches_map
 
+    std::unordered_map<std::string, std::shared_ptr<TiRspQryPosition>>  m_position_map;      //symbol, order_status
 public:
     TiGtTraderAccount(TI_BrokerType broker_type, TI_AccountType account, TiTraderCallback* userCb);
     virtual ~TiGtTraderAccount();
@@ -33,6 +34,7 @@ public:
     void enterOrder(std::shared_ptr<TiRtnOrderStatus> order_ptr);
     void enterBatchOrder(std::shared_ptr<TiRtnOrderStatus> order_ptr);
     void enterMatch(std::shared_ptr<TiRtnOrderMatch> match_ptr);
+    void enterPosition(std::shared_ptr<TiRspQryPosition> position_ptr);
     
     TiRtnOrderStatus* getOrderStatus(int64_t order_id);
     TiRtnOrderStatus* getOrderStatus(int64_t order_id, std::string symbol);

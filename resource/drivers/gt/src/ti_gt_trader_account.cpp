@@ -34,6 +34,11 @@ void TiGtTraderAccount::enterMatch(std::shared_ptr<TiRtnOrderMatch> match_ptr)
     m_matches_map.insert(std::pair<std::string, std::shared_ptr<TiRtnOrderMatch>>(match_ptr->szStreamId, match_ptr));
 };
 
+void TiGtTraderAccount::enterPosition(std::shared_ptr<TiRspQryPosition> position_ptr)
+{
+    m_position_map[position_ptr->szSymbol] = position_ptr;
+};
+
 TiRtnOrderStatus* TiGtTraderAccount::getOrderStatus(int64_t order_id)
 {
     auto iter = m_order_map.find(order_id);

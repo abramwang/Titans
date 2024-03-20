@@ -114,6 +114,10 @@ void OcTraderCommanderGt::OnRspQryMatch(const TiRspQryMatch* pData, bool isLast)
 };
 void OcTraderCommanderGt::OnRspQryPosition(const TiRspQryPosition* pData, bool isLast)
 {
+
+    json j;
+    TiTraderFormater::FormatPosition(pData, j);
+    std::cout << "OnRspQryPosition: " << j << std::endl;
     /*
     for (auto iter = m_workerList.begin(); iter != m_workerList.end(); iter++)
     {

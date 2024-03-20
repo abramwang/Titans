@@ -5,10 +5,20 @@ void TiTraderFormater::FormatOrderDelete(const TiRspOrderDelete* pData, json& j)
 {
 
 };
+
 void TiTraderFormater::FormatPosition(const TiRspQryPosition* pData, json& j)
 {
-
+    j = {
+        {"szSymbol" , pData->szSymbol},
+        {"szExchange" , pData->szExchange},
+        {"szAccount" , pData->szAccount},
+        {"nPosition" , pData->nPosition},
+        {"nProfit" , pData->nProfit},
+        {"nSettledProfit" , pData->nSettledProfit},
+        {"szShareholderId" , pData->szShareholderId},
+    };
 };
+
 void TiTraderFormater::FormatOrderStatus(const TiRtnOrderStatus* pData, json& j)
 {
     char order_id[128];
@@ -25,6 +35,7 @@ void TiTraderFormater::FormatOrderStatus(const TiRtnOrderStatus* pData, json& j)
         {"szReqTimestamp" , pData->nReqTimestamp ? datetime::get_format_timestamp_ms(pData->nReqTimestamp):""},
         {"szOrderId" , order_id},
         {"szOrderStreamId" , pData->szOrderStreamId},
+        {"szShareholderId" , pData->szShareholderId},
         {"nSubmitVol" , pData->nSubmitVol},
         {"nDealtPrice" , pData->nDealtPrice},
         {"nDealtVol" , pData->nDealtVol},
@@ -67,6 +78,7 @@ void TiTraderFormater::FormatOrderStatus(const TiRtnOrderStatus* pData, json& j)
         break;
     }
 };
+
 void TiTraderFormater::FormatOrderMatchEvent(const TiRtnOrderMatch* pData, json& j)
 {
     char order_id[128];
@@ -80,5 +92,6 @@ void TiTraderFormater::FormatOrderMatchEvent(const TiRtnOrderMatch* pData, json&
         {"szExchange" , pData->szExchange},
         {"szMatchTime" , datetime::get_format_timestamp_ms(pData->nMatchTimestamp)},
         {"nTradeSideType" , pData->nTradeSideType},
+        {"szShareholderId" , pData->szShareholderId},
     };
 };

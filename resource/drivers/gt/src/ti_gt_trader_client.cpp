@@ -200,6 +200,34 @@ void TiGtTraderClient::onReqSecuAccount(const char* accountID, int nRequestId, c
     }
 };
 
+void TiGtTraderClient::onReqPositionDetail(const char* accountID, int nRequestId, const CPositionDetail* data, bool isLast, const XtError& error)
+{
+    if (data == NULL)
+    {
+        return;
+    }
+
+    auto account_iter = m_account_map.find(data->m_strAccountID);
+    if (account_iter == m_account_map.end())
+    {
+        return;
+    }
+
+    std::shared_ptr<TiRspQryPosition> position_ptr = std::make_shared<TiRspQryPosition>();
+    account_iter->second->enterPosition(position_ptr);
+
+    strcpy(position_ptr->szSymbol, data->m_strInstrumentID);
+    strcpy(position_ptr->szExchange, data->m_strExchangeID);
+    strcpy(position_ptr->szAccount, data->m_strAccountID);
+    position_ptr->nPosition = data->m_nVolume;
+    position_ptr->nPrice = data->m_dOpenPrice;
+    //position_ptr->nProfit = data->m_dProfitRate;
+    //position_ptr->nSettledProfit = data->m_dProfitRate;
+    strcpy(position_ptr->szShareholderId, data->m_strSecuAccount);
+
+    m_cb->OnRspQryPosition(position_ptr.get(), isLast);
+};
+
 void TiGtTraderClient::onReqOrderDetail(const char* accountID, int nRequestId, const COrderDetail* data, bool isLast, const XtError& error)
 {
     std::cout << "[onReqOrderDetail]:" << isLast << " " << accountID << " " << nRequestId << " " << data << std::endl;
@@ -239,8 +267,9 @@ void TiGtTraderClient::onReqOrderDetail(const char* accountID, int nRequestId, c
         }
     }
 
-    order->nLastUpdateTimestamp = datetime::get_now_timestamp_ms();
+    strcpy(order->szShareholderId, data->m_strSecuAccount);
 
+    order->nLastUpdateTimestamp = datetime::get_now_timestamp_ms();
     order->nUsedTime = order->nReqTimestamp?(order->nLastUpdateTimestamp - order->nReqTimestamp):(order->nLastUpdateTimestamp - order->nInsertTimestamp);
 
     order->nDealtVol = data->m_nTradedVolume;
@@ -274,6 +303,7 @@ void TiGtTraderClient::onReqDealDetail(const char* accountID, int nRequestId, co
     match_ptr->nMatchVol = data->m_nVolume;
     strcpy(match_ptr->szSymbol, data->m_strInstrumentID);
     strcpy(match_ptr->szExchange, data->m_strExchangeID);
+    strcpy(match_ptr->szShareholderId, data->m_strSecuAccount);
 
     match_ptr->nMatchTimestamp = datetime::get_timestamp_ms(atoi(data->m_strTradeDate), atoi(data->m_strTradeTime)*1000);
     match_ptr->nTradeSideType = convertTradeSide(data->m_nDirection);
@@ -390,6 +420,8 @@ void TiGtTraderClient::onRtnOrderDetail(const COrderDetail* data)
         }
     }
 
+    strcpy(order->szShareholderId, data->m_strSecuAccount);
+
     order->nLastUpdateTimestamp = datetime::get_now_timestamp_ms();
     order->nUsedTime = order->nReqTimestamp?(order->nLastUpdateTimestamp - order->nReqTimestamp):(order->nLastUpdateTimestamp - order->nInsertTimestamp);
 
@@ -423,6 +455,7 @@ void TiGtTraderClient::onRtnDealDetail(const CDealDetail* data)
     match_ptr->nMatchVol = data->m_nVolume;
     strcpy(match_ptr->szSymbol, data->m_strInstrumentID);
     strcpy(match_ptr->szExchange, data->m_strExchangeID);
+    strcpy(match_ptr->szShareholderId, data->m_strSecuAccount);
 
     match_ptr->nMatchTimestamp = datetime::get_timestamp_ms(atoi(data->m_strTradeDate), atoi(data->m_strTradeTime)*1000);
     match_ptr->nTradeSideType = convertTradeSide(data->m_nDirection);
@@ -765,6 +798,13 @@ int TiGtTraderClient::QueryPositions()
     if(!m_config){
         LOG(INFO) << "[loadConfig] Do not have config info";
         return -1;
+    }
+
+    ++nReqId;
+    auto account_iter = m_account_map.begin();
+    for (; account_iter != m_account_map.end(); account_iter++)
+    {
+        m_client->reqPositionDetail(account_iter->first.c_str(), nReqId);
     }
 
     return nReqId;

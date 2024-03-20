@@ -298,7 +298,7 @@ def enterOrder_ETF_Redemption():
 #QueryPositions()
 #exit(0)
 #QueryAsset()
-#QueryPositions()
+QueryPositions()
 #QueryOrders()
-QueryMatches()
+#QueryMatches()
 

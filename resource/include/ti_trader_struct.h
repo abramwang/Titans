@@ -90,6 +90,7 @@ struct TiRtnOrderStatus : TiReqOrderInsert
     int64_t            nUsedTime;             //  花费时间 完全成交，或者撤单花费的时间
     double             nFee;                  //  手续费
     TI_OrderIdType     szOrderStreamId;       //  委托编号（broker 或交易所的唯一编号）
+    TI_AccountType     szShareholderId; //  股东代码
 };
 
 /// 撤单
@@ -129,11 +130,14 @@ struct TiReqQryPosition : TiBase_Msg
 /// 持仓查询回调
 struct TiRspQryPosition : TiBase_Msg
 {
-    TI_SymbolType szSymbol;        //  证券合约代码
-    int32_t       nPosition;       //  持仓总量
-    double        nPrice;          //  持仓均价
-    double        nProfit;         //  浮盈（不含手续费）
-    double        nSettledProfit;  //  已结算的盈利（不含手续费）
+    TI_SymbolType    szSymbol;        //  证券合约代码
+    TI_ExchangeType  szExchange;      //  交易所
+    TI_AccountType   szAccount;       //  资金帐号
+    int32_t          nPosition;       //  持仓总量
+    double           nPrice;          //  持仓均价
+    double           nProfit;         //  浮盈（不含手续费）
+    double           nSettledProfit;  //  已结算的盈利（不含手续费）
+    TI_AccountType   szShareholderId; //  股东代码
 };
 
 /// 成交回调通知
@@ -148,6 +152,7 @@ struct TiRtnOrderMatch : TiBase_Msg
     TI_AccountType   szAccount;          //  资金帐号
     int64_t          nMatchTimestamp;    //  成交时间戳
     TI_TradeSideType nTradeSideType;     //  交易类型 买、卖
+    TI_AccountType   szShareholderId;    //  股东代码
 };
 
 /// 委托查询响应
