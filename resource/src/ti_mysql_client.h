@@ -13,7 +13,7 @@ using namespace nlohmann;
 
 class TiMysqlClient
 {
-private:
+protected:
     MYSQL *m_conn;
     std::string m_host;
     u_int32_t m_port;

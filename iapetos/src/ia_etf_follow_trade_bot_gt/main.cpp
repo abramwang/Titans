@@ -5,10 +5,11 @@
 
 #include "ia_etf_follow_trade_bot_gt.h"
 #include "ti_mysql_client.h"
+#include "ia_etf_info_mysql.h"
 
 int main(int argc, char* argv[]) {
 #if 1
-    TiMysqlClient sql_client(
+    IaEtfInfoMysql sql_client(
         "119.13.76.95",
         20000,
         "ustc",
