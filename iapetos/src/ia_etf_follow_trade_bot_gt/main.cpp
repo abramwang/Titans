@@ -3,11 +3,11 @@
 #include <uv.h>
 #include <glog/logging.h>
 
-#include "oc_trader_commander_gt.h"
+#include "ia_etf_follow_trade_bot_gt.h"
 #include "ti_mysql_client.h"
 
 int main(int argc, char* argv[]) {
-#if 0
+#if 1
     TiMysqlClient sql_client(
         "119.13.76.95",
         20000,
@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
 
     uv_loop_t* loop = uv_default_loop();
 
-    OcTraderCommanderGt* commander = new OcTraderCommanderGt(loop, "./config.ini");
+    IaEtfFollowTradeBotGt* commander = new IaEtfFollowTradeBotGt(loop, "./config.ini");
 
     commander->listen();
 }

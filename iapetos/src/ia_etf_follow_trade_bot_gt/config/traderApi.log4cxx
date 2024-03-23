@@ -1,0 +1,24 @@
+﻿log4j.rootLogger=DEBUG, fa
+log4j.logger.TTStdFile=INFO,fa1
+log4j.logger.TTDbgFile=DEBUG,fa2
+
+
+# 文件输出
+log4j.appender.fa1=org.apache.log4j.RollingFileAppender
+log4j.appender.fa1.datePattern='_'yyyy-MM-dd
+log4j.appender.fa1.MaxFileSize=500MB
+log4j.appender.fa1.MaxBackupIndex=10
+log4j.appender.fa1.File=../userdata/log/traderApi.log
+log4j.appender.fa1.Append=true
+log4j.appender.fa1.layout=org.apache.log4j.PatternLayout
+log4j.appender.fa1.layout.ConversionPattern=%d [%p] [%t] %m%n
+
+# 文件输出2
+log4j.appender.fa2=org.apache.log4j.FileAppender
+log4j.appender.fa2.MaxFileSize=500MB 
+log4j.appender.fa2.MaxBackupIndex=10
+log4j.appender.fa2.File=../userdata/log/traderApi_debug.log
+log4j.appender.fa2.Append=true
+log4j.appender.fa2.layout=org.apache.log4j.PatternLayout
+log4j.appender.fa2.layout.ConversionPattern=%d [%p] [%t] %m%n
+
