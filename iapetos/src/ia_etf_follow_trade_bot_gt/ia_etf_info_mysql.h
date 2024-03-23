@@ -15,15 +15,11 @@ public:
         const std::string& szUser,
         const std::string& szPassword,
         const std::string& szDb
-    ):
-        TiMysqlClient(szIp, nPort, szUser, szPassword, szDb)
-    {
+    );
+    ~IaEtfInfoMysql();
 
-    };
-    ~IaEtfInfoMysql()
-    {
-
-    };
+public:
+    void QueryEtfInfoList(std::vector<IaEtfInfo>& etfInfoList);
 };
 
 #endif // __IA_ETF_INFO_MYSQL_H__

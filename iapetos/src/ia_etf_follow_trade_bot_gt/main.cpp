@@ -17,12 +17,15 @@ int main(int argc, char* argv[]) {
         "pcf"
     );
 
+    /*
     json j;
 
     sql_client.query("SELECT * FROM etf_info ORDER BY m_tradeDate DESC LIMIT 100;", j);
 
     //std::cout << j << std::endl;
 
+    */
+   
     std::vector<std::map<std::string, std::string>> result;
     sql_client.query("SELECT * FROM etf_info ORDER BY m_tradeDate DESC LIMIT 100;", result);
 
@@ -35,6 +38,32 @@ int main(int argc, char* argv[]) {
         break;
     }
 
+    std::vector<IaEtfInfo> etfInfoList;
+    sql_client.QueryEtfInfoList(etfInfoList);
+
+    std::cout << etfInfoList.size() << std::endl;
+
+    for (auto& etfInfo : etfInfoList) {
+        std::cout << "etfInfo.m_tradeDate:" << etfInfo.m_tradeDate << std::endl;
+        std::cout << "etfInfo.m_fundId:" << etfInfo.m_fundId << std::endl;
+        std::cout << "etfInfo.m_exchange:" << etfInfo.m_exchange << std::endl;
+        std::cout << "etfInfo.m_company:" << etfInfo.m_company << std::endl;
+        std::cout << "etfInfo.m_fundName:" << etfInfo.m_fundName << std::endl;
+        std::cout << "etfInfo.m_minUnit:" << etfInfo.m_minUnit << std::endl;
+        std::cout << "etfInfo.m_preMinUnitTurnover:" << etfInfo.m_preMinUnitTurnover << std::endl;
+        std::cout << "etfInfo.m_publicEstimatedCashDifference:" << etfInfo.m_publicEstimatedCashDifference << std::endl;
+        std::cout << "etfInfo.m_realEstimatedCashDifference:" << etfInfo.m_realEstimatedCashDifference << std::endl;
+        std::cout << "etfInfo.m_allowCreation:" << etfInfo.m_allowCreation << std::endl;
+        std::cout << "etfInfo.m_allowRedemption:" << etfInfo.m_allowRedemption << std::endl;
+        std::cout << "etfInfo.m_maxCashReplacePercentage:" << etfInfo.m_maxCashReplacePercentage << std::endl;
+        std::cout << "etfInfo.m_maxCreationVol:" << etfInfo.m_maxCreationVol << std::endl;
+        std::cout << "etfInfo.m_maxRedemptionVol:" << etfInfo.m_maxRedemptionVol << std::endl;
+        std::cout << "etfInfo.m_requiredToDiscloseIOPV:" << etfInfo.m_requiredToDiscloseIOPV << std::endl;
+        std::cout << "etfInfo.m_constituentStockNum:" << etfInfo.m_constituentStockNum << std::endl;
+
+
+        break;
+    }
 
     return 0;
 #endif
