@@ -45,6 +45,11 @@ apt install libuv1-dev
 apt install libhiredis-dev
 ```
 
+#### 安装mysql
+```shell
+apt install libmariadb-dev
+```
+
 ```shell
 #安装
 apt-get install libgoogle-glog-dev
@@ -105,6 +110,11 @@ yum --enablerepo=remi install redis
 ### 安装 hiredis
 ```shell
 yum install hiredis-devel -y
+```
+
+#### 安装mysql
+```shell
+yum install mariadb-devel
 ```
 
 ### 安装 Apache Arrow

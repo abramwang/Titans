@@ -130,9 +130,6 @@ public:
     int QueryOrders();
     int QueryMatches();
     int QueryPositions();
-
-    int QueryETFFile();
-    int QueryETFBasket();
     
 };
 

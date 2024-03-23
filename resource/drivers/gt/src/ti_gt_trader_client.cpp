@@ -810,25 +810,3 @@ int TiGtTraderClient::QueryPositions()
 
     return nReqId;
 };
-
-
-int TiGtTraderClient::QueryETFFile()
-{
-    if(!m_config){
-        LOG(INFO) << "[loadConfig] Do not have config info";
-        return -1;
-    }
-
-    return nReqId;
-};
-
-int TiGtTraderClient::QueryETFBasket()
-{
-    if(!m_config){
-        LOG(INFO) << "[loadConfig] Do not have config info";
-        return -1;
-    }
-    
-    return nReqId;
-};
-

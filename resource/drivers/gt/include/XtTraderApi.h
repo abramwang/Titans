@@ -304,7 +304,7 @@ namespace xti
         virtual void reqDealDetail(const char* accountID, int nRequestId, int nOrderID, const char* accountKey = "") = 0;
 
         /**
-        * @brief 请求账号持仓明细信息
+        * @brief 请求账号持仓明细信息，供期货使用
         * @note 调用此函数后，回调 onReqPositionDetail
         * @param [in] accountID 账号ID
         * @param [in] nRequestId 客户自己维护的请求顺序ID
@@ -313,7 +313,7 @@ namespace xti
         virtual void reqPositionDetail(const char* accountID, int nRequestId, const char* accountKey = "") = 0;
 
         /**
-        * @brief 同步请求账号持仓明细信息
+        * @brief 同步请求账号持仓明细信息 ，供期货使用
         * @note 调用此函数后，回调 CPositionDetail
         * @param [in] accountID 账号ID
         * @param [in] error 错误信息，用于接收同步请求时的错误信息
@@ -322,7 +322,7 @@ namespace xti
         virtual std::vector<xti::CPositionDetail> reqPositionDetailSync(const char* accountID, XtError& error, const char* accountKey = "") = 0;
 
         /**
-        * @brief 同步请求账号持仓明细信息
+        * @brief 同步请求账号持仓明细信息，供期货使用
         * @note 调用此函数后，回调 onReqPositionDetail
         * @param [in] accountID 账号ID
         * @param [in] nRequestId 客户自己维护的请求顺序ID

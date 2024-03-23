@@ -204,6 +204,7 @@ namespace xti
         char                        m_strAccountKey[64];    ///< 账号key
         char                        m_strStrategyID[32];    ///< 收益互换策略ID
         char                        m_strSecuAccount[32];   ///< 股东号
+        char                        m_strCombID[32];        ///< 组合持仓编号，用于解除组合策略
     };
 
     ///< 成交信息
@@ -239,6 +240,7 @@ namespace xti
         char                m_strSecuAccount[32];       ///< 股东号
         int                 m_nProductId;               ///< 迅投产品ID
         char                m_strProductName[64];       ///< 迅投产品名称
+        char                m_strCombID[32];            ///< 组合持仓编号，用于解除组合策略
     };
 
     ///< 成交统计
@@ -523,7 +525,7 @@ namespace xti
     {
         CIntelligentAlgorithmOrder();
         ~CIntelligentAlgorithmOrder();
-        char                    m_strAccountID[32];             ///< 账号
+        char                    m_strAccountID[32];             ///< 账号，如果是多账号下单，该字段无意义
         char                    m_strMarket[32];                ///< 市场
         char                    m_strInstrument[32];            ///< 合约
         char                    m_strOrderType[32];             ///< 算法名称，VWAP，TWAP，VP，PINLINE，DMA，FLOAT，MSO，SWITCH，ICEBERG，MOC，GRID，VWAPPLUS，MOO，IS，STWAP，SLOS，VPPLUS，XTFAST，SLOH，MOOPLUS，IVWAP，VWAPPLUS2
@@ -610,27 +612,35 @@ namespace xti
     {
         CGroupOrder();
         ~CGroupOrder();
-        CAlgorithmOrder  m_orderParam;               ///< 下单配置
+        CAlgorithmOrder  m_orderParam;                ///< 下单配置
         char              m_strMarket[1000][32];      ///< 市场列表
         char              m_strInstrument[1000][32];  ///< 证券代码
         int               m_nVolume[1000];            ///< 每只股票的下单量
         EOperationType    m_eOperationType[1000];     ///< 每只股票的下单类型
-        int               m_nOrderNum;               ///< 股票只数
-        char              m_strRemark[128];          ///< 投资备注
+        int               m_nOrderNum;                ///< 股票只数
+        char              m_strRemark[128];           ///< 投资备注
     };
 
-    ///< 算法组合单下单参数
+    ///< 智能算法组合单下单参数
     struct XT_API_EXPORT CAlgGroupOrder
     {
+        //说明：使用多资金账户下单，必须保证每个合约的买卖方向一致性。
+        //      每个账户对应的每个合约必须保证唯一性。
+        //      单账号多合约可以选择买入卖出双方向。
+        //      单账号多合约是组合单，多账号多合约也是组合单，多账号单合约只是批量单，在对应业务界面展示。
         CAlgGroupOrder();
         ~CAlgGroupOrder();
-        CIntelligentAlgorithmOrder    m_orderParam;              ///< 下单配置
+        CIntelligentAlgorithmOrder    m_orderParam;               ///< 下单配置
         char                          m_strMarket[1000][32];      ///< 市场列表
         char                          m_strInstrument[1000][32];  ///< 证券代码
         int                           m_nVolume[1000];            ///< 每只股票的下单量
         EOperationType                m_eOperationType[1000];     ///< 每只股票的下单类型
-        int                           m_nOrderNum;               ///< 股票只数
-        char                          m_strRemark[128];          ///< 投资备注
+        //组合单兼容多资金账号组合下单功能，如果是单账号组合单，m_strAccountKey可不填，如果是多账号下单，m_strAccountKey必填，否则会导致下单异常
+        char                          m_strAccountKey[1000][64];  ///< 每个合约的下单资金账号Key
+        double                        m_dMaxPartRate[1000];       ///< 量比比例, 用户设定, 当MaxPartRate==100%, 表示没有限制，如果量比比例全都相同可以只填写CIntelligentAlgorithmOrder里面的m_dMaxPartRate
+
+        int                           m_nOrderNum;                ///< 股票只数
+        char                          m_strRemark[128];           ///< 投资备注
     };
 
     ///< 外部算法组合单下单参数
@@ -668,9 +678,13 @@ namespace xti
     ///< 普通组合单下单参数
     struct XT_API_EXPORT COrdinaryGroupOrder
     {
+        //说明：使用多资金账户下单，必须保证每个合约的买卖方向一致性。
+        //      每个账户对应的每个合约必须保证唯一性。
+        //      单账号多合约可以选择买入卖出双方向。
+        //      单账号多合约是组合单，多账号多合约也是组合单，多账号单合约只是批量单，在对应业务界面展示。
         COrdinaryGroupOrder();
         ~COrdinaryGroupOrder();
-        char                          m_strAccountID[32];        ///< 资金账户ID，如果为子账户，则为子账户ID
+        char                          m_strAccountID[32];        ///< 资金账户ID，如果为子账户，则为子账户ID ，如果是多账号下单，该字段无意义
         double                        m_dSuperPriceRate;         ///< 单笔超价百分比
         EPriceType                    m_ePriceType;              ///< 报价方式： 指定价，最新价 对手价……
         EHedgeFlagType                m_eHedgeFlag;              ///< 套利标志
@@ -683,11 +697,15 @@ namespace xti
         int                           m_nVolume[1000];            ///< 每只股票的下单量
         double                        m_dPrice[1000];             ///< 每只股票的下单价格
         EOperationType                m_eOperationType[1000];     ///< 每只股票的下单类型
+        //组合单兼容多资金账号组合下单功能，如果是单账号组合单，m_strAccountKey可不填，如果是多账号下单，m_strAccountKey必填，否则会导致下单异常
+        char                          m_strAccountKey[1000][64]; ///< 每个合约的下单资金账号Key
         int                           m_nOrderNum;               ///< 股票只数
 
         char                          m_strRemark[128];          ///< 投资备注
         double                        m_dSuperPrice;             ///< 单笔超价,和m_dSuperPriceRate只用设置一个，优先使用m_dSuperPriceRate
         char                          m_strStrategyID[32];       ///< 收益互换策略ID
+
+        
     };
 
     ///< 两融负债信息
@@ -1190,6 +1208,7 @@ namespace xti
         double          m_dOptExercisePrice;                                ///< 期权行权价
         int             m_nCallOrPut;                                       ///< 合约种类(个股期权：0认购，1认沽)
         double          m_dMarginUnit;                                      ///< 保证金单位
+        EStockType      m_eStockType;                                       ///< 证券类别
     };
 
     ///< 查询可下单量

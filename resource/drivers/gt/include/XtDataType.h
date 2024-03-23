@@ -356,12 +356,13 @@ namespace xti
         OCS_RUNNING,                ///< 运行中
         OCS_CANCELING,              ///< 撤销中
         OCS_FINISHED,               ///< 已完成
-        OCS_STOPPED,                ///< 已停止
+        OCS_STOPPED,                ///< 已撤销
         OCS_FROCE_COMPLETED,        ///< 强制撤销
         OCS_CHECKFAILED,            ///< 风控驳回
         OCS_CANCELING_APPROVING,    ///< 撤销审批中
         OCS_CANCELING_REJECTED,     ///< 撤销驳回
         OCS_PAUSE_PAUSEORDER = 14,  ///< 暂停指令并暂停任务
+        OCS_PAUSE_CANCELORDER = 15, ///< 暂停指令并撤销任务
     };
 
     ///< 委托类型
@@ -708,7 +709,7 @@ namespace xti
     };
 
     ///< 申报状态（中信建投算法）
-    enum EPurchaseStatus
+    enum XT_API_EXPORT EPurchaseStatus
     {
         PURCHASE_STATUS_MUST = 48,  //必须参与申报
         PURCHASE_STATUS_FORBID = 49,  //禁止参与申报
@@ -716,7 +717,7 @@ namespace xti
     };
 
     ///< 股票状态
-    enum EStockStatus
+    enum XT_API_EXPORT EStockStatus
     {
         STOCK_STATUS_DEFAULT = 0,
         STOCK_STATUS_BEFORE_TRADING = 1, //开盘前
@@ -734,6 +735,173 @@ namespace xti
         STOCK_STATUS_POST_TRADE_CLOSE = 13, //盘后固定价格行情完毕
         STOCK_STATUS_CLOSE_REMOVE = 14, //盘后固定价格恢复闭市
         STOCK_STATUS_FAKED = 15, //伪造的状态
+    };
+
+    ///< 证券类别
+    enum XT_API_EXPORT EStockType
+    {
+        MINOR_KIND_UNDEFINED = 0,
+        //大类
+        MAJOR_KIND_INDEX,               // 指数
+        MAJOR_KIND_STOCK,               // 股票
+        MAJOR_KIND_FUND,                // 基金
+        MAJOR_KIND_BOND,                // 债券
+        MAJOR_KIND_WARRANT,             // 权证
+        MAJOR_KIND_REPO,                // 质押式回购交易
+        MAJOR_KIND_OPTION,              // 期权
+        MAJOR_KIND_PREFERRED_STOCK,     // 优先股
+        MAJOR_KIND_ABS,                 // 资产支持证券
+        MAJOR_KIND_FJY,                 // 非交易 
+        MAJOR_KIND_REIT,                // 房地产信托投资基金(REITs)
+        //上海
+        // 可交易类
+        SH_MINOR_KIND_STOCK_ASH,       // 以人民币交易的股票（主板）
+        SH_MINOR_KIND_STOCK_BSH,       // 以美元交易的股票
+        SH_MINOR_KIND_STOCK_KSH,       // 以人民币交易的股票（科创板）
+        SH_MINOR_KIND_STOCK_OEQ,       // 其它股票
+        SH_MINOR_KIND_FUND_CEF,        // 封闭式基金
+        SH_MINOR_KIND_FUND_OEF,        // 开放式基金
+        SH_MINOR_KIND_FUND_EBS,        // ETF基金
+        SH_MINOR_KIND_FUND_FBL,        // 跨市场 / 跨境基金
+        SH_MINOR_KIND_FUND_OFN,        // 其它基金
+        SH_MINOR_KIND_FUND_LOF,        // LOF基金
+        SH_MINOR_KIND_BOND_GBF,        // 国债、地方债、政府支持债、政策性金融债
+        SH_MINOR_KIND_BOND_GBZ,        // 无息国债 (弃用)
+        SH_MINOR_KIND_BOND_DST,        // 国债分销（仅用于分销阶段）
+        SH_MINOR_KIND_BOND_DVP,        // 公司债（地方债）分销
+        SH_MINOR_KIND_BOND_CBF,        // 企业债券
+        SH_MINOR_KIND_BOND_CCF,        // 可转换企业债券
+        SH_MINOR_KIND_BOND_CPF,        // 公司债、企业债、可交换债、政府支持债
+        SH_MINOR_KIND_BOND_FBF,        // 金融机构发行债券 (弃用)
+        SH_MINOR_KIND_BOND_CRP,        // 通用质押式回购
+        SH_MINOR_KIND_BOND_BRP,        // 质押式企债回购 (弃用)
+        SH_MINOR_KIND_BOND_ORP,        // 买断式债券回购 (弃用)
+        SH_MINOR_KIND_BOND_CBD,        // 分离式可转债 (弃用)
+        SH_MINOR_KIND_BOND_OBD,        // 其它债券
+        SH_MINOR_KIND_BOND_WIT,        // 国债预发行
+        SH_MINOR_KIND_AMP,             // 集合资产管理计划
+        SH_MINOR_KIND_OPS,             // 公开发行优先股
+        SH_MINOR_KIND_PPS,             // 非公开发行优先股
+        SH_MINOR_KIND_QRP,             // 报价回购
+        SH_MINOR_KIND_CMD,             // 控制指令（中登身份认证密码服务产品复用CMD证券子类别）
+
+        // 非交易类
+        SH_FJY_MINOR_KIND_IN,          // 上网证券发行申购
+        SH_FJY_MINOR_KIND_IS,          // 老股东增发证券发行申购
+        SH_FJY_MINOR_KIND_PH,          // IPO配号
+        SH_FJY_MINOR_KIND_KK,          // IPO扣款
+        SH_FJY_MINOR_KIND_HK,          // IPO还款
+        SH_FJY_MINOR_KIND_CV,          // 可转债转股 / 可交换公司债换股
+        SH_FJY_MINOR_KIND_CR,          // 可转债回售
+        SH_FJY_MINOR_KIND_R1,          // 股票配股行权行权
+        SH_FJY_MINOR_KIND_R2,          // 股票转配股配股行权
+        SH_FJY_MINOR_KIND_R3,          // 职工股转配股配股行权
+        SH_FJY_MINOR_KIND_R4,          // 股票配转债行权
+        SH_FJY_MINOR_KIND_OS,          // 开放式基金认购
+        SH_FJY_MINOR_KIND_OC,          // 开放式基金申购
+        SH_FJY_MINOR_KIND_OR,          // 开放式基金赎回
+        SH_FJY_MINOR_KIND_OD,          // 开放式基金分红选择
+        SH_FJY_MINOR_KIND_OT,          // 开放式基金份额转出
+        SH_FJY_MINOR_KIND_OV,          // 开放式基金转换
+        SH_FJY_MINOR_KIND_EC,          // ETF申购
+        SH_FJY_MINOR_KIND_ER,          // ETF赎回
+        SH_FJY_MINOR_KIND_EZ,          // 申赎资金代码
+        SH_FJY_MINOR_KIND_BD,          // 回购入库
+        SH_FJY_MINOR_KIND_BW,          // 回购出库
+        SH_FJY_MINOR_KIND_FS,          // 要约预受
+        SH_FJY_MINOR_KIND_FC,          // 要约撤销
+        SH_FJY_MINOR_KIND_ST,          // 余券划转
+        SH_FJY_MINOR_KIND_SR,          // 还券划转
+        SH_FJY_MINOR_KIND_CI,          // 担保品划入
+        SH_FJY_MINOR_KIND_CO,          // 担保品划出
+        SH_FJY_MINOR_KIND_SI,          // 券源划入
+        SH_FJY_MINOR_KIND_SO,          // 券源划出
+        SH_FJY_MINOR_KIND_PA,          // 密码激活(注销)
+        SH_FJY_MINOR_KIND_DT,          // 指定登记
+        SH_FJY_MINOR_KIND_DC,          // 指定撤销
+        SH_FJY_MINOR_KIND_QT,          // 其它
+
+        // 新增可交易类
+        SH_MINOR_KIND_FUND_KES,        // 科创板ETF基金
+        SH_MINOR_KIND_FUND_KOF,        // 科创板LOF基金
+
+        SH_MINOR_KIND_BOND_TCB,        // 定向可转债
+        SH_MINOR_KIND_BOND_KCCF,       // 科创板可转债
+        SH_MINOR_KIND_REITS_RET,        // REITs
+
+        //深圳
+        // 可交易类
+        SZ_MINOR_KIND_STOCK_ZHU_BAN_A ,                        // 主板 A 股
+        SZ_MINOR_KIND_STOCK_ZHONG_XIAO_BAN,                    // 中小板股票
+        SZ_MINOR_KIND_STOCK_CHUANG_YE_BAN,                     // 创业板股票
+        SZ_MINOR_KIND_STOCK_ZHU_BAN_B,                         // 主板 B 股
+        SZ_MINOR_KIND_BOND_TREASURY_BOND,                      // 国债（含地方债）
+        SZ_MINOR_KIND_BOND_ENTERPRISE_BOND,                    // 企业债
+        SZ_MINOR_KIND_BOND_CORPORATE_BOND,                     // 公司债
+        SZ_MINOR_KIND_BOND_CONVERTIBLE_BOND,                   // 可转债
+        SZ_MINOR_KIND_BOND_PRIVATELY_RAISED_COMPANY_BONDS,     // 私募债
+        SZ_MINOR_KIND_BOND_EXCHANGEABLE_PB,                    // 可交换私募债
+        SZ_MINOR_KIND_BOND_SECURITY_COMPANY_SUB_DEBT,          // 证券公司次级债
+        SZ_MINOR_KIND_REPO_PLEDGE_STYLE_REPO,                  // 质押式回购
+        SZ_MINOR_KIND_ASSET_BACKED_SECURITIES,                 // 资产支持证券
+        SZ_MINOR_KIND_FUND_STOCK_ETF,                          // 本市场股票 ETF
+        SZ_MINOR_KIND_FUND_INTER_MARKET_STOCK_ETF,             // 跨市场股票 ETF
+        SZ_MINOR_KIND_FUND_CROSS_BORDER_ETF,                   // 跨境 ETF
+        SZ_MINOR_KIND_FUND_BEARER_BOND_ETF,                    // 本市场实物债券 ETF
+        SZ_MINOR_KIND_FUND_CASH_BOND_ETF,                      // 现金债券 ETF
+        SZ_MINOR_KIND_FUND_GOLD_ETF,                           // 黄金ETF
+        SZ_MINOR_KIND_FUND_CURRENCY_ETF,                       // 货币ETF
+        SZ_MINOR_KIND_FUND_LEVER_ETF,                          // 杠杆ETF
+        SZ_MINOR_KIND_FUND_COMMODITY_FUTURES_ETF,              // 商品期货ETF
+        SZ_MINOR_KIND_FUND_STANDARD_LOF,                       // 标准 LOF
+        SZ_MINOR_KIND_FUND_GRADED_SUB_FUNDS,                   // 分级子基金
+        SZ_MINOR_KIND_FUND_CLOSED_END_FUNDS,                   // 封闭式基金
+        SZ_MINOR_KIND_FUND_REDEMPTION_FUND,                    // 仅申赎基金
+        SZ_MINOR_KIND_WARRANT ,                                // 权证
+        SZ_MINOR_KIND_OPTION_STOCK_OPTION,                     // 个股期权
+        SZ_MINOR_KIND_OPTION_ETF_OPTION,                       // ETF期权
+        SZ_MINOR_KIND_PREFERRED_STOCK ,                        // 优先股
+        SZ_MINOR_KIND_BOND_SECURITY_COMPANY_SHORT_TERM_BOND,   // 证券公司短期债
+        SZ_MINOR_KIND_BOND_EXCHANGEABLE_CORPORATE_BOND,        // 可交换公司债
+        SZ_MINOR_KIND_STOCK_CDR,                               // 主板、中小板存托凭证
+        SZ_MINOR_KIND_STOCK_CHUANG_YE_CDR,                     // 创业板存托凭证
+        SZ_MINOR_KIND_FUND_INFRASTRUCTURE_FUND,                // 基础设施基金
+        SZ_MINOR_KIND_BOND_ORIENT_CONVERTIBLE_BOND,            // 定向可转债
+        // 非交易类
+        SZ_FJY_MINOR_KIND_ISSUE ,                              // 网上认购
+        SZ_FJY_MINOR_KIND_BOND_DISTRIBUTION,                   // 债券分销
+        SZ_FJY_MINOR_KIND_RIGHTS_ISSUE,                        // 配股
+        SZ_FJY_MINOR_KIND_DERIVATIVEAUCTION,                   // 衍生品交易
+        SZ_FJY_MINOR_KIND_NEGOTIATION,                         // 协议交易
+        SZ_FJY_MINOR_KIND_ISSUE_ADDITIONNAL,                   // 增发
+        SZ_FJY_MINOR_KIND_BOND_RIGHTS_ISSUE,                   // 配债
+
+        //新三板
+        // 可交易类
+        NEEQ_MINOR_KIND_STOCK_DELIST_COMPANY_A ,               // 两网公司及退市公司A股
+        NEEQ_MINOR_KIND_STOCK_DELIST_COMPANY_B,                // 两网公司及退市公司B股
+        NEEQ_MINOR_KIND_STOCK_LISTED_COMPANY,                  // 挂牌公司股票
+        NEEQ_MINOR_KIND_PREFERRED_STOCK,                       // 优先股
+        NEEQ_MINOR_KIND_TENDER_OFFER,                          // 要约收购
+        NEEQ_MINOR_KIND_OFFER_TO_REPURCHASE,                   // 要约回购
+        NEEQ_MINOR_KIND_EQUITY_INCENTIVE_OPTION,               // 股权激励期权
+        NEEQ_MINOR_KIND_INDEX,                                 // 指数
+
+        // 非交易类
+        NEEQ_MINOR_KIND_ISSUE_TRANSACTION,                     // 发行业务
+
+        // 新增可交易类
+        NEEQ_MINOR_KIND_CONVERTIBLE_BOND,                      // 可转债
+        NEEQ_MINOR_KIND_ORIENT_CONVERTIBLE_BOND,               // 定向可转债
+        NEEQ_MINOR_KIND_DELIST_CONVERTIBLE_BOND,               // 退市可转债
+    
+        SHFI_MINOR_KIND_TREASURY_BOND ,                         // 国债
+        SHFI_MINOR_KIND_CORPORATE_BOND,                         // 公司债
+        SHFI_MINOR_KIND_PRIVATE_PLACEMENT_BOND,                 // 私募债券
+        SHFI_MINOR_KIND_ABS,                                    // 信贷资产支持证券
+        SHFI_MINOR_KIND_SPECIAL_BOND,                           // 特定债券
+        SHFI_MINOR_KIND_REITS,                                  // 公募REITs
+        SHFI_MINOR_KIND_CONVERTIBLE_BOND,                       // 公募可转债
     };
 }
 
