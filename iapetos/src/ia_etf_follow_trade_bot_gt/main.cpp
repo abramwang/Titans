@@ -8,7 +8,7 @@
 #include "ia_etf_info_mysql.h"
 
 int main(int argc, char* argv[]) {
-#if 1
+#if 0
     IaEtfInfoMysql sql_client(
         "119.13.76.95",
         20000,

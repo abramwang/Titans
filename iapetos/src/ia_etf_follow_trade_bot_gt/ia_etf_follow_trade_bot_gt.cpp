@@ -9,7 +9,8 @@
 IaEtfFollowTradeBotGt::IaEtfFollowTradeBotGt(uv_loop_s* loop, std::string configPath)
     : RedisCommander(loop)
 {
-    m_client = new TiGtTraderClient(configPath, this);
+    m_quote_client = new TiQuoteIpcClient(configPath, loop, this);
+    m_trade_client = new TiGtTraderClient(configPath, this);
     m_config = NULL;
     m_total_asset = 0;
     m_cash_asset = 0;
@@ -28,11 +29,13 @@ IaEtfFollowTradeBotGt::IaEtfFollowTradeBotGt(uv_loop_s* loop, std::string config
     m_timer.data = this;
     uv_timer_init(loop, &m_timer);
     uv_timer_start(&m_timer, onTimer, 1000, 500);
+
+    m_quote_client->run(NULL);
 }
 IaEtfFollowTradeBotGt::~IaEtfFollowTradeBotGt(){
-    if(m_client){
-        delete m_client;
-        m_client = NULL;
+    if(m_trade_client){
+        delete m_trade_client;
+        m_trade_client = NULL;
     }
     if(m_config){
         delete m_config;
@@ -173,25 +176,25 @@ void IaEtfFollowTradeBotGt::OnCommandRtn(const char* type, const char* command)
 
     if (!strcmp(type, "QueryAsset"))
     {
-        m_client->QueryAsset();
+        m_trade_client->QueryAsset();
         return;
     }
 
     if (!strcmp(type, "QueryPositions"))
     {
-        m_client->QueryPositions();
+        m_trade_client->QueryPositions();
         return;
     }
 
     if (!strcmp(type, "QueryOrders"))
     {
-        m_client->QueryOrders();
+        m_trade_client->QueryOrders();
         return;
     }
 
     if (!strcmp(type, "QueryMatches"))
     {
-        m_client->QueryMatches();
+        m_trade_client->QueryMatches();
         return;
     }
     
@@ -219,8 +222,8 @@ void IaEtfFollowTradeBotGt::onAuth(int err, const char* errStr){
             m_config->nBlock);
     }
     ///* 
-    if(m_client){
-        m_client->connect();
+    if(m_trade_client){
+        m_trade_client->connect();
     }
     //*/
     std::cout << "onAuth:" << err << " " << errStr << std::endl;
@@ -313,7 +316,7 @@ void IaEtfFollowTradeBotGt::enterOrder(json &msg)
     req.nOrderVol = msg["nOrderVol"];
     strcpy(req.szUseStr, "oc_trader_commander_gt");
 
-    m_client->orderInsert(&req);
+    m_trade_client->orderInsert(&req);
 };
 
 void IaEtfFollowTradeBotGt::enterOrders(json &msg)
@@ -343,7 +346,7 @@ void IaEtfFollowTradeBotGt::enterOrders(json &msg)
 
         account_id = (*iter)["szAccount"];
     }
-    m_client->orderInsertBatch(req_vec, account_id);
+    m_trade_client->orderInsertBatch(req_vec, account_id);
 };
 
 
@@ -353,7 +356,7 @@ void IaEtfFollowTradeBotGt::cancelOrder(json &msg)
     memset(&req, 0, sizeof(TiReqOrderDelete));
     req.nOrderId = msg["nOrderId"];
 
-    m_client->orderDelete(&req);
+    m_trade_client->orderDelete(&req);
 
 };
 
@@ -362,5 +365,5 @@ void IaEtfFollowTradeBotGt::cancelOrder(json &msg)
 ////////////////////////////////////////////////////////////////////////
 TiTraderClient* IaEtfFollowTradeBotGt::GetTraderClient()
 {
-    return m_client;
+    return m_trade_client;
 };
