@@ -252,17 +252,17 @@ int IaEtfFollowTradeBotGt::loadConfig(std::string iniFileName){
 
     m_config = new ConfigInfo();
 
-    m_config->szIp        = string(_iniFile["oc_trader_commander_gt"]["ip"]);
-    m_config->nPort       = _iniFile["oc_trader_commander_gt"]["port"];
-    m_config->szAuth      = string(_iniFile["oc_trader_commander_gt"]["auth"]);
+    m_config->szIp        = string(_iniFile["ia_etf_follow_trade_bot_gt"]["ip"]);
+    m_config->nPort       = _iniFile["ia_etf_follow_trade_bot_gt"]["port"];
+    m_config->szAuth      = string(_iniFile["ia_etf_follow_trade_bot_gt"]["auth"]);
 
-    m_config->nBlock          = _iniFile["oc_trader_commander_gt"]["block"];
-    m_config->szCommandStreamKey     = string(_iniFile["oc_trader_commander_gt"]["command_stream_key"]);
-    m_config->szCommandStreamGroup   = string(_iniFile["oc_trader_commander_gt"]["command_stream_group"]);
-    m_config->szCommandConsumerId   = string(_iniFile["oc_trader_commander_gt"]["command_consumer_id"]);
+    m_config->nBlock          = _iniFile["ia_etf_follow_trade_bot_gt"]["block"];
+    m_config->szCommandStreamKey     = string(_iniFile["ia_etf_follow_trade_bot_gt"]["command_stream_key"]);
+    m_config->szCommandStreamGroup   = string(_iniFile["ia_etf_follow_trade_bot_gt"]["command_stream_group"]);
+    m_config->szCommandConsumerId   = string(_iniFile["ia_etf_follow_trade_bot_gt"]["command_consumer_id"]);
     
-    m_config->szOrderKey         = string(_iniFile["oc_trader_commander_gt"]["order_key"]);
-    m_config->szMatchKey         = string(_iniFile["oc_trader_commander_gt"]["match_key"]);
+    m_config->szOrderKey         = string(_iniFile["ia_etf_follow_trade_bot_gt"]["order_key"]);
+    m_config->szMatchKey         = string(_iniFile["ia_etf_follow_trade_bot_gt"]["match_key"]);
     
     if( m_config->szIp.empty() |
         !m_config->nPort |

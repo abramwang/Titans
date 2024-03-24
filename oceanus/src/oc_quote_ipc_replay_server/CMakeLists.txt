@@ -35,4 +35,4 @@ link_directories( "./" )
 
 add_executable( ${PROJECT_NAME} ${SRCS} )
 
-target_link_libraries(${PROJECT_NAME} -luv -lhiredis -larrow -lparquet -lglog -lrt)
+target_link_libraries(${PROJECT_NAME} -lmysqlclient -luv -lhiredis -larrow -lparquet -lglog -lrt)
