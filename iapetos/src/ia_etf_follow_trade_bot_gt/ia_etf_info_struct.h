@@ -64,7 +64,7 @@ CREATE TABLE `constituent_info` (
 */
 
 
-struct IaConstituentInfo {
+struct IaEtfConstituentInfo {
     std::string m_tradeDate;
     std::string m_fundId;
     std::string m_symbol;

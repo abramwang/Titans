@@ -19,7 +19,8 @@ public:
     ~IaEtfInfoMysql();
 
 public:
-    void QueryEtfInfoList(std::vector<IaEtfInfo>& etfInfoList);
+    void QueryEtfInfoList(std::vector<IaEtfInfo>& etfInfoVec);
+    void QueryEtfConstituentInfoList(std::vector<IaEtfConstituentInfo>& constituentInfoVec);
 };
 
 #endif // __IA_ETF_INFO_MYSQL_H__

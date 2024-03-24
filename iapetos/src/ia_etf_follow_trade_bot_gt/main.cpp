@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
     //std::cout << j << std::endl;
 
     */
-   
+
     std::vector<std::map<std::string, std::string>> result;
     sql_client.query("SELECT * FROM etf_info ORDER BY m_tradeDate DESC LIMIT 100;", result);
 
@@ -61,6 +61,29 @@ int main(int argc, char* argv[]) {
         std::cout << "etfInfo.m_requiredToDiscloseIOPV:" << etfInfo.m_requiredToDiscloseIOPV << std::endl;
         std::cout << "etfInfo.m_constituentStockNum:" << etfInfo.m_constituentStockNum << std::endl;
 
+
+        break;
+    }
+
+
+    std::vector<IaEtfConstituentInfo> constituentInfoVec;
+    sql_client.QueryEtfConstituentInfoList(constituentInfoVec);
+    
+    std::cout << constituentInfoVec.size() << std::endl;
+    for (auto& constituentInfo : constituentInfoVec) {
+        std::cout << "constituentInfo.m_tradeDate:" << constituentInfo.m_tradeDate << std::endl;
+        std::cout << "constituentInfo.m_fundId:" << constituentInfo.m_fundId << std::endl;
+        std::cout << "constituentInfo.m_symbol:" << constituentInfo.m_symbol << std::endl;
+        std::cout << "constituentInfo.m_exchange:" << constituentInfo.m_exchange << std::endl;
+        std::cout << "constituentInfo.m_name:" << constituentInfo.m_name << std::endl;
+        std::cout << "constituentInfo.m_replace_flag:" << constituentInfo.m_replace_flag << std::endl;
+        std::cout << "constituentInfo.m_replace_amount:" << constituentInfo.m_replace_amount << std::endl;
+        std::cout << "constituentInfo.m_creation_amount:" << constituentInfo.m_creation_amount << std::endl;
+        std::cout << "constituentInfo.m_redemption_amount:" << constituentInfo.m_redemption_amount << std::endl;
+        std::cout << "constituentInfo.m_disclosure_vol:" << constituentInfo.m_disclosure_vol << std::endl;
+        std::cout << "constituentInfo.m_reality_vol:" << constituentInfo.m_reality_vol << std::endl;
+        std::cout << "constituentInfo.m_cash_replaced_creation_premium_rate:" << constituentInfo.m_cash_replaced_creation_premium_rate << std::endl;
+        std::cout << "constituentInfo.m_cash_replaced_redemption_discount_rate:" << constituentInfo.m_cash_replaced_redemption_discount_rate << std::endl;
 
         break;
     }

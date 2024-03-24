@@ -15,11 +15,13 @@ IaEtfInfoMysql::IaEtfInfoMysql(
 IaEtfInfoMysql::~IaEtfInfoMysql(){};
 
 
-void IaEtfInfoMysql::QueryEtfInfoList(std::vector<IaEtfInfo>& etfInfoList)
+void IaEtfInfoMysql::QueryEtfInfoList(std::vector<IaEtfInfo>& etfInfoVec)
 {
     std::vector<std::map<std::string, std::string>> result;
-    query("SELECT * FROM etf_info ORDER BY m_tradeDate DESC LIMIT 100;", result);
-
+    int date_num = 20240322;
+    char sql[256] = {0};
+    sprintf(sql, "SELECT * FROM etf_info WHERE m_tradeDate = %d", date_num);
+    query(sql, result);
     for (auto& row : result) {
         IaEtfInfo etfInfo;
         etfInfo.m_tradeDate = row["m_tradeDate"];
@@ -38,6 +40,32 @@ void IaEtfInfoMysql::QueryEtfInfoList(std::vector<IaEtfInfo>& etfInfoList)
         etfInfo.m_maxRedemptionVol = atof(row["m_maxRedemptionVol"].c_str());
         etfInfo.m_requiredToDiscloseIOPV = atof(row["m_requiredToDiscloseIOPV"].c_str());
         etfInfo.m_constituentStockNum = atof(row["m_constituentStockNum"].c_str());
-        etfInfoList.push_back(etfInfo);
+        etfInfoVec.push_back(etfInfo);
+    }
+};
+
+void IaEtfInfoMysql::QueryEtfConstituentInfoList(std::vector<IaEtfConstituentInfo>& constituentInfoVec)
+{
+    std::vector<std::map<std::string, std::string>> result;
+    int date_num = 20240322;
+    char sql[256] = {0};
+    sprintf(sql, "SELECT * FROM constituent_info WHERE m_tradeDate = %d", date_num);
+    query(sql, result);
+    for (auto& row : result) {
+        IaEtfConstituentInfo constituentInfo;
+        constituentInfo.m_tradeDate = row["m_tradeDate"];
+        constituentInfo.m_fundId = row["m_fundId"];
+        constituentInfo.m_symbol = row["m_symbol"];
+        constituentInfo.m_exchange = row["m_exchange"];
+        constituentInfo.m_name = row["m_name"];
+        constituentInfo.m_replace_flag = row["m_replace_flag"];
+        constituentInfo.m_replace_amount = atof(row["m_replace_amount"].c_str());
+        constituentInfo.m_creation_amount = atof(row["m_creation_amount"].c_str());
+        constituentInfo.m_redemption_amount = atof(row["m_redemption_amount"].c_str());
+        constituentInfo.m_disclosure_vol = atof(row["m_disclosure_vol"].c_str());
+        constituentInfo.m_reality_vol = atof(row["m_reality_vol"].c_str());
+        constituentInfo.m_cash_replaced_creation_premium_rate = atof(row["m_cash_replaced_creation_premium_rate"].c_str());
+        constituentInfo.m_cash_replaced_redemption_discount_rate = atof(row["m_cash_replaced_redemption_discount_rate"].c_str());
+        constituentInfoVec.push_back(constituentInfo);
     }
 };
