@@ -25,21 +25,14 @@ int main(int argc, char* argv[]) {
     //std::cout << j << std::endl;
 
     */
+    std::vector<std::string> fund_symbol_vec;
+    fund_symbol_vec.push_back("159150");
+    fund_symbol_vec.push_back("159350");
+    fund_symbol_vec.push_back("159801");
 
-    std::vector<std::map<std::string, std::string>> result;
-    sql_client.query("SELECT * FROM etf_info ORDER BY m_tradeDate DESC LIMIT 100;", result);
-
-    std::cout << result.size() << std::endl;
-
-    for (auto& row : result) {
-        for (auto& kv : row) {
-            std::cout << kv.first << ": " << kv.second << std::endl;
-        }
-        break;
-    }
 
     std::vector<IaEtfInfo> etfInfoList;
-    sql_client.QueryEtfInfoList(etfInfoList);
+    sql_client.QueryEtfInfoList(20240322, fund_symbol_vec, etfInfoList);
 
     std::cout << etfInfoList.size() << std::endl;
 
@@ -60,14 +53,11 @@ int main(int argc, char* argv[]) {
         std::cout << "etfInfo.m_maxRedemptionVol:" << etfInfo.m_maxRedemptionVol << std::endl;
         std::cout << "etfInfo.m_requiredToDiscloseIOPV:" << etfInfo.m_requiredToDiscloseIOPV << std::endl;
         std::cout << "etfInfo.m_constituentStockNum:" << etfInfo.m_constituentStockNum << std::endl;
-
-
         break;
     }
 
-
     std::vector<IaEtfConstituentInfo> constituentInfoVec;
-    sql_client.QueryEtfConstituentInfoList(constituentInfoVec);
+    sql_client.QueryEtfConstituentInfoList(20240322, fund_symbol_vec, constituentInfoVec);
     
     std::cout << constituentInfoVec.size() << std::endl;
     for (auto& constituentInfo : constituentInfoVec) {
@@ -76,7 +66,7 @@ int main(int argc, char* argv[]) {
         std::cout << "constituentInfo.m_symbol:" << constituentInfo.m_symbol << std::endl;
         std::cout << "constituentInfo.m_exchange:" << constituentInfo.m_exchange << std::endl;
         std::cout << "constituentInfo.m_name:" << constituentInfo.m_name << std::endl;
-        std::cout << "constituentInfo.m_replace_flag:" << constituentInfo.m_replace_flag << std::endl;
+        std::cout << "constituentInfo.m_replace_flag:" << (int)constituentInfo.m_replace_flag << std::endl;
         std::cout << "constituentInfo.m_replace_amount:" << constituentInfo.m_replace_amount << std::endl;
         std::cout << "constituentInfo.m_creation_amount:" << constituentInfo.m_creation_amount << std::endl;
         std::cout << "constituentInfo.m_redemption_amount:" << constituentInfo.m_redemption_amount << std::endl;

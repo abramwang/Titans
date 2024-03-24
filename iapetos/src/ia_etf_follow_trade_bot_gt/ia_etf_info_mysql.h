@@ -18,9 +18,11 @@ public:
     );
     ~IaEtfInfoMysql();
 
+private:
+    std::string format_vec(const std::vector<std::string>& vec);
 public:
-    void QueryEtfInfoList(std::vector<IaEtfInfo>& etfInfoVec);
-    void QueryEtfConstituentInfoList(std::vector<IaEtfConstituentInfo>& constituentInfoVec);
+    void QueryEtfInfoList(int32_t date_num, std::vector<std::string> fund_symbol_vec, std::vector<IaEtfInfo>& out);
+    void QueryEtfConstituentInfoList(int32_t date_num, std::vector<std::string> fund_symbol_vec, std::vector<IaEtfConstituentInfo>& out);
 };
 
 #endif // __IA_ETF_INFO_MYSQL_H__

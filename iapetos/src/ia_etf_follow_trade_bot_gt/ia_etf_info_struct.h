@@ -63,6 +63,18 @@ CREATE TABLE `constituent_info` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 */
 
+const char IA_ERT_CASH_FORBIDDEN             = 0;
+const char IA_ERT_CASH_OPTIONAL              = 1;
+const char IA_ERT_CASH_MUST                  = 2;
+const char IA_ERT_CASH_RECOMPUTE_INTER_SZ    = 3;
+const char IA_ERT_CASH_MUST_INTER_SZ         = 4;
+const char IA_ERT_CASH_RECOMPUTE_INTER_OTHER = 5;
+const char IA_ERT_CASH_MUST_INTER_OTHER      = 6;
+const char IA_ERT_CASH_RECOMPUTE_INTER_HK    = 7;
+const char IA_ERT_CASH_MUST_INTER_HK         = 8;
+const char IA_EPT_INVALID                    = 9;
+typedef char IA_ERT_CASH_TYPE;
+
 
 struct IaEtfConstituentInfo {
     std::string m_tradeDate;
@@ -70,7 +82,7 @@ struct IaEtfConstituentInfo {
     std::string m_symbol;
     std::string m_exchange;
     std::string m_name;
-    std::string m_replace_flag;
+    IA_ERT_CASH_TYPE m_replace_flag;
     float m_replace_amount;
     float m_creation_amount;
     float m_redemption_amount;
@@ -79,6 +91,32 @@ struct IaEtfConstituentInfo {
     float m_cash_replaced_creation_premium_rate;
     float m_cash_replaced_redemption_discount_rate;
 };
+
+namespace IaEtfInfoStruct {
+    inline IA_ERT_CASH_TYPE pares_ert_cash_type(std::string type_string){
+        if (type_string == "ERT_CASH_FORBIDDEN") {
+            return IA_ERT_CASH_FORBIDDEN;
+        } else if (type_string == "ERT_CASH_OPTIONAL") {
+            return IA_ERT_CASH_OPTIONAL;
+        } else if (type_string == "ERT_CASH_MUST") {
+            return IA_ERT_CASH_MUST;
+        } else if (type_string == "ERT_CASH_RECOMPUTE_INTER_SZ") {
+            return IA_ERT_CASH_RECOMPUTE_INTER_SZ;
+        } else if (type_string == "ERT_CASH_MUST_INTER_SZ") {
+            return IA_ERT_CASH_MUST_INTER_SZ;
+        } else if (type_string == "ERT_CASH_RECOMPUTE_INTER_OTHER") {
+            return IA_ERT_CASH_RECOMPUTE_INTER_OTHER;
+        } else if (type_string == "ERT_CASH_MUST_INTER_OTHER") {
+            return IA_ERT_CASH_MUST_INTER_OTHER;
+        } else if (type_string == "ERT_CASH_RECOMPUTE_INTER_HK") {
+            return IA_ERT_CASH_RECOMPUTE_INTER_HK;
+        } else if (type_string == "ERT_CASH_MUST_INTER_HK") {
+            return IA_ERT_CASH_MUST_INTER_HK;
+        } else {
+            return IA_EPT_INVALID;
+        }
+    };
+}
 
 
 #endif

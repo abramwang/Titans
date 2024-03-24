@@ -15,13 +15,28 @@ IaEtfInfoMysql::IaEtfInfoMysql(
 IaEtfInfoMysql::~IaEtfInfoMysql(){};
 
 
-void IaEtfInfoMysql::QueryEtfInfoList(std::vector<IaEtfInfo>& etfInfoVec)
+std::string IaEtfInfoMysql::format_vec(const std::vector<std::string>& vec) {
+    std::string str;
+    for (size_t i = 0; i < vec.size(); i++) {
+        str +=  "'" + vec[i] + "',"; 
+    }
+    str.pop_back();
+    return str;
+}
+
+void IaEtfInfoMysql::QueryEtfInfoList(int32_t date_num, std::vector<std::string> fund_symbol_vec, std::vector<IaEtfInfo>& out)
 {
     std::vector<std::map<std::string, std::string>> result;
-    int date_num = 20240322;
     char sql[256] = {0};
     sprintf(sql, "SELECT * FROM etf_info WHERE m_tradeDate = %d", date_num);
-    query(sql, result);
+    std::string sql_str = sql;
+    if (!fund_symbol_vec.empty()) {
+        sql_str += " AND m_fundId IN (" + format_vec(fund_symbol_vec) + ");";
+    }else{
+        sql_str += ";";
+    }
+    std::cout << sql_str << std::endl;
+    query(sql_str, result);
     for (auto& row : result) {
         IaEtfInfo etfInfo;
         etfInfo.m_tradeDate = row["m_tradeDate"];
@@ -40,17 +55,22 @@ void IaEtfInfoMysql::QueryEtfInfoList(std::vector<IaEtfInfo>& etfInfoVec)
         etfInfo.m_maxRedemptionVol = atof(row["m_maxRedemptionVol"].c_str());
         etfInfo.m_requiredToDiscloseIOPV = atof(row["m_requiredToDiscloseIOPV"].c_str());
         etfInfo.m_constituentStockNum = atof(row["m_constituentStockNum"].c_str());
-        etfInfoVec.push_back(etfInfo);
+        out.push_back(etfInfo);
     }
 };
 
-void IaEtfInfoMysql::QueryEtfConstituentInfoList(std::vector<IaEtfConstituentInfo>& constituentInfoVec)
+void IaEtfInfoMysql::QueryEtfConstituentInfoList(int32_t date_num, std::vector<std::string> fund_symbol_vec, std::vector<IaEtfConstituentInfo>& out)
 {
     std::vector<std::map<std::string, std::string>> result;
-    int date_num = 20240322;
     char sql[256] = {0};
     sprintf(sql, "SELECT * FROM constituent_info WHERE m_tradeDate = %d", date_num);
-    query(sql, result);
+    std::string sql_str = sql;
+    if (!fund_symbol_vec.empty()) {
+        sql_str += " AND m_fundId IN (" + format_vec(fund_symbol_vec) + ");";
+    }else{
+        sql_str += ";";
+    }
+    query(sql_str, result);
     for (auto& row : result) {
         IaEtfConstituentInfo constituentInfo;
         constituentInfo.m_tradeDate = row["m_tradeDate"];
@@ -58,7 +78,7 @@ void IaEtfInfoMysql::QueryEtfConstituentInfoList(std::vector<IaEtfConstituentInf
         constituentInfo.m_symbol = row["m_symbol"];
         constituentInfo.m_exchange = row["m_exchange"];
         constituentInfo.m_name = row["m_name"];
-        constituentInfo.m_replace_flag = row["m_replace_flag"];
+        constituentInfo.m_replace_flag = IaEtfInfoStruct::pares_ert_cash_type(row["m_replace_flag"]);
         constituentInfo.m_replace_amount = atof(row["m_replace_amount"].c_str());
         constituentInfo.m_creation_amount = atof(row["m_creation_amount"].c_str());
         constituentInfo.m_redemption_amount = atof(row["m_redemption_amount"].c_str());
@@ -66,6 +86,6 @@ void IaEtfInfoMysql::QueryEtfConstituentInfoList(std::vector<IaEtfConstituentInf
         constituentInfo.m_reality_vol = atof(row["m_reality_vol"].c_str());
         constituentInfo.m_cash_replaced_creation_premium_rate = atof(row["m_cash_replaced_creation_premium_rate"].c_str());
         constituentInfo.m_cash_replaced_redemption_discount_rate = atof(row["m_cash_replaced_redemption_discount_rate"].c_str());
-        constituentInfoVec.push_back(constituentInfo);
+        out.push_back(constituentInfo);
     }
 };
