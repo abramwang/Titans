@@ -6,7 +6,7 @@ redis_pool = redis.ConnectionPool(
 redis_conn = redis.Redis(connection_pool= redis_pool)
 
 
-streamKey = "oc_trader_commander_gt.00043346"
+streamKey = "oc_trader_commander_guangfa.00043346"
 
 def querySymbolList():
     redis_conn.xadd(streamKey,
@@ -287,7 +287,7 @@ def enterOrder_ETF_Redemption():
 #enterOrder_sell()
 #enterOrder_sell_sz()
 #QueryOrders()
-enterOrder()
+#enterOrder()
 #enterOrder_SZ()
 #for i in range(100):
 #    enterOrder_SZ()
@@ -298,7 +298,7 @@ enterOrder()
 #QueryPositions()
 #exit(0)
 #QueryAsset()
-#QueryPositions()
+QueryPositions()
 #QueryOrders()
 #QueryMatches()
 
