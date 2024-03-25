@@ -5,7 +5,7 @@
 #include <thread>
 #include <mutex>
 
-#include "ti_ax_quote_client.h"
+#include "ti_gf_quote_client.h"
 #include "ti_quote_cache.h"
 #include "ti_quote_callback.h"
 #include "ti_ipc_api.h"
@@ -62,12 +62,12 @@ public:
         m_cout_time_trans = 0;
         m_cout_time_order = 0;
 
-        m_client = new TiAxQuoteClient("./config.ini", this);;
+        m_client = new TiGfQuoteClient("./config.ini", this);;
         m_redis.connect("47.103.74.35", 20184, "W_P!ViW+d7xAFept6");    
     };
     virtual ~Callback(){};
     
-    TiAxQuoteClient* m_client;
+    TiGfQuoteClient* m_client;
 public:
     virtual void OnEventRtn(TI_QUOTE_EVENT_TYPE event){
         return;
@@ -92,6 +92,7 @@ public:
     };
    
     virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){};
+    virtual void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData){};
 
     virtual void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){
         m_mutex.lock();

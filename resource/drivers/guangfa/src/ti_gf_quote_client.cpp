@@ -14,7 +14,6 @@ TiGfQuoteClient::TiGfQuoteClient(std::string configPath, TiQuoteCallback* userCb
     loadConfig(configPath);
 };
 
-
 TiGfQuoteClient::~TiGfQuoteClient()
 {
     if(m_config){
@@ -300,15 +299,15 @@ int TiGfQuoteClient::loadConfig(std::string iniFileName){
     _iniFile.load(iniFileName);
 
     m_config = new ConfigInfo();
-    m_config->szIp                  = string(_iniFile["ti_ax_quote_client"]["ip"]);
-    m_config->nPort                 = int(_iniFile["ti_ax_quote_client"]["port"]);
-    m_config->szLocalIp             = string(_iniFile["ti_ax_quote_client"]["local_ip"]);
-    m_config->szModel               = string(_iniFile["ti_ax_quote_client"]["model"]);
+    m_config->szIp                  = string(_iniFile["ti_gf_quote_client"]["ip"]);
+    m_config->nPort                 = int(_iniFile["ti_gf_quote_client"]["port"]);
+    m_config->szLocalIp             = string(_iniFile["ti_gf_quote_client"]["local_ip"]);
+    m_config->szModel               = string(_iniFile["ti_gf_quote_client"]["model"]);
     
     LOG(INFO)<< "m_config->szModel:" << m_config->szModel;
 
-    m_config->szUser                = string(_iniFile["ti_ax_quote_client"]["user"]);
-    m_config->szPass                = string(_iniFile["ti_ax_quote_client"]["pass"]);
+    m_config->szUser                = string(_iniFile["ti_gf_quote_client"]["user"]);
+    m_config->szPass                = string(_iniFile["ti_gf_quote_client"]["pass"]);
 
     
     if( m_config->szIp.empty() |
