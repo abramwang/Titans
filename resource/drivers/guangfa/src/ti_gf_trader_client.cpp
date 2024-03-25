@@ -11,7 +11,7 @@ std::atomic_bool g_cust_logined_flag(false);        // 已登录
 std::atomic_bool g_waiting_flag(false);             // 等待响应
 
 ATPClientSeqIDType g_client_seq_id = 1;             //  客户系统消息号
-ATPClientFeatureCodeType g_client_feature_code = "OH;IIP=121.8.190.120;IPORT=20184;LIP=192.168.124.5;MAC=3448EDF6B29C;HD=64cd98f01b78d800289a9a0c706b7052@QuantStage.Moneta;v1.0.1;TAIMENGLI;QuantStage.Oceanus.v2.0.3;192.168.124.5;121.8.190.120";  // 终端识别码，由券商指定规则
+ATPClientFeatureCodeType g_client_feature_code = "OH;IIP=60.216.86.190;IPORT=20184;LIP=192.168.124.5;MAC=3448EDF6B29C;HD=64cd98f01b78d800289a9a0c706b7052@QuantStage.Moneta;v1.0.1;TAIMENGLI;QuantStage.Oceanus.v2.0.3;192.168.124.5;121.8.190.120";  // 终端识别码，由券商指定规则
 
 TiGfTraderClient::TiGfTraderClient(std::string configPath, TiTraderCallback* userCb)
 {
