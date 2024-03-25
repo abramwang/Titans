@@ -33,6 +33,13 @@ public:
         std::string szOrderKey;
         std::string szMatchKey;
 
+
+        std::string szSqlIp;
+        int         nSqlPort;
+        std::string szSqlUser;
+        std::string szSqlPassword;
+        std::string szSqlDb;
+
     } ConfigInfo;
 
     class Locker
