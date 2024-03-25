@@ -1,0 +1,287 @@
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <script src="https://unpkg.com/vue@3"></script>
+  <!-- import CSS -->
+  <!-- <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css"> -->
+  <link rel="stylesheet" href="./index.css">
+  <!-- import JavaScript -->
+  <!-- <script src="https://unpkg.com/element-plus"></script> -->
+  <script src="./index.full.js"></script>
+  <title>交易终端信息采集</title>
+  <style>
+    #app {
+      width: 30%;
+      min-width: 360px;
+      margin: 4% auto 0;
+      padding-bottom: 80px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+   <p>报备内容格式要求：PC/OH;IIP=[IIP];IPORT=[IPORT];LIP=[LIP];MAC=[MAC];HD=[HD];PCN=[PCN];CPU=[CPU];PI=[PI];VOL=[VOL]@[CINFO];[CVER];[CH];[SVER];[GW];[AR]</p>
+   <p>示例(windows)：PC;IIP=123.112.154.118;IPORT=50361;LIP=192.168.118.107;MAC=54EE750B1713^FCF8AE5CBD58;HD=TF655AY91GHRVL;PCN=XXJSB-ZHUANG;CPU=bfebfbff00040651;PI=C^NTFS^99G;VOL=0004-2CC4@O32Client;V2.0;TJYH;O32Server1.0;192.168.0.1;10.0.2.13</p>
+   <p>示例(linux)：OH;IIP=123.112.154.118;IPORT=50361;LIP=192.168.118.107;MAC=54EE750B1713^FCF8AE5CBD58;HD=TF655AY91GHRVL;PCN=XXJSB-ZHUANG;CPU=bfebfbff00040651;PI=C^NTFS^99G;VOL=0004-2CC4@O32Client;V2.0;TJYH;O32Server1.0;192.168.0.1;10.0.2.13</p>
+   <p> 
+   <br/>
+   <br/>
+   </p>
+
+    <el-form :model="form" label-width="200px" :rules="rules" ref="formRef">
+      <el-form-item label="系统类型" prop="systemType">
+        <el-radio-group v-model="form.systemType">
+          <el-radio label="UFT"></el-radio>
+          <el-radio label="ATP"></el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="" prop="ruleType" v-if="form.systemType === 'ATP'">
+        <el-radio-group v-model="form.ruleType">
+          <el-radio label="现货"></el-radio>
+          <el-radio label="两融"></el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="环境" prop="env">
+        <el-radio-group v-model="form.env">
+          <el-radio label="生产"></el-radio>
+          <el-radio label="测试"></el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="接入终端类型" prop="system">
+        <el-radio-group v-model="form.system">
+          <el-radio label="OH">linux</el-radio>
+          <el-radio label="PC">windows</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="机房" prop="center">
+        <el-radio-group v-model="form.center">
+          <el-radio label="深圳中心"></el-radio>
+          <el-radio label="上海中心"></el-radio>
+        </el-radio-group>
+      </el-form-item> 
+      <el-form-item label="本机局域网地址[LIP]" prop="Ip">
+        <el-input v-model="form.Ip" style="width: 220px" />
+      </el-form-item>
+      <el-form-item label="本机MAC地址[MAC]" prop="mac">
+        <el-input v-model="form.mac" style="width: 220px" />
+      </el-form-item>
+      <el-form-item label="硬盘序列号[HD]" prop="HD">
+        <el-input v-model="form.HD" style="width: 220px" />
+      </el-form-item>
+      <el-form-item label="CPU序列号[CPU]" prop="cpu">
+        <el-input v-model="form.cpu" style="width: 220px" />
+      </el-form-item>
+      <el-form-item label="PC终端设备名[PCN]" prop="PCN">
+        <el-input v-model="form.PCN" style="width: 220px" />
+      </el-form-item>
+      <el-form-item label="硬盘分区信息[PI]" prop="PI">
+        <el-input v-model="form.PI" style="width: 220px" />
+      </el-form-item>
+      <el-form-item label="系统盘卷标号[VOL]" prop="Vol">
+        <el-input v-model="form.Vol" style="width: 220px" />
+      </el-form-item>
+      <el-divider></el-divider>
+      <el-form-item label="客户端程序名称[CINFO]" prop="cinfo">
+        <el-input v-model="form.cinfo" style="width: 220px" />
+      </el-form-item>
+      <el-form-item label="客户端程序版本[CVER]" prop="cver">
+        <el-input v-model="form.cver" style="width: 220px" />
+      </el-form-item>
+      <el-form-item label="特征码[CH]" prop="CH">
+        <el-input v-model="form.CH" style="width: 220px" />
+      </el-form-item>
+      <el-form-item label="客户端后台程序版本[SVER]" prop="sver">
+        <el-input v-model="form.sver" style="width: 220px" />
+      </el-form-item>
+      <!--
+          <el-form-item label="委托网关IP地址" prop="GW">
+            <el-input v-model="form.GW" style="width: 240px"/>
+          </el-form-item>
+        
+          <el-form-item label="接入网关IP地址" prop="AR">
+            <el-input v-model="form.AR" style="width: 240px"/>
+          </el-form-item>
+        -->
+      <!-- <el-divider></el-divider> -->
+      <el-form-item>
+        <el-button type="primary" @click="onSubmit">生成</el-button>
+        <!-- <el-button style="margin-left:20px" @click="reset">重置</el-button>  -->
+      </el-form-item>
+    </el-form>
+    <el-input v-if="message" v-model="message" autosize type="textarea" />
+  </div>
+
+  <script>
+    const { createApp, reactive } = Vue;
+    const ipReg = /^(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])\.(\d{1,2}|1\d\d|2[0-4]\d|25[0-5])$/
+    const App = {
+      data() {
+        return {
+          form: reactive({
+            system: '',
+            env: '',
+            center: '',
+            systemType: '',
+            ruleType: '',
+            Ip: '',
+            mac: '',
+            HD: '',
+            cpu: '',
+            PCN: '',
+            PI: '',
+            Vol: '',
+            cinfo: '',
+            cver: '',
+            CH: '',
+            sver: '',
+            GW: '',
+            AR: ''
+          }),
+          rules: reactive({
+            system: [{ required: true, message: '请选择接入终端类型' }],
+            env: [{ required: true, message: '请选择环境' }],
+            center: [{ required: true, message: '请选择机房' }],
+            systemType: [{ required: true, message: '请选择系统类型' }],
+            ruleType: [{ required: true, message: '请选择' }],
+            Ip: [
+              { required: true, message: '请输入IP地址，格式如:127.0.0.1' },
+              { pattern: ipReg, message: '请输入正确的IP地址，格式如:127.0.0.1' }
+            ],
+            mac: [
+              { required: true, message: '请输入mac地址,格式如:11223344FFEE' },
+              { pattern: "^([0-9A-Fa-f]{2}){5,}([0-9A-Fa-f]{2})|([0-9a-fA-F]{4}\\.[0-9a-fA-F]{4}\\.[0-9a-fA-F]{4})$", message: '请输入正确的MAC地址,格式如:11223344FFEE' }
+            ],
+            HD: [{ required: true, message: '请输入硬盘序列号' }],
+            cinfo: [{ required: true, message: '请输入终端名称,如demo' }],
+            cver: [{ required: true, message: '请输入终端版本,如v1.0.0' }],
+            CH: [{ required: true, message: '请输入特征码' }],
+            sver: [{ required: true, message: '请输入后台系统版本号,如demo v1.0.0' }],
+            GW: [
+              { required: true, message: '请输入委托网关IP地址' },
+              { pattern: ipReg, message: '请输入正确的IP地址' }
+            ],
+            AR: [
+              { required: true, message: '请输入接入网关IP地址' },
+              { pattern: ipReg, message: '请输入正确的IP地址' }
+            ],
+          }),
+          message: ''
+        };
+      },
+
+      methods: {
+        // 格式化mac地址
+        formatMAC(mac) {
+          return mac.replace(/-|:/g, '').toUpperCase()
+        },
+        // 提交表单
+        onSubmit() {
+          const formEl = this.$refs.formRef
+
+          if (!formEl) return
+          formEl.validate((valid, fields) => {
+            if (valid) {
+              const formData = Object.assign({}, this.form)
+              formData.mac = this.formatMAC(formData.mac)
+              var opstation = 'OH;IIP=NA;IPORT=NA;LIP=[LIP];MAC=[MAC];HD=[HD];PCN=[PCN];CPU=[CPU];PI=[PI];VOL=[VOL]@[CINFO];[CVER];[CH];[SVER];[GW];[AR]';
+              //opstation=formData.mac;
+
+              if ((formData.system == 'OH')) {
+                opstation = 'OH;IIP=NA;IPORT=NA;LIP=[LIP];MAC=[MAC];HD=[HD];PCN=[PCN];CPU=[CPU];PI=[PI];VOL=[VOL]@[CINFO];[CVER];[CH];[SVER];[GW];[AR]'
+              }
+              else if ((formData.system == 'PC')) {
+                opstation = 'PC;IIP=NA;IPORT=NA;LIP=[LIP];MAC=[MAC];HD=[HD];PCN=[PCN];CPU=[CPU];PI=[PI];VOL=[VOL]@[CINFO];[CVER];[CH];[SVER];[GW];[AR]'
+              }
+			 // alert(formData.system) ;
+              // alert(formData.systemType=='UFT') ;
+              // alert(formData.env=='测试') ;
+              //alert(formData.center=='上海中心') ;
+
+              var ar_address = '';
+              if ((formData.systemType == 'UFT') && (formData.env == '测试')) {
+                ar_address = '10.128.10.42';
+              }
+              else if ((formData.systemType == 'ATP')  && (formData.ruleType == '现货') && (formData.env == '测试') && (formData.center == '深圳中心')) {
+                ar_address = '10.62.146.242';
+              }
+              else if ((formData.systemType == 'ATP') && (formData.ruleType == '现货') && (formData.env == '测试') && (formData.center == '上海中心')) {
+                ar_address = '10.2.147.48';
+              }
+              else if ((formData.systemType == 'ATP')  && (formData.ruleType == '两融') && (formData.env == '测试') && (formData.center == '深圳中心')) {
+                ar_address = '10.62.147.27';
+              }
+              else if ((formData.systemType == 'ATP')  && (formData.ruleType == '两融') && (formData.env == '测试') && (formData.center == '上海中心')) {
+                ar_address = '10.62.147.27';
+              }
+			  
+             // alert(ar_address);
+              opstation = opstation.replace('[AR]', ar_address);
+              opstation = opstation.replace('[LIP]', formData.Ip);
+              opstation = opstation.replace('[MAC]', formData.mac);
+              opstation = opstation.replace('[HD]', formData.HD);
+              opstation = opstation.replace('[CINFO]', formData.cinfo);
+              opstation = opstation.replace('[CVER]', formData.cver);
+              opstation = opstation.replace('[CH]', formData.CH);
+              opstation = opstation.replace('[SVER]', formData.sver);
+              opstation = opstation.replace('[GW]', formData.Ip);
+              // cpu: '',
+              //PCN: '',
+              // PI: '',
+              // Vol: '',
+              if (formData.cpu != "" && formData.cpu != null && formData.cpu != undefined) {
+                opstation = opstation.replace('[CPU]', formData.cpu);
+              }
+              else {
+                opstation = opstation.replace('CPU=[CPU];', '');
+              }
+
+              if (formData.PCN != "" && formData.PCN != null && formData.PCN != undefined) {
+                opstation = opstation.replace('[PCN]', formData.PCN);
+              }
+              else {
+                opstation = opstation.replace('PCN=[PCN];', '');
+              }
+
+              if (formData.PI != "" && formData.PI != null && formData.PI != undefined) {
+                opstation = opstation.replace('[PI]', formData.PI);
+              }
+              else {
+                opstation = opstation.replace('PI=[PI];', '');
+              }
+
+
+              if (formData.Vol != "" && formData.Vol != null && formData.Vol != undefined) {
+                opstation = opstation.replace('[VOL]', formData.Vol);
+              }
+              else {
+                opstation = opstation.replace('VOL=[VOL]', '');
+              }
+
+              opstation = opstation.replace(';@', '@');
+
+              console.log('submit!', formData)
+              this.message = opstation;
+              //this.message = formData.env;
+
+            } else {
+              console.log('error submit!', fields)
+			  alert('格式有错误');
+            }
+          })
+        },
+        reset() {
+          this.$refs.formRef.resetFields()
+        }
+      }
+    };
+
+    const app = createApp(App);
+    app.use(ElementPlus);
+    app.mount("#app");
+  </script>
+</body>
+
+</html>
