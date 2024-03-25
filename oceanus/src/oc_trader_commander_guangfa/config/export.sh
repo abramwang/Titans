@@ -1,0 +1,2 @@
+export RSA_PUBLICK_KEY_PATH=/home/docker/D01/project/Titans/oceanus/src/oc_trader_commander_guangfa/config/rsa_public_key.pem
+export ATP_ENCRYPT_PASSWORD=/home/docker/D01/project/Titans/oceanus/src/oc_trader_commander_guangfa/config/librsa_2048_encrypt.so
