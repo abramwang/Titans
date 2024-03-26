@@ -8,7 +8,6 @@
 #include "redis_commander.h"
 #include "redis_sync_handle.h"
 
-
 #include "ti_quote_callback.h"
 #include "ti_quote_ipc_client.h"
 
