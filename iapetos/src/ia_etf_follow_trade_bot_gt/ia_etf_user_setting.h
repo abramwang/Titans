@@ -18,6 +18,8 @@ private:
 private:
     std::vector<std::string> m_monitor_etf_symbol_vec;  //监控ETF清单
 
+private:
+    void init_monitor_etf_symbol();
 };
 
 #endif // __IA_ETF_USER_SETTING_H__

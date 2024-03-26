@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(ia_etf_follow_trade_bot_gt)
+project(ia_etf_jager_tacit_ronin_gt)
 
 # This ensures that things like gnu++11 get passed correctly
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

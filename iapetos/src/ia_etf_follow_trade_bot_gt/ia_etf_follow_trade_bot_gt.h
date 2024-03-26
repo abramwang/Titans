@@ -11,8 +11,8 @@
 #include "ti_quote_callback.h"
 #include "ti_quote_ipc_client.h"
 
+#include "ia_etf_user_setting.h"
 #include "ia_etf_info_mysql.h"
-
 #include "ia_etf_quote_data_cache.h"
 #include "ia_etf_trade_worker_center.h"
 
@@ -109,6 +109,7 @@ private:
     TiGtTraderClient* m_trade_client;
     ConfigInfo* m_config;
 
+    IaEtfUserSetting* m_user_setting;
     IaEtfInfoMysql* m_mysql;
     IaEtfQuoteDataCache* m_quote_cache;
     IaEtfTradeWorkerCenter* m_trade_center;
