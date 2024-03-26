@@ -12,6 +12,7 @@ IaEtfFollowTradeBotGt::IaEtfFollowTradeBotGt(uv_loop_s* loop, std::string config
     m_quote_client = new TiQuoteIpcClient(configPath, loop, this);
     m_trade_client = new TiGtTraderClient(configPath, this);
     m_config = NULL;
+    m_quote_cache = new IaEtfQuoteDataCache();
     m_total_asset = 0;
     m_cash_asset = 0;
     loadConfig(configPath);
@@ -43,6 +44,13 @@ IaEtfFollowTradeBotGt::~IaEtfFollowTradeBotGt(){
     }
     uv_timer_stop(&m_timer);
     uv_close((uv_handle_t*)&m_timer, NULL);
+};
+
+////////////////////////////////////////////////////////////////////////
+// 行情回调
+////////////////////////////////////////////////////////////////////////
+void IaEtfFollowTradeBotGt::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){
+    m_quote_cache->OnL2StockSnapshotRtn(pData);
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -147,6 +155,12 @@ void IaEtfFollowTradeBotGt::OnRtnOrderMatchEvent(const TiRtnOrderMatch* pData)
 void IaEtfFollowTradeBotGt::OnTimer()
 {
     Locker locker(&m_mutex);
+    TiQuoteSnapshotStockField* pData = m_quote_cache->GetSnapshot("000001", "SZ");
+    if (pData)
+    {
+        printf("[OnL2StockSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
+                pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
+    }
 };
 
 

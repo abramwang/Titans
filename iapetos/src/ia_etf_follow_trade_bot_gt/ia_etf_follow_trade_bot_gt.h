@@ -11,6 +11,8 @@
 #include "ti_quote_callback.h"
 #include "ti_quote_ipc_client.h"
 
+#include "ia_etf_quote_data_cache.h"
+
 #include <nlohmann/json.hpp>
 using namespace nlohmann;
 
@@ -64,11 +66,7 @@ public:
     virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){};
     virtual void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData){};
 
-    virtual void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){
-        printf("[OnL2StockSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
-                pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
-            
-    };
+    virtual void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData);
     virtual void OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){};
     virtual void OnL2StockOrderRtn(const TiQuoteOrderField* pData){};
 /*   交易回调   */
@@ -107,6 +105,8 @@ private:
     TiQuoteIpcClient* m_quote_client;
     TiGtTraderClient* m_trade_client;
     ConfigInfo* m_config;
+    IaEtfQuoteDataCache* m_quote_cache;
+
     json m_json_cash;
     json m_json_msg;
 

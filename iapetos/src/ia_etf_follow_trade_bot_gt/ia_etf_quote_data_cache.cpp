@@ -18,5 +18,16 @@ void IaEtfQuoteDataCache::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* 
         m_snapshot_map[id] = std::make_shared<TiQuoteSnapshotStockField>();
     }
 
-    memcpy(m_snapshot_map[id].get(), pData, sizeof(TiQuoteSnapshotIndexField));
+    memcpy(m_snapshot_map[id].get(), pData, sizeof(TiQuoteSnapshotIndexField));        
 }
+
+TiQuoteSnapshotStockField* IaEtfQuoteDataCache::GetSnapshot(const char* symbol, const char* exchange)
+{
+    int64_t id = TiQuoteTools::GetSymbolID(exchange, symbol);
+    auto it = m_snapshot_map.find(id);
+    if (it != m_snapshot_map.end())
+    {
+        return it->second.get();
+    }
+    return nullptr;
+};

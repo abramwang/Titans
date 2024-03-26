@@ -2,6 +2,7 @@
 #define __IA_ETF_QUOTE_DATA_CACHE_H__
 
 #include <memory>
+#include <string>
 
 #include "ti_quote_tools.h"
 #include "ti_quote_callback.h"
@@ -24,10 +25,12 @@ public:     /*   行情回调   */
     virtual void OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){};
     virtual void OnL2StockOrderRtn(const TiQuoteOrderField* pData){};
 
-
 public:
     IaEtfQuoteDataCache();
     ~IaEtfQuoteDataCache();
+
+public:
+    TiQuoteSnapshotStockField* GetSnapshot(const char* symbol, const char* exchange);
 };
 
 
