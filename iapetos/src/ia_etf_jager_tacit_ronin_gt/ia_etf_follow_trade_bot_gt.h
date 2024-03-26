@@ -103,8 +103,8 @@ public:
     static void onTimer(uv_timer_t* handle);
 
 private:
-    RedisSyncHandle m_redis;
     uv_timer_t m_timer;
+    RedisSyncHandle* m_redis;
     TiQuoteIpcClient* m_quote_client;
     TiGtTraderClient* m_trade_client;
     ConfigInfo* m_config;

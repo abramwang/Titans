@@ -9,6 +9,7 @@
 IaEtfFollowTradeBotGt::IaEtfFollowTradeBotGt(uv_loop_s* loop, std::string configPath)
     : RedisCommander(loop)
 {
+    m_redis = new RedisSyncHandle();
     m_quote_client = new TiQuoteIpcClient(configPath, loop, this);
     m_trade_client = new TiGtTraderClient(configPath, this);
     m_config = NULL;
@@ -24,11 +25,11 @@ IaEtfFollowTradeBotGt::IaEtfFollowTradeBotGt(uv_loop_s* loop, std::string config
     if(m_config){
         connect(m_config->szIp.c_str(), m_config->nPort, m_config->szAuth.c_str());
         
-        bool flag = m_redis.connect(m_config->szIp.c_str(), m_config->nPort, m_config->szAuth.c_str());
+        bool flag = m_redis->connect(m_config->szIp.c_str(), m_config->nPort, m_config->szAuth.c_str());
         LOG(INFO) << "[IaEtfFollowTradeBotGt] flag: " << flag;
         resetStreamKey();
 
-        m_user_setting = new IaEtfUserSetting(&m_redis);
+        m_user_setting = new IaEtfUserSetting(m_redis);
         m_mysql = new IaEtfInfoMysql(m_config->szSqlIp.c_str(), m_config->nSqlPort, m_config->szSqlUser.c_str(), m_config->szSqlPassword.c_str(), m_config->szSqlDb.c_str());
         m_quote_cache = new IaEtfQuoteDataCache();
         m_trade_center = new IaEtfTradeWorkerCenter(m_trade_client, m_quote_cache, m_mysql);
@@ -105,7 +106,7 @@ void IaEtfFollowTradeBotGt::OnRspQryOrder(const TiRspQryOrder* pData, bool isLas
         if(!m_config->szOrderKey.empty())
         {
             TiTraderFormater::FormatOrderStatus(pData, m_json_cash);
-            m_redis.hmset(m_config->szOrderKey.c_str(), m_json_cash["szOrderId"].get<std::string>().c_str(), m_json_cash.dump().c_str());
+            m_redis->hmset(m_config->szOrderKey.c_str(), m_json_cash["szOrderId"].get<std::string>().c_str(), m_json_cash.dump().c_str());
         }
     }
 };
@@ -126,7 +127,7 @@ void IaEtfFollowTradeBotGt::OnRspQryMatch(const TiRspQryMatch* pData, bool isLas
         if(!m_config->szMatchKey.empty())
         {
             TiTraderFormater::FormatOrderMatchEvent(pData, m_json_cash);
-            m_redis.hmset(m_config->szMatchKey.c_str(), m_json_cash["szStreamId"].get<std::string>().c_str(), m_json_cash.dump().c_str());
+            m_redis->hmset(m_config->szMatchKey.c_str(), m_json_cash["szStreamId"].get<std::string>().c_str(), m_json_cash.dump().c_str());
         }
     }
 };
@@ -321,11 +322,11 @@ void IaEtfFollowTradeBotGt::resetStreamKey()
     }
     if(!m_config->szOrderKey.empty())
     {
-        m_redis.del(m_config->szOrderKey.c_str());
+        m_redis->del(m_config->szOrderKey.c_str());
     }
     if(!m_config->szMatchKey.empty())
     {
-        m_redis.del(m_config->szMatchKey.c_str());
+        m_redis->del(m_config->szMatchKey.c_str());
     }
 };
 
