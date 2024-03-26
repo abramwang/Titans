@@ -5,7 +5,7 @@
 #include "ti_trader_callback.h"
 
 #include "ti_gt_trader_client.h"
-
+#include "ia_etf_info_mysql.h"
 #include "ia_etf_quote_data_cache.h"
 
 class IaEtfTradeWorkerCenter
@@ -26,10 +26,14 @@ public:
 
 private:
     TiGtTraderClient* m_trade_client;
+    IaEtfInfoMysql* m_mysql;
     IaEtfQuoteDataCache* m_quote_cache;
 public:
-    IaEtfTradeWorkerCenter(TiGtTraderClient* trade_client, IaEtfQuoteDataCache* quote_cache);
+    IaEtfTradeWorkerCenter(TiGtTraderClient* trade_client, IaEtfQuoteDataCache* quote_cache, IaEtfInfoMysql* mysql);
     ~IaEtfTradeWorkerCenter();
+
+private:
+    void init_etf_info();
 
 };
 
