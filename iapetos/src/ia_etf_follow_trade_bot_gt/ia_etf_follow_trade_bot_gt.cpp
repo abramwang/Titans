@@ -13,6 +13,7 @@ IaEtfFollowTradeBotGt::IaEtfFollowTradeBotGt(uv_loop_s* loop, std::string config
     m_trade_client = new TiGtTraderClient(configPath, this);
     m_config = NULL;
     m_quote_cache = new IaEtfQuoteDataCache();
+    m_trade_center = new IaEtfTradeWorkerCenter(m_trade_client, m_quote_cache);
     m_total_asset = 0;
     m_cash_asset = 0;
     loadConfig(configPath);

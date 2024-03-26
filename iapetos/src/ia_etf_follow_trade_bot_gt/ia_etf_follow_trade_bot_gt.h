@@ -12,6 +12,7 @@
 #include "ti_quote_ipc_client.h"
 
 #include "ia_etf_quote_data_cache.h"
+#include "ia_etf_trade_worker_center.h"
 
 #include <nlohmann/json.hpp>
 using namespace nlohmann;
@@ -106,6 +107,8 @@ private:
     TiGtTraderClient* m_trade_client;
     ConfigInfo* m_config;
     IaEtfQuoteDataCache* m_quote_cache;
+    IaEtfTradeWorkerCenter* m_trade_center;
+    
 
     json m_json_cash;
     json m_json_msg;
