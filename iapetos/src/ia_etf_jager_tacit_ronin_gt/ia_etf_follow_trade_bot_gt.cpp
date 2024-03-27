@@ -13,8 +13,8 @@ IaEtfFollowTradeBotGt::IaEtfFollowTradeBotGt(uv_loop_s* loop, std::string config
     m_quote_client = new TiQuoteIpcClient(configPath, loop, this);
     m_trade_client = new TiGtTraderClient(configPath, this);
     m_config = NULL;
-    m_user_setting = NULL;
     m_mysql = NULL;
+    m_user_setting = NULL;
     m_quote_cache = NULL;
     m_trade_center = NULL;
     m_total_asset = 0;
@@ -29,10 +29,10 @@ IaEtfFollowTradeBotGt::IaEtfFollowTradeBotGt(uv_loop_s* loop, std::string config
         LOG(INFO) << "[IaEtfFollowTradeBotGt] flag: " << flag;
         resetStreamKey();
 
-        m_user_setting = new IaEtfUserSetting(m_redis);
         m_mysql = new IaEtfInfoMysql(m_config->szSqlIp.c_str(), m_config->nSqlPort, m_config->szSqlUser.c_str(), m_config->szSqlPassword.c_str(), m_config->szSqlDb.c_str());
+        m_user_setting = new IaEtfUserSetting(m_redis, m_mysql);
         m_quote_cache = new IaEtfQuoteDataCache();
-        m_trade_center = new IaEtfTradeWorkerCenter(m_trade_client, m_quote_cache, m_mysql);
+        m_trade_center = new IaEtfTradeWorkerCenter(m_trade_client, m_quote_cache, m_user_setting);
     }
 
     m_timer.data = this;
