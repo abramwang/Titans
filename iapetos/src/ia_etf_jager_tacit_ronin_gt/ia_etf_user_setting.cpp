@@ -24,51 +24,59 @@ void IaEtfUserSetting::init_monitor_etf_symbol()
 
 void IaEtfUserSetting::init_etf_info()
 {
+    std::set<std::string> symbol_set;
+
     std::vector<IaEtfInfo> etfInfoList;
     m_etf_info_mysql_client->QueryEtfInfoList(20240322, m_monitor_etf_symbol_vec, etfInfoList);
 
     std::cout << etfInfoList.size() << std::endl;
 
     for (auto& etfInfo : etfInfoList) {
-        std::cout << "etfInfo.m_tradeDate:" << etfInfo.m_tradeDate << std::endl;
-        std::cout << "etfInfo.m_fundId:" << etfInfo.m_fundId << std::endl;
-        std::cout << "etfInfo.m_exchange:" << etfInfo.m_exchange << std::endl;
-        std::cout << "etfInfo.m_company:" << etfInfo.m_company << std::endl;
-        std::cout << "etfInfo.m_fundName:" << etfInfo.m_fundName << std::endl;
-        std::cout << "etfInfo.m_minUnit:" << etfInfo.m_minUnit << std::endl;
-        std::cout << "etfInfo.m_preMinUnitTurnover:" << etfInfo.m_preMinUnitTurnover << std::endl;
-        std::cout << "etfInfo.m_publicEstimatedCashDifference:" << etfInfo.m_publicEstimatedCashDifference << std::endl;
-        std::cout << "etfInfo.m_realEstimatedCashDifference:" << etfInfo.m_realEstimatedCashDifference << std::endl;
-        std::cout << "etfInfo.m_allowCreation:" << etfInfo.m_allowCreation << std::endl;
-        std::cout << "etfInfo.m_allowRedemption:" << etfInfo.m_allowRedemption << std::endl;
-        std::cout << "etfInfo.m_maxCashReplacePercentage:" << etfInfo.m_maxCashReplacePercentage << std::endl;
-        std::cout << "etfInfo.m_maxCreationVol:" << etfInfo.m_maxCreationVol << std::endl;
-        std::cout << "etfInfo.m_maxRedemptionVol:" << etfInfo.m_maxRedemptionVol << std::endl;
-        std::cout << "etfInfo.m_requiredToDiscloseIOPV:" << etfInfo.m_requiredToDiscloseIOPV << std::endl;
-        std::cout << "etfInfo.m_constituentStockNum:" << etfInfo.m_constituentStockNum << std::endl;
-        break;
+        std::shared_ptr<IaEtfInfo> info_ptr = std::make_shared<IaEtfInfo>(etfInfo);
+        m_etf_info_map[etfInfo.m_fundId] = info_ptr;
+
+        symbol_set.insert(info_ptr->m_fundId);
     }
 
     std::vector<IaEtfConstituentInfo> constituentInfoVec;
     m_etf_info_mysql_client->QueryEtfConstituentInfoList(20240322, m_monitor_etf_symbol_vec, constituentInfoVec);
     
+
     std::cout << constituentInfoVec.size() << std::endl;
     for (auto& constituentInfo : constituentInfoVec) {
-        std::cout << "constituentInfo.m_tradeDate:" << constituentInfo.m_tradeDate << std::endl;
-        std::cout << "constituentInfo.m_fundId:" << constituentInfo.m_fundId << std::endl;
-        std::cout << "constituentInfo.m_symbol:" << constituentInfo.m_symbol << std::endl;
-        std::cout << "constituentInfo.m_exchange:" << constituentInfo.m_exchange << std::endl;
-        std::cout << "constituentInfo.m_name:" << constituentInfo.m_name << std::endl;
-        std::cout << "constituentInfo.m_replace_flag:" << (int)constituentInfo.m_replace_flag << std::endl;
-        std::cout << "constituentInfo.m_replace_amount:" << constituentInfo.m_replace_amount << std::endl;
-        std::cout << "constituentInfo.m_creation_amount:" << constituentInfo.m_creation_amount << std::endl;
-        std::cout << "constituentInfo.m_redemption_amount:" << constituentInfo.m_redemption_amount << std::endl;
-        std::cout << "constituentInfo.m_disclosure_vol:" << constituentInfo.m_disclosure_vol << std::endl;
-        std::cout << "constituentInfo.m_reality_vol:" << constituentInfo.m_reality_vol << std::endl;
-        std::cout << "constituentInfo.m_cash_replaced_creation_premium_rate:" << constituentInfo.m_cash_replaced_creation_premium_rate << std::endl;
-        std::cout << "constituentInfo.m_cash_replaced_redemption_discount_rate:" << constituentInfo.m_cash_replaced_redemption_discount_rate << std::endl;
+        std::shared_ptr<IaEtfConstituentInfo> info_ptr = std::make_shared<IaEtfConstituentInfo>(constituentInfo);
+        m_etf_constituent_info_map.insert(std::make_pair(constituentInfo.m_fundId, info_ptr));
 
-        break;
+        symbol_set.insert(info_ptr->m_symbol);
     }
-    
+
+    std::cout << symbol_set.size() << std::endl;
+};
+
+
+bool IaEtfUserSetting::GetMonitorEtfSymbol(std::vector<std::string> &monitor_etf_symbol_vec)
+{
+    if (m_monitor_etf_symbol_vec.empty())
+    {
+        return false;
+    }
+    monitor_etf_symbol_vec = m_monitor_etf_symbol_vec;
+    return true;
+};
+
+bool IaEtfUserSetting::GetEtfInfo(std::string fund_symbol, std::shared_ptr<IaEtfInfo> &etf_info_ptr, std::vector<std::shared_ptr<IaEtfConstituentInfo>> &constituent_info_vec)
+{
+    auto iter = m_etf_info_map.find(fund_symbol);
+    if (iter == m_etf_info_map.end())
+    {
+        return false;
+    }
+    etf_info_ptr = iter->second;
+
+    auto range = m_etf_constituent_info_map.equal_range(fund_symbol);
+    for (auto it = range.first; it != range.second; ++it) {
+        constituent_info_vec.push_back(it->second);
+    }
+
+    return true;
 };
