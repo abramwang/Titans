@@ -1,4 +1,5 @@
 #include "ia_etf_signal_factor.h"
+#include "datetime.h"
 
 IaEtfSignalFactor::IaEtfSignalFactor(std::shared_ptr<IaEtfInfo> etf_info_ptr, std::vector<std::shared_ptr<IaEtfConstituentInfo>> constituent_info_vec, IaEtfQuoteDataCache* etf_quote_data_cache)
 {
@@ -18,8 +19,9 @@ void IaEtfSignalFactor::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pD
             pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
     */
     m_out["symbol"] = m_etf_info_ptr->m_fundId;
+    m_out["name"] = m_etf_info_ptr->m_fundName;
     m_out["company"] = m_etf_info_ptr->m_company;
-    m_out["update_time"] = pData->time_str;
+    m_out["update_time"] = datetime::get_format_time_ms(pData->date, pData->time);
     m_out["diff"] = calc_diff();
 };
 
@@ -59,11 +61,20 @@ double IaEtfSignalFactor::calc_diff()
             total_diff += diff;
         }
     }
-    //printf("[calc_diff] %s total_diff: %f\n", m_etf_info_ptr->m_fundId.c_str(), total_diff);
+    //printf("[calc_diff] %s %s total_diff: %f\n", m_etf_info_ptr->m_fundId.c_str(), m_etf_info_ptr->m_fundName.c_str(), total_diff);
     return total_diff;
 };
 
-void IaEtfSignalFactor::GetJsonOut(json& j)
+bool IaEtfSignalFactor::GetJsonOut(json& j)
 {
+    if (m_out.empty())
+    {
+        return false;
+    }
+    if (m_out["diff"].get<double>() == 0)
+    {
+        return false;
+    }
     j = m_out;
+    return true;
 };

@@ -45,7 +45,7 @@ public:
     ~IaEtfSignalFactor();
 
 public:
-    void GetJsonOut(json& j);
+    bool GetJsonOut(json& j);
 
 };
 

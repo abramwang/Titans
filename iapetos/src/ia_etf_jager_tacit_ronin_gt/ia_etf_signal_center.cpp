@@ -16,12 +16,15 @@ IaEtfSignalCenter::~IaEtfSignalCenter()
 void IaEtfSignalCenter::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData)
 {
     auto iter = m_etf_signal_factor_map.find(pData->symbol);
-    for (; iter != m_etf_signal_factor_map.end(); ++iter)
+    if(iter == m_etf_signal_factor_map.end())
     {
-        iter->second->OnL2StockSnapshotRtn(pData);
-
-        m_out[pData->symbol] = json::object();
-        iter->second->GetJsonOut(m_out[pData->symbol]);
+        return;
+    }
+    iter->second->OnL2StockSnapshotRtn(pData);
+    json etf_diff;
+    if (iter->second->GetJsonOut(etf_diff))
+    {
+        m_out[pData->symbol] = etf_diff;
     }
 };
 

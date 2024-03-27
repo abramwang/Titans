@@ -181,7 +181,7 @@ void IaEtfFollowTradeBotGt::OnTimer()
     {
         return;
     }
-    std::cout << "[IaEtfFollowTradeBotGt::OnTimer] signal_size" << signal_out.size() << std::endl;
+    std::cout << "[IaEtfFollowTradeBotGt::OnTimer] signal_size: " << signal_out.size() << std::endl;
     m_redis->xadd(m_config->szSignalKey.c_str(), signal_out.dump().c_str());
 };
 
