@@ -16,6 +16,7 @@ IaEtfFollowTradeBotGt::IaEtfFollowTradeBotGt(uv_loop_s* loop, std::string config
     m_mysql = NULL;
     m_user_setting = NULL;
     m_quote_cache = NULL;
+    m_signal_center = NULL;
     m_trade_center = NULL;
     m_total_asset = 0;
     m_cash_asset = 0;
@@ -32,6 +33,7 @@ IaEtfFollowTradeBotGt::IaEtfFollowTradeBotGt(uv_loop_s* loop, std::string config
         m_mysql = new IaEtfInfoMysql(m_config->szSqlIp.c_str(), m_config->nSqlPort, m_config->szSqlUser.c_str(), m_config->szSqlPassword.c_str(), m_config->szSqlDb.c_str());
         m_user_setting = new IaEtfUserSetting(m_redis, m_mysql);
         m_quote_cache = new IaEtfQuoteDataCache();
+        m_signal_center = new IaEtfSignalCenter(m_user_setting, m_quote_cache);
         m_trade_center = new IaEtfTradeWorkerCenter(m_trade_client, m_quote_cache, m_user_setting);
     }
 
@@ -59,6 +61,7 @@ IaEtfFollowTradeBotGt::~IaEtfFollowTradeBotGt(){
 ////////////////////////////////////////////////////////////////////////
 void IaEtfFollowTradeBotGt::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){
     m_quote_cache->OnL2StockSnapshotRtn(pData);
+    m_signal_center->OnL2StockSnapshotRtn(pData);
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -91,12 +94,14 @@ void IaEtfFollowTradeBotGt::OnRspOrderDelete(const TiRspOrderDelete* pData)
 };
 void IaEtfFollowTradeBotGt::OnRspQryOrder(const TiRspQryOrder* pData, bool isLast)
 {
+    m_trade_center->OnRspQryOrder(pData, isLast);
     /*
     for (auto iter = m_workerList.begin(); iter != m_workerList.end(); iter++)
     {
         (*iter)->OnRspQryOrder(pData, isLast);
     }
     */
+
     json j;
     TiTraderFormater::FormatOrderStatus(pData, j);
     std::cout << "OnRspQryOrder: " << j << std::endl;
@@ -112,6 +117,7 @@ void IaEtfFollowTradeBotGt::OnRspQryOrder(const TiRspQryOrder* pData, bool isLas
 };
 void IaEtfFollowTradeBotGt::OnRspQryMatch(const TiRspQryMatch* pData, bool isLast)
 {
+    m_trade_center->OnRspQryMatch(pData, isLast);
     /*
     for (auto iter = m_workerList.begin(); iter != m_workerList.end(); iter++)
     {
@@ -133,6 +139,7 @@ void IaEtfFollowTradeBotGt::OnRspQryMatch(const TiRspQryMatch* pData, bool isLas
 };
 void IaEtfFollowTradeBotGt::OnRspQryPosition(const TiRspQryPosition* pData, bool isLast)
 {
+    m_trade_center->OnRspQryPosition(pData, isLast);
 
     json j;
     TiTraderFormater::FormatPosition(pData, j);
@@ -147,6 +154,7 @@ void IaEtfFollowTradeBotGt::OnRspQryPosition(const TiRspQryPosition* pData, bool
 void IaEtfFollowTradeBotGt::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
 {
     Locker locker(&m_mutex);
+    m_trade_center->OnRtnOrderStatusEvent(pData);
     json j;
     TiTraderFormater::FormatOrderStatus(pData, j);
     std::cout << "OnRtnOrderStatusEvent: " << j << std::endl;
@@ -154,6 +162,7 @@ void IaEtfFollowTradeBotGt::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
 void IaEtfFollowTradeBotGt::OnRtnOrderMatchEvent(const TiRtnOrderMatch* pData)
 {
     Locker locker(&m_mutex);
+    m_trade_center->OnRtnOrderMatchEvent(pData);
     json j;
     TiTraderFormater::FormatOrderMatchEvent(pData, j);
     std::cout << "OnRtnOrderMatchEvent: " << j << std::endl;
@@ -163,12 +172,7 @@ void IaEtfFollowTradeBotGt::OnRtnOrderMatchEvent(const TiRtnOrderMatch* pData)
 void IaEtfFollowTradeBotGt::OnTimer()
 {
     Locker locker(&m_mutex);
-    TiQuoteSnapshotStockField* pData = m_quote_cache->GetSnapshot("000001", "SZ");
-    if (pData)
-    {
-        printf("[OnL2StockSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
-                pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
-    }
+    m_signal_center->OnTimer();
 };
 
 

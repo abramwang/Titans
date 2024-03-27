@@ -79,7 +79,7 @@ bool RedisSyncHandle::connect(const char* ip, int port, const char* pass)
 	std::cout << "AUTH: " << reply << std::endl;
 	freeReplyObject(reply);
 
-    cout << "connect redis-server success!" << endl;
+    cout << "connect server success!" << endl;
 
     return true;
 }

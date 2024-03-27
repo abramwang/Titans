@@ -14,6 +14,7 @@
 #include "ia_etf_user_setting.h"
 #include "ia_etf_info_mysql.h"
 #include "ia_etf_quote_data_cache.h"
+#include "ia_etf_signal_center.h"
 #include "ia_etf_trade_worker_center.h"
 
 #include <nlohmann/json.hpp>
@@ -112,6 +113,7 @@ private:
     IaEtfUserSetting* m_user_setting;
     IaEtfInfoMysql* m_mysql;
     IaEtfQuoteDataCache* m_quote_cache;
+    IaEtfSignalCenter* m_signal_center;
     IaEtfTradeWorkerCenter* m_trade_center;
     
 
