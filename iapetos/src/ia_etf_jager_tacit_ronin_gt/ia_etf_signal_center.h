@@ -9,6 +9,9 @@
 
 #include "ia_etf_signal_factor.h"
 
+#include <nlohmann/json.hpp>
+using namespace nlohmann;
+
 class IaEtfSignalCenter 
     : public TiQuoteCallback
 {
@@ -33,11 +36,16 @@ private:
 
     std::unordered_map<std::string, std::shared_ptr<IaEtfSignalFactor>> m_etf_signal_factor_map;
 
+    json m_out;     //输出数据
+
 private:
     void init_etf_signal_factor();
 public:
     IaEtfSignalCenter(IaEtfUserSetting* etf_user_setting, IaEtfQuoteDataCache* etf_quote_data_cache);
     ~IaEtfSignalCenter();
+
+public:
+    void GetJsonOut(json& j);
 };
 
 #endif

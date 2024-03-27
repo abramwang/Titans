@@ -38,6 +38,7 @@ public:
         std::string szOrderKey;
         std::string szMatchKey;
 
+        std::string szSignalKey;
 
         std::string szSqlIp;
         int         nSqlPort;

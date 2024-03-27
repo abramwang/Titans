@@ -19,6 +19,9 @@ void IaEtfSignalCenter::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pD
     for (; iter != m_etf_signal_factor_map.end(); ++iter)
     {
         iter->second->OnL2StockSnapshotRtn(pData);
+
+        m_out[pData->symbol] = json::object();
+        iter->second->GetJsonOut(m_out[pData->symbol]);
     }
 };
 
@@ -45,6 +48,12 @@ void IaEtfSignalCenter::init_etf_signal_factor()
 
         std::shared_ptr<IaEtfSignalFactor> etf_signal_factor = std::make_shared<IaEtfSignalFactor>(etf_info_ptr, constituent_info_vec, m_quote_data_cache);
         m_etf_signal_factor_map[fund_symbol] = etf_signal_factor;
-        break;
     }
+};
+
+
+void IaEtfSignalCenter::GetJsonOut(json& j)
+{
+    j = m_out;
+    m_out.clear();
 };

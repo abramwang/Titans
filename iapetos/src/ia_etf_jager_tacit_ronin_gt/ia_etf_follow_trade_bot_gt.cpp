@@ -173,6 +173,16 @@ void IaEtfFollowTradeBotGt::OnTimer()
 {
     Locker locker(&m_mutex);
     m_signal_center->OnTimer();
+
+    json signal_out;
+    m_signal_center->GetJsonOut(signal_out);
+
+    if(signal_out.empty())
+    {
+        return;
+    }
+    std::cout << "[IaEtfFollowTradeBotGt::OnTimer] signal_size" << signal_out.size() << std::endl;
+    m_redis->xadd(m_config->szSignalKey.c_str(), signal_out.dump().c_str());
 };
 
 
@@ -292,6 +302,8 @@ int IaEtfFollowTradeBotGt::loadConfig(std::string iniFileName){
     
     m_config->szOrderKey         = string(_iniFile["ia_etf_follow_trade_bot_gt"]["order_key"]);
     m_config->szMatchKey         = string(_iniFile["ia_etf_follow_trade_bot_gt"]["match_key"]);
+
+    m_config->szSignalKey   = string(_iniFile["ia_etf_follow_trade_bot_gt"]["signal_key"]);
     
     m_config->szSqlIp       = string(_iniFile["ia_etf_follow_trade_bot_gt"]["sql_ip"]);
     m_config->nSqlPort      = _iniFile["ia_etf_follow_trade_bot_gt"]["sql_port"];

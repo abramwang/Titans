@@ -8,6 +8,9 @@
 #include "ia_etf_info_struct.h"
 #include "ia_etf_quote_data_cache.h"
 
+#include <nlohmann/json.hpp>
+using namespace nlohmann;
+
 class IaEtfSignalFactor 
     : public TiQuoteCallback
 {
@@ -31,6 +34,8 @@ private:
     std::vector<std::shared_ptr<IaEtfConstituentInfo>>  m_constituent_info_vec;
     IaEtfQuoteDataCache* m_quote_data_cache;
 
+    json m_out;     //输出数据
+
 private:
     double calc_diff(); //计算现金差值
 public:
@@ -38,6 +43,9 @@ public:
         std::vector<std::shared_ptr<IaEtfConstituentInfo>> constituent_info_vec, 
         IaEtfQuoteDataCache* etf_quote_data_cache);
     ~IaEtfSignalFactor();
+
+public:
+    void GetJsonOut(json& j);
 
 };
 
