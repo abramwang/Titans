@@ -24,14 +24,8 @@ void IaEtfUserSetting::init_monitor_etf_symbol()
 
 void IaEtfUserSetting::init_etf_info()
 {
-    std::vector<std::string> fund_symbol_vec;
-    fund_symbol_vec.push_back("159150");
-    fund_symbol_vec.push_back("159350");
-    fund_symbol_vec.push_back("159801");
-
-
     std::vector<IaEtfInfo> etfInfoList;
-    m_etf_info_mysql_client->QueryEtfInfoList(20240322, fund_symbol_vec, etfInfoList);
+    m_etf_info_mysql_client->QueryEtfInfoList(20240322, m_monitor_etf_symbol_vec, etfInfoList);
 
     std::cout << etfInfoList.size() << std::endl;
 
@@ -56,7 +50,7 @@ void IaEtfUserSetting::init_etf_info()
     }
 
     std::vector<IaEtfConstituentInfo> constituentInfoVec;
-    m_etf_info_mysql_client->QueryEtfConstituentInfoList(20240322, fund_symbol_vec, constituentInfoVec);
+    m_etf_info_mysql_client->QueryEtfConstituentInfoList(20240322, m_monitor_etf_symbol_vec, constituentInfoVec);
     
     std::cout << constituentInfoVec.size() << std::endl;
     for (auto& constituentInfo : constituentInfoVec) {
