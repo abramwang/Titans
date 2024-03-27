@@ -15,10 +15,10 @@ IaEtfSignalCenter::~IaEtfSignalCenter()
 
 void IaEtfSignalCenter::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData)
 {
-    if (std::string(pData->symbol) == "000001" && std::string(pData->exchange) == "SZ")
+    auto iter = m_etf_signal_factor_map.find(pData->symbol);
+    for (; iter != m_etf_signal_factor_map.end(); ++iter)
     {
-        printf("[OnL2StockSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
-                pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
+        iter->second->OnL2StockSnapshotRtn(pData);
     }
 };
 
@@ -44,7 +44,7 @@ void IaEtfSignalCenter::init_etf_signal_factor()
         m_etf_user_setting->GetEtfInfo(fund_symbol, etf_info_ptr, constituent_info_vec);
 
         std::shared_ptr<IaEtfSignalFactor> etf_signal_factor = std::make_shared<IaEtfSignalFactor>(etf_info_ptr, constituent_info_vec, m_quote_data_cache);
-        //m_etf_signal_factor_map[fund_symbol] = etf_signal_factor;
+        m_etf_signal_factor_map[fund_symbol] = etf_signal_factor;
         break;
     }
 };

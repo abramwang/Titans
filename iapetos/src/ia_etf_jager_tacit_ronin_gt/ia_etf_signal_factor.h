@@ -18,7 +18,7 @@ public:
     virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){};
     virtual void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData){};
 
-    virtual void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){};
+    virtual void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData);
     virtual void OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){};
     virtual void OnL2StockOrderRtn(const TiQuoteOrderField* pData){};
 
@@ -30,6 +30,9 @@ private:
     std::shared_ptr<IaEtfInfo>                          m_etf_info_ptr;
     std::vector<std::shared_ptr<IaEtfConstituentInfo>>  m_constituent_info_vec;
     IaEtfQuoteDataCache* m_quote_data_cache;
+
+private:
+    double calc_diff(); //计算现金差值
 public:
     IaEtfSignalFactor(std::shared_ptr<IaEtfInfo> etf_info_ptr, 
         std::vector<std::shared_ptr<IaEtfConstituentInfo>> constituent_info_vec, 
