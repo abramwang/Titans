@@ -181,8 +181,16 @@ void IaEtfFollowTradeBotGt::OnTimer()
     {
         return;
     }
+
+    json signal_array = json::array();
+    for (auto iter = signal_out.begin(); iter != signal_out.end(); iter++)
+    {
+        signal_array.push_back(iter.value());
+
+        m_redis->hmset(m_config->szSignalMap.c_str(), iter.key().c_str(), iter.value().dump().c_str());
+    }
+    m_redis->xadd(m_config->szSignalStream.c_str(), signal_array.dump().c_str());
     std::cout << "[IaEtfFollowTradeBotGt::OnTimer] signal_size: " << signal_out.size() << std::endl;
-    m_redis->xadd(m_config->szSignalKey.c_str(), signal_out.dump().c_str());
 };
 
 
@@ -296,14 +304,15 @@ int IaEtfFollowTradeBotGt::loadConfig(std::string iniFileName){
     m_config->szAuth      = string(_iniFile["ia_etf_follow_trade_bot_gt"]["auth"]);
 
     m_config->nBlock          = _iniFile["ia_etf_follow_trade_bot_gt"]["block"];
-    m_config->szCommandStreamKey     = string(_iniFile["ia_etf_follow_trade_bot_gt"]["command_stream_key"]);
-    m_config->szCommandStreamGroup   = string(_iniFile["ia_etf_follow_trade_bot_gt"]["command_stream_group"]);
-    m_config->szCommandConsumerId   = string(_iniFile["ia_etf_follow_trade_bot_gt"]["command_consumer_id"]);
+    m_config->szCommandStreamKey        = string(_iniFile["ia_etf_follow_trade_bot_gt"]["command_stream_key"]);
+    m_config->szCommandStreamGroup      = string(_iniFile["ia_etf_follow_trade_bot_gt"]["command_stream_group"]);
+    m_config->szCommandConsumerId       = string(_iniFile["ia_etf_follow_trade_bot_gt"]["command_consumer_id"]);
     
     m_config->szOrderKey         = string(_iniFile["ia_etf_follow_trade_bot_gt"]["order_key"]);
     m_config->szMatchKey         = string(_iniFile["ia_etf_follow_trade_bot_gt"]["match_key"]);
 
-    m_config->szSignalKey   = string(_iniFile["ia_etf_follow_trade_bot_gt"]["signal_key"]);
+    m_config->szSignalStream    = string(_iniFile["ia_etf_follow_trade_bot_gt"]["signal_stream"]);
+    m_config->szSignalMap       = string(_iniFile["ia_etf_follow_trade_bot_gt"]["signal_map"]);
     
     m_config->szSqlIp       = string(_iniFile["ia_etf_follow_trade_bot_gt"]["sql_ip"]);
     m_config->nSqlPort      = _iniFile["ia_etf_follow_trade_bot_gt"]["sql_port"];
@@ -313,6 +322,8 @@ int IaEtfFollowTradeBotGt::loadConfig(std::string iniFileName){
 
     if( m_config->szIp.empty() |
         !m_config->nPort |
+        m_config->szSignalStream.empty() |
+        m_config->szSignalMap.empty() | 
         m_config->szCommandStreamGroup.empty() |
         m_config->szCommandStreamKey.empty() | 
         m_config->szCommandStreamGroup.empty() |
