@@ -1,0 +1,26 @@
+@import "@vueform/multiselect/themes/default.css";
+
+:root {
+  --ms-tag-bg: rgb(59, 130, 246);
+  --ms-tag-color: #fff;
+  --ms-tag-radius: 4px;
+  --ms-tag-font-weight: 400;
+  --ms-group-label-bg-selected: rgb(123, 154, 203);
+  --ms-group-label-bg-selected-pointed: rgb(123, 154, 203);
+  --ms-ring-color: rgb(29, 87, 181);
+  --ms-spinner-color: rgb(59, 130, 246);
+  --ms-group-label-bg-selected-disabled: rgb(123, 154, 203);
+  --ms-group-label-color-selected-disabled: rgb(150, 170, 202);
+  --ms-option-bg-selected: rgb(123, 154, 203);
+  --ms-option-bg-selected-pointed: rgb(123, 154, 203);
+  --ms-option-color-selected-disabled: rgb(123, 154, 203);
+  --ms-option-font-size: 13px
+}
+
+.multiselect.is-active {
+  box-shadow: none !important;
+}
+
+.multiselect-single-label-text {
+  font-size: 13px;
+}
