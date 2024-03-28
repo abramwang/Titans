@@ -28,12 +28,12 @@ onMounted(() => {
       <div class="!px-10 !py-12 card-body">
         <a href="#!">
           <img
-            src="@/assets/images/logo-light.png"
+            src="@/assets/images/olla.svg"
             alt=""
             class="hidden h-6 mx-auto dark:block"
           />
           <img
-            src="@/assets/images/logo-dark.png"
+            src="@/assets/images/olla.svg"
             alt=""
             class="block h-6 mx-auto dark:hidden"
           />
