@@ -23,6 +23,7 @@ void IaEtfSignalFactor::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pD
     m_out["company"] = m_etf_info_ptr->m_company;
     m_out["update_time"] = datetime::get_format_time_ms(pData->date, pData->time);
     m_out["diff"] = calc_diff();
+    m_out["last"] = pData->last;
 };
 
 void IaEtfSignalFactor::OnTimer()
@@ -63,6 +64,11 @@ double IaEtfSignalFactor::calc_diff()
     }
     //printf("[calc_diff] %s %s total_diff: %f\n", m_etf_info_ptr->m_fundId.c_str(), m_etf_info_ptr->m_fundName.c_str(), total_diff);
     return total_diff;
+};
+
+double IaEtfSignalFactor::calc_iopv()
+{
+    return 0;
 };
 
 bool IaEtfSignalFactor::GetJsonOut(json& j)

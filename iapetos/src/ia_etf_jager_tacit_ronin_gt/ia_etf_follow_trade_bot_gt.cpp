@@ -198,13 +198,26 @@ void IaEtfFollowTradeBotGt::OnTimer()
             m_redis->hmset(m_config->szSignalMap.c_str(), iter.key().c_str(), iter.value().dump().c_str());
         }
         m_redis->xadd(m_config->szSignalStream.c_str(), signal_array.dump().c_str());
-        std::cout << "[IaEtfFollowTradeBotGt::OnTimer] signal_size: " << signal_out.size() << std::endl;
+        //std::cout << "[IaEtfFollowTradeBotGt::OnTimer] signal_size: " << signal_out.size() << std::endl;
     }catch(std::exception& e){
-        std::cout << e.what() << std::endl;
+        std::cout << "[IaEtfFollowTradeBotGt::OnTimer] " << e.what() << std::endl;
     }catch(...){
-        std::cout << "unknown exception" << std::endl;
+        std::cout << "[IaEtfFollowTradeBotGt::OnTimer] " << "unknown exception" << std::endl;
     }
 
+    std::time_t currentTime = std::time(nullptr);
+    std::tm* localTime = std::localtime(&currentTime);
+    /*
+    std::cout << "当前时间: "
+            << localTime->tm_year + 1900 << "-" << localTime->tm_mon + 1 << "-" << localTime->tm_mday << " "
+            << localTime->tm_hour << ":" << localTime->tm_min << ":" << localTime->tm_sec
+            << std::endl;
+    */
+    if (localTime->tm_hour > 16 )
+    {
+        std::cout << "terminate" << std::endl;
+        std::terminate();
+    }
 };
 
 

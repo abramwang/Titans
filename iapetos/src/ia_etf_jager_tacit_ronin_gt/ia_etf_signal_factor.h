@@ -38,6 +38,7 @@ private:
 
 private:
     double calc_diff(); //计算现金差值
+    double calc_iopv(); //计算IOPV
 public:
     IaEtfSignalFactor(std::shared_ptr<IaEtfInfo> etf_info_ptr, 
         std::vector<std::shared_ptr<IaEtfConstituentInfo>> constituent_info_vec, 

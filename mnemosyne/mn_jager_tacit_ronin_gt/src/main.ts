@@ -4,7 +4,7 @@ import MainApp from "@/App.vue";
 import i18n from "@/plugins/i18n";
 import router from "@/router/index";
 import pinia from "@/store/index";
-import VueApexCharts from "vue3-apexcharts";
+//import VueApexCharts from "vue3-apexcharts";
 import PageHeader from "@/app/common/PageHeader.vue";
 import simplebar from "simplebar-vue";
 import VueTippy from "vue-tippy";
@@ -35,7 +35,7 @@ initGlobalComponents(app);
 
 app.use(pinia);
 app.use(i18n);
-app.use(VueApexCharts);
+//app.use(VueApexCharts);
 app.use(router);
 app.use(
   VueTippy,
