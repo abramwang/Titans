@@ -183,7 +183,7 @@ void IaEtfFollowTradeBotGt::OnTimer()
     }
 
     try{
-         json signal_array = json::array();
+        json signal_array = json::array();
         for (auto iter = signal_out.begin(); iter != signal_out.end(); iter++)
         {
             signal_array.push_back(iter.value());
@@ -204,7 +204,7 @@ void IaEtfFollowTradeBotGt::OnTimer()
     }catch(...){
         std::cout << "[IaEtfFollowTradeBotGt::OnTimer] " << "unknown exception" << std::endl;
     }
-
+    
     std::time_t currentTime = std::time(nullptr);
     std::tm* localTime = std::localtime(&currentTime);
     /*

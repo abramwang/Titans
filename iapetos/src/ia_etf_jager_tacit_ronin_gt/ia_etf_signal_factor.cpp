@@ -1,5 +1,6 @@
 #include "ia_etf_signal_factor.h"
 #include "datetime.h"
+#include <iostream>
 
 IaEtfSignalFactor::IaEtfSignalFactor(std::shared_ptr<IaEtfInfo> etf_info_ptr, std::vector<std::shared_ptr<IaEtfConstituentInfo>> constituent_info_vec, IaEtfQuoteDataCache* etf_quote_data_cache)
 {
@@ -23,6 +24,11 @@ void IaEtfSignalFactor::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pD
     m_out["company"] = m_etf_info_ptr->m_company;
     m_out["update_time"] = datetime::get_format_time_ms(pData->date, pData->time);
     m_out["diff"] = calc_diff();
+    double creation_iopv = 0.0;
+    double redemption_iopv = 0.0;
+    calc_iopv(creation_iopv, redemption_iopv);
+    m_out["c_iopv"] = creation_iopv;
+    m_out["r_iopv"] = redemption_iopv;
     m_out["last"] = pData->last;
 };
 
@@ -66,9 +72,82 @@ double IaEtfSignalFactor::calc_diff()
     return total_diff;
 };
 
-double IaEtfSignalFactor::calc_iopv()
+void IaEtfSignalFactor::calc_iopv(double& creation_iopv, double& redemption_iopv)
 {
-    return 0;
+    creation_iopv = 0.0;
+    redemption_iopv = 0.0;
+    for(auto &constituent_info : m_constituent_info_vec)
+    {
+        TiQuoteSnapshotStockField* snap_ptr = m_quote_data_cache->GetSnapshot(constituent_info->m_symbol.c_str(), constituent_info->m_exchange.c_str());
+        if(snap_ptr)
+        {
+            double bid_price = snap_ptr->bid_price[0];
+            double ask_price = snap_ptr->ask_price[0];
+            double last = snap_ptr->last;
+
+            if(!bid_price){
+                bid_price = last;
+            }
+            if (!bid_price)
+            {
+                bid_price = ask_price;
+            }
+            if (!bid_price)
+            {
+                bid_price = snap_ptr->pre_close;
+            }
+
+            if(!ask_price){
+                ask_price = last;
+            }
+            if (!ask_price)
+            {
+                ask_price = bid_price;
+            }
+            if (!ask_price)
+            {
+                ask_price = snap_ptr->pre_close;
+            }
+
+            if(!last){
+                last = bid_price;
+            }
+            if(!last){
+                last = ask_price;
+            }
+            if (!last)
+            {
+                last = snap_ptr->pre_close;
+            }
+
+
+            double c_iopv = last * constituent_info->m_disclosure_vol;
+            double r_iopv = last * constituent_info->m_disclosure_vol;
+
+            if ((constituent_info->m_replace_flag == IA_ERT_CASH_MUST) ||
+                (constituent_info->m_replace_flag == IA_ERT_CASH_MUST_INTER_SZ) ||
+                (constituent_info->m_replace_flag == IA_ERT_CASH_MUST_INTER_OTHER) ||
+                (constituent_info->m_replace_flag == IA_ERT_CASH_MUST_INTER_HK))
+            {
+                c_iopv = constituent_info->m_creation_amount;
+                r_iopv = constituent_info->m_redemption_amount;
+            }
+            creation_iopv += c_iopv;
+            redemption_iopv += r_iopv;
+        }else{
+            if ((constituent_info->m_replace_flag == IA_ERT_CASH_MUST) ||
+                (constituent_info->m_replace_flag == IA_ERT_CASH_MUST_INTER_SZ) ||
+                (constituent_info->m_replace_flag == IA_ERT_CASH_MUST_INTER_OTHER) ||
+                (constituent_info->m_replace_flag == IA_ERT_CASH_MUST_INTER_HK))
+            {
+                creation_iopv += constituent_info->m_creation_amount;
+                redemption_iopv += constituent_info->m_redemption_amount;
+            }
+        }
+    }
+
+    creation_iopv = (creation_iopv + m_etf_info_ptr->m_publicEstimatedCashDifference) / m_etf_info_ptr->m_minUnit;
+    redemption_iopv = (redemption_iopv + m_etf_info_ptr->m_publicEstimatedCashDifference) / m_etf_info_ptr->m_minUnit;
 };
 
 bool IaEtfSignalFactor::GetJsonOut(json& j)
