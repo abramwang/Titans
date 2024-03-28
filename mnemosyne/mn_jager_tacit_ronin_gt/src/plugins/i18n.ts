@@ -5,9 +5,9 @@ import appConfigs from "@/app/appConfig.ts";
 
 const legacy: boolean = false;
 const globalInjection: boolean = true;
-const locale: string = appConfigs.defaultLocale || "en";
+const locale: string = appConfigs.defaultLocale || "ch";
 const fallbackLocale: string =
-  import.meta.env.VUE_APP_I18N_FALLBACK_LOCALE || "en";
+  import.meta.env.VUE_APP_I18N_FALLBACK_LOCALE || "ch";
 
 export default createI18n({
   legacy,

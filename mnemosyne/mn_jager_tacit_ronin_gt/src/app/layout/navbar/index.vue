@@ -2,12 +2,12 @@
 import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { ChevronsLeft, ChevronsRight, Search } from "lucide-vue-next";
 import { logoDark, logoLight, logoSm } from "@/assets/images/utils";
-import Language from "@/app/layout/navbar/Language.vue";
+//import Language from "@/app/layout/navbar/Language.vue";
 import SiteMode from "@/app/layout/navbar/SiteMode.vue";
-import Cart from "@/app/layout/navbar/Cart.vue";
-import Notification from "@/app/layout/navbar/Notification.vue";
-import Settings from "@/app/layout/navbar/Settings.vue";
-import Profile from "@/app/layout/navbar/Profile.vue";
+//import Cart from "@/app/layout/navbar/Cart.vue";
+//import Notification from "@/app/layout/navbar/Notification.vue";
+//import Settings from "@/app/layout/navbar/Settings.vue";
+//import Profile from "@/app/layout/navbar/Profile.vue";
 import CartDrawer from "@/app/layout/navbar/CartDrawer.vue";
 import CustomizerDrawer from "@/app/layout/navbar/customizer/Drawer.vue";
 import { useLayoutStore } from "@/store/layout";
@@ -46,13 +46,15 @@ const onWindowResize = () => {
     layoutStore.value.changeSideBarSize(DEFAULT);
   }
 };
+
+/*
 const toggleCartDrawer = () => {
   cardDrawer.value = !cardDrawer.value;
 };
-
 const toggleCustomizerDrawer = () => {
   customizerDrawer.value = !customizerDrawer.value;
 };
+*/
 
 const updateCount = (newVal: number) => {
   cartCount.value = newVal;
@@ -171,16 +173,21 @@ const onOverlayClick = () => {
           </div>
 
           <div class="flex gap-3 ms-auto">
+            
             <div class="relative flex items-center dropdown h-header">
+              <!--
               <Language />
+              -->
             </div>
             <SiteMode />
-            <Cart @toggleDrawer="toggleCartDrawer" />
+            <!--
             <Notification />
+            <Cart @toggleDrawer="toggleCartDrawer" />
             <div class="relative items-center hidden h-header md:flex">
               <Settings @toggleDrawer="toggleCustomizerDrawer" />
             </div>
             <Profile />
+            -->
           </div>
         </div>
       </div>
