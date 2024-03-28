@@ -182,15 +182,29 @@ void IaEtfFollowTradeBotGt::OnTimer()
         return;
     }
 
-    json signal_array = json::array();
-    for (auto iter = signal_out.begin(); iter != signal_out.end(); iter++)
-    {
-        signal_array.push_back(iter.value());
-
-        m_redis->hmset(m_config->szSignalMap.c_str(), iter.key().c_str(), iter.value().dump().c_str());
+    try{
+         json signal_array = json::array();
+        for (auto iter = signal_out.begin(); iter != signal_out.end(); iter++)
+        {
+            signal_array.push_back(iter.value());
+            if (iter.key().empty())
+            {
+                continue;
+            }
+            if (iter.value().empty())
+            {
+                continue;
+            }
+            m_redis->hmset(m_config->szSignalMap.c_str(), iter.key().c_str(), iter.value().dump().c_str());
+        }
+        m_redis->xadd(m_config->szSignalStream.c_str(), signal_array.dump().c_str());
+        std::cout << "[IaEtfFollowTradeBotGt::OnTimer] signal_size: " << signal_out.size() << std::endl;
+    }catch(std::exception& e){
+        std::cout << e.what() << std::endl;
+    }catch(...){
+        std::cout << "unknown exception" << std::endl;
     }
-    m_redis->xadd(m_config->szSignalStream.c_str(), signal_array.dump().c_str());
-    std::cout << "[IaEtfFollowTradeBotGt::OnTimer] signal_size: " << signal_out.size() << std::endl;
+
 };
 
 
@@ -346,6 +360,10 @@ void IaEtfFollowTradeBotGt::resetStreamKey()
     if (time_num  > 95000000 && time_num < 155000000)   //交易时段不重置了
     {
         return;
+    }
+    if(!m_config->szSignalStream.empty())
+    {
+        m_redis->del(m_config->szSignalStream.c_str());
     }
     if(!m_config->szOrderKey.empty())
     {

@@ -1,5 +1,5 @@
 #include "ia_etf_user_setting.h"
-#include <iostream>
+#include "datetime.h"
 
 IaEtfUserSetting::IaEtfUserSetting(RedisSyncHandle* redis_client, IaEtfInfoMysql* etf_info_mysql)
 {
@@ -24,10 +24,11 @@ void IaEtfUserSetting::init_monitor_etf_symbol()
 
 void IaEtfUserSetting::init_etf_info()
 {
+    int date_num = datetime::get_today();
     std::set<std::string> symbol_set;
 
     std::vector<IaEtfInfo> etfInfoList;
-    m_etf_info_mysql_client->QueryEtfInfoList(20240322, m_monitor_etf_symbol_vec, etfInfoList);
+    m_etf_info_mysql_client->QueryEtfInfoList(date_num, m_monitor_etf_symbol_vec, etfInfoList);
 
     std::cout << etfInfoList.size() << std::endl;
 
@@ -39,7 +40,7 @@ void IaEtfUserSetting::init_etf_info()
     }
 
     std::vector<IaEtfConstituentInfo> constituentInfoVec;
-    m_etf_info_mysql_client->QueryEtfConstituentInfoList(20240322, m_monitor_etf_symbol_vec, constituentInfoVec);
+    m_etf_info_mysql_client->QueryEtfConstituentInfoList(date_num, m_monitor_etf_symbol_vec, constituentInfoVec);
     
 
     std::cout << constituentInfoVec.size() << std::endl;
