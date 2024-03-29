@@ -65,6 +65,26 @@ double IaEtfSignalFactor::calc_diff()
             }
             double diff = constituent_info->m_reality_vol ? (constituent_info->m_reality_vol - constituent_info->m_disclosure_vol) * (snap_ptr->last - snap_ptr->pre_close) : 0;
             //printf("[calc_diff] %s, %s, %f\n", snap_ptr->symbol, snap_ptr->exchange, diff);
+            if ((constituent_info->m_replace_flag == IA_ERT_CASH_MUST) ||
+                (constituent_info->m_replace_flag == IA_ERT_CASH_MUST_INTER_SZ) ||
+                (constituent_info->m_replace_flag == IA_ERT_CASH_MUST_INTER_OTHER) ||
+                (constituent_info->m_replace_flag == IA_ERT_CASH_MUST_INTER_HK))
+            {
+                double replace_amount = constituent_info->m_replace_amount;
+                if (!replace_amount)
+                {
+                    replace_amount = constituent_info->m_creation_amount;
+                }
+                if (!replace_amount)
+                {
+                    replace_amount = constituent_info->m_redemption_amount;
+                }
+                
+                if (replace_amount)
+                {
+                    diff = replace_amount * (snap_ptr->last - snap_ptr->pre_close)/snap_ptr->pre_close;
+                }
+            }
             total_diff += diff;
         }
     }
@@ -121,8 +141,8 @@ void IaEtfSignalFactor::calc_iopv(double& creation_iopv, double& redemption_iopv
             }
 
 
-            double c_iopv = last * constituent_info->m_disclosure_vol;
-            double r_iopv = last * constituent_info->m_disclosure_vol;
+            double c_iopv = ask_price * constituent_info->m_disclosure_vol;
+            double r_iopv = bid_price * constituent_info->m_disclosure_vol;
 
             if ((constituent_info->m_replace_flag == IA_ERT_CASH_MUST) ||
                 (constituent_info->m_replace_flag == IA_ERT_CASH_MUST_INTER_SZ) ||
@@ -140,12 +160,14 @@ void IaEtfSignalFactor::calc_iopv(double& creation_iopv, double& redemption_iopv
                 (constituent_info->m_replace_flag == IA_ERT_CASH_MUST_INTER_OTHER) ||
                 (constituent_info->m_replace_flag == IA_ERT_CASH_MUST_INTER_HK))
             {
-                creation_iopv += constituent_info->m_creation_amount;
-                redemption_iopv += constituent_info->m_redemption_amount;
+                //creation_iopv += constituent_info->m_creation_amount;
+                //redemption_iopv += constituent_info->m_redemption_amount;
             }
         }
     }
 
+    //creation_iopv = creation_iopv + m_etf_info_ptr->m_publicEstimatedCashDifference;
+    //redemption_iopv = redemption_iopv + m_etf_info_ptr->m_publicEstimatedCashDifference;
     creation_iopv = (creation_iopv + m_etf_info_ptr->m_publicEstimatedCashDifference) / m_etf_info_ptr->m_minUnit;
     redemption_iopv = (redemption_iopv + m_etf_info_ptr->m_publicEstimatedCashDifference) / m_etf_info_ptr->m_minUnit;
 };
