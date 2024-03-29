@@ -1,8 +1,9 @@
 import redis
 import json
 
-redis_pool = redis.ConnectionPool(
-    host='121.36.210.85', port= 20184, password= 'P7pO48Lw4AZTOLXKlR', db= 0)
+redis_pool = redis.ConnectionPool(host='121.36.210.85', port= 20184, password= 'P7pO48Lw4AZTOLXKlR', db= 0)
+#redis_pool = redis.ConnectionPool(host='192.168.124.5', port= 20184, password= 'P7pO48Lw4AZTOLXKlR', db= 0)
+
 redis_conn = redis.Redis(connection_pool= redis_pool)
 
 
