@@ -251,6 +251,7 @@ void TiGtTraderClient::onReqOrderDetail(const char* accountID, int nRequestId, c
     strcpy(order->szSymbol, data->m_strInstrumentID);
     strcpy(order->szAccount, data->m_strAccountID);
 
+    order->nTradeSideType = convertTradeSide(data->m_nDirection);
     order->nOrderPrice = data->m_dLimitPrice;
     order->nOrderVol = data->m_nTotalVolume;
     order->nSubmitVol = data->m_nTotalVolume;
@@ -406,6 +407,7 @@ void TiGtTraderClient::onRtnOrderDetail(const COrderDetail* data)
     strcpy(order->szSymbol, data->m_strInstrumentID);
     strcpy(order->szAccount, data->m_strAccountID);
 
+    order->nTradeSideType = convertTradeSide(data->m_nDirection);
     order->nOrderPrice = data->m_dLimitPrice;
     order->nOrderVol = data->m_nTotalVolume;
     order->nSubmitVol = data->m_nTotalVolume;
@@ -454,7 +456,7 @@ void TiGtTraderClient::onRtnDealDetail(const CDealDetail* data)
     match_ptr->nOrderId = order_ptr->nOrderId;
     strncpy(match_ptr->szStreamId, data->m_strOrderSysID, 64);
     strcpy(match_ptr->szAccount, data->m_strAccountID);
-    
+
     match_ptr->nMatchPrice = data->m_dAveragePrice;
     match_ptr->nMatchVol = data->m_nVolume;
     strcpy(match_ptr->szSymbol, data->m_strInstrumentID);
