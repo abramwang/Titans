@@ -86,6 +86,7 @@ void TiTraderFormater::FormatOrderMatchEvent(const TiRtnOrderMatch* pData, json&
     sprintf(order_id, "%lu", pData->nOrderId);
     j = {
         {"szOrderId" , order_id},
+        {"szOrderStreamId" , pData->szOrderStreamId},
         {"szStreamId" , pData->szStreamId},
         {"nMatchPrice" , pData->nMatchPrice},
         {"nMatchVol" , pData->nMatchVol},
@@ -94,5 +95,6 @@ void TiTraderFormater::FormatOrderMatchEvent(const TiRtnOrderMatch* pData, json&
         {"szMatchTime" , datetime::get_format_timestamp_ms(pData->nMatchTimestamp)},
         {"nTradeSideType" , pData->nTradeSideType},
         {"szShareholderId" , pData->szShareholderId},
+        {"szErr" , pData->szErr},
     };
 };

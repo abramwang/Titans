@@ -251,7 +251,7 @@ void TiGtTraderClient::onReqOrderDetail(const char* accountID, int nRequestId, c
     strcpy(order->szSymbol, data->m_strInstrumentID);
     strcpy(order->szAccount, data->m_strAccountID);
 
-    order->nTradeSideType = convertTradeSide(data->m_nDirection);
+    order->nTradeSideType = convertTradeSide(data->m_nOrderPriceType, data->m_eOffsetFlag);
     order->nOrderPrice = data->m_dLimitPrice;
     order->nOrderVol = data->m_nTotalVolume;
     order->nSubmitVol = data->m_nTotalVolume;
@@ -270,12 +270,25 @@ void TiGtTraderClient::onReqOrderDetail(const char* accountID, int nRequestId, c
 
     strcpy(order->szShareholderId, data->m_strSecuAccount);
 
-    order->nLastUpdateTimestamp = datetime::get_now_timestamp_ms();
+    order->nInsertTimestamp = datetime::get_timestamp_ms(atoi(data->m_strInsertDate), atoi(data->m_strInsertTime)*1000);
+    order->nLastUpdateTimestamp = datetime::get_timestamp_ms(atoi(data->m_strInsertDate), atoi(data->m_strInsertTime)*1000);
     order->nUsedTime = order->nReqTimestamp?(order->nLastUpdateTimestamp - order->nReqTimestamp):(order->nLastUpdateTimestamp - order->nInsertTimestamp);
 
     order->nDealtVol = data->m_nTradedVolume;
     strcpy(order->szOrderStreamId, data->m_strOrderSysID);
     order->nFee = data->m_dFrozenCommission;
+
+    /*
+    sprintf(order->szErr, "%d-%d-%d-%d-%d-%d-%d-%d", 
+        data->m_nOrderPriceType,
+        data->m_nDirection,
+        data->m_eOffsetFlag,
+        data->m_eHedgeFlag,
+        data->m_eOrderSubmitStatus,
+        data->m_eOrderStatus,
+        data->m_eEntrustType,
+        data->m_eCoveredFlag);
+    */
 
     m_cb->OnRspQryOrder(order, isLast);
 };
@@ -299,7 +312,8 @@ void TiGtTraderClient::onReqDealDetail(const char* accountID, int nRequestId, co
     std::shared_ptr<TiRtnOrderMatch> match_ptr = std::make_shared<TiRtnOrderMatch>();
     memset(match_ptr.get(), 0, sizeof(TiRtnOrderMatch));
     match_ptr->nOrderId = order_ptr->nOrderId;
-    strncpy(match_ptr->szStreamId, data->m_strOrderSysID, 64);
+    strncpy(match_ptr->szOrderStreamId, data->m_strOrderSysID, 64);
+    strncpy(match_ptr->szStreamId, data->m_strTradeID, 64);
     strcpy(match_ptr->szAccount, data->m_strAccountID);
 
     match_ptr->nMatchPrice = data->m_dAveragePrice;
@@ -309,9 +323,19 @@ void TiGtTraderClient::onReqDealDetail(const char* accountID, int nRequestId, co
     strcpy(match_ptr->szShareholderId, data->m_strSecuAccount);
 
     match_ptr->nMatchTimestamp = datetime::get_timestamp_ms(atoi(data->m_strTradeDate), atoi(data->m_strTradeTime)*1000);
-    match_ptr->nTradeSideType = convertTradeSide(data->m_nDirection);
+    match_ptr->nTradeSideType = convertTradeSide(data->m_nOrderPriceType, data->m_nOffsetFlag);
 
     account_iter->second->enterMatch(match_ptr);
+
+    /*
+    sprintf(match_ptr->szErr, "%d-%d-%d-%d-%d-%d", 
+        data->m_nDirection,
+        data->m_nOffsetFlag,
+        data->m_nHedgeFlag,
+        data->m_nOrderPriceType,
+        data->m_eEntrustType,
+        data->m_eCoveredFlag);
+    */
 
     m_cb->OnRspQryMatch(match_ptr.get(), isLast);
 };
@@ -407,7 +431,7 @@ void TiGtTraderClient::onRtnOrderDetail(const COrderDetail* data)
     strcpy(order->szSymbol, data->m_strInstrumentID);
     strcpy(order->szAccount, data->m_strAccountID);
 
-    order->nTradeSideType = convertTradeSide(data->m_nDirection);
+    order->nTradeSideType = convertTradeSide(data->m_nOrderPriceType, data->m_eOffsetFlag);
     order->nOrderPrice = data->m_dLimitPrice;
     order->nOrderVol = data->m_nTotalVolume;
     order->nSubmitVol = data->m_nTotalVolume;
@@ -454,7 +478,8 @@ void TiGtTraderClient::onRtnDealDetail(const CDealDetail* data)
     std::shared_ptr<TiRtnOrderMatch> match_ptr = std::make_shared<TiRtnOrderMatch>();
     memset(match_ptr.get(), 0, sizeof(TiRtnOrderMatch));
     match_ptr->nOrderId = order_ptr->nOrderId;
-    strncpy(match_ptr->szStreamId, data->m_strOrderSysID, 64);
+    strncpy(match_ptr->szOrderStreamId, data->m_strOrderSysID, 64);
+    strncpy(match_ptr->szStreamId, data->m_strTradeID, 64);
     strcpy(match_ptr->szAccount, data->m_strAccountID);
 
     match_ptr->nMatchPrice = data->m_dAveragePrice;
@@ -464,7 +489,7 @@ void TiGtTraderClient::onRtnDealDetail(const CDealDetail* data)
     strcpy(match_ptr->szShareholderId, data->m_strSecuAccount);
 
     match_ptr->nMatchTimestamp = datetime::get_timestamp_ms(atoi(data->m_strTradeDate), atoi(data->m_strTradeTime)*1000);
-    match_ptr->nTradeSideType = convertTradeSide(data->m_nDirection);
+    match_ptr->nTradeSideType = convertTradeSide(data->m_nOrderPriceType, data->m_nOffsetFlag);
 
     account_iter->second->enterMatch(match_ptr);
 
@@ -578,17 +603,33 @@ TI_TradeSideType TiGtTraderClient::convertTradeSide(EOperationType operation)
     }
 };
 
-TI_TradeSideType TiGtTraderClient::convertTradeSide(EEntrustBS direction)
+TI_TradeSideType TiGtTraderClient::convertTradeSide(EBrokerPriceType price_type, EOffsetFlagType offset)
 {
-    switch(direction)
+    if (price_type == BROKER_PRICE_LIMIT)
     {
-    case ENTRUST_BUY:
-        return TI_TradeSideType_Buy;
-    case ENTRUST_SELL:
-        return TI_TradeSideType_Sell;
-    default:
-        return TI_TradeSideType_Default;
+        if (offset == EOFF_THOST_FTDC_OF_Open)
+        {
+            return TI_TradeSideType_Buy;
+        }
+        else if (offset == EOFF_THOST_FTDC_OF_Close)
+        {
+            return TI_TradeSideType_Sell;
+        }
     }
+    
+    if (price_type == BROKER_PRICE_PROP_ETF)
+    {
+        if (offset == EOFF_THOST_FTDC_OF_Open)
+        {
+            return TI_TradeSideType_Purchase;
+        }
+        else if (offset == EOFF_THOST_FTDC_OF_Close)
+        {
+            return TI_TradeSideType_Redemption;
+        }
+    }
+
+    return TI_TradeSideType_Default;  
 };
 
 void TiGtTraderClient::connect(){
