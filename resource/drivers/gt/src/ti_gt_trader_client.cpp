@@ -326,6 +326,12 @@ void TiGtTraderClient::onReqDealDetail(const char* accountID, int nRequestId, co
     match_ptr->nMatchTimestamp = datetime::get_timestamp_ms(atoi(data->m_strTradeDate), atoi(data->m_strTradeTime)*1000);
     match_ptr->nTradeSideType = convertTradeSide(data->m_nOrderPriceType, data->m_nOffsetFlag);
 
+    if (match_ptr->nMatchTimestamp > order_ptr->nLastUpdateTimestamp)
+    {
+        order_ptr->nLastUpdateTimestamp = match_ptr->nMatchTimestamp;
+        order_ptr->nUsedTime = order_ptr->nReqTimestamp?(order_ptr->nLastUpdateTimestamp - order_ptr->nReqTimestamp):(order_ptr->nLastUpdateTimestamp - order_ptr->nInsertTimestamp);
+    }
+
     account_iter->second->enterMatch(match_ptr);
 
     /*
@@ -492,6 +498,11 @@ void TiGtTraderClient::onRtnDealDetail(const CDealDetail* data)
 
     match_ptr->nMatchTimestamp = datetime::get_timestamp_ms(atoi(data->m_strTradeDate), atoi(data->m_strTradeTime)*1000);
     match_ptr->nTradeSideType = convertTradeSide(data->m_nOrderPriceType, data->m_nOffsetFlag);
+
+    if (match_ptr->nMatchTimestamp > order_ptr->nLastUpdateTimestamp)
+    {
+        order_ptr->nLastUpdateTimestamp = match_ptr->nMatchTimestamp;
+    }
 
     account_iter->second->enterMatch(match_ptr);
 
