@@ -299,6 +299,8 @@ void TiGtTraderClient::onReqDealDetail(const char* accountID, int nRequestId, co
     memset(match_ptr.get(), 0, sizeof(TiRtnOrderMatch));
     match_ptr->nOrderId = order_ptr->nOrderId;
     strncpy(match_ptr->szStreamId, data->m_strOrderSysID, 64);
+    strcpy(match_ptr->szAccount, data->m_strAccountID);
+
     match_ptr->nMatchPrice = data->m_dAveragePrice;
     match_ptr->nMatchVol = data->m_nVolume;
     strcpy(match_ptr->szSymbol, data->m_strInstrumentID);
@@ -451,6 +453,8 @@ void TiGtTraderClient::onRtnDealDetail(const CDealDetail* data)
     memset(match_ptr.get(), 0, sizeof(TiRtnOrderMatch));
     match_ptr->nOrderId = order_ptr->nOrderId;
     strncpy(match_ptr->szStreamId, data->m_strOrderSysID, 64);
+    strcpy(match_ptr->szAccount, data->m_strAccountID);
+    
     match_ptr->nMatchPrice = data->m_dAveragePrice;
     match_ptr->nMatchVol = data->m_nVolume;
     strcpy(match_ptr->szSymbol, data->m_strInstrumentID);

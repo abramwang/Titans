@@ -101,17 +101,19 @@ void IaEtfFollowTradeBotGt::OnRspQryOrder(const TiRspQryOrder* pData, bool isLas
         (*iter)->OnRspQryOrder(pData, isLast);
     }
     */
-
-    json j;
-    TiTraderFormater::FormatOrderStatus(pData, j);
-    std::cout << "OnRspQryOrder: " << j << std::endl;
-    return;
     if (m_config)
     {
         if(!m_config->szOrderKey.empty())
         {
-            TiTraderFormater::FormatOrderStatus(pData, m_json_cash);
-            m_redis->hmset(m_config->szOrderKey.c_str(), m_json_cash["szOrderId"].get<std::string>().c_str(), m_json_cash.dump().c_str());
+            std::string key = m_config->szOrderKey;
+            key += ".";
+            key += pData->szAccount;
+
+            json j;
+            TiTraderFormater::FormatOrderStatus(pData, j);
+            std::cout << "OnRspQryOrder: " << key.c_str() << " " << pData->szOrderStreamId << " " << j << std::endl;
+
+            m_redis->hmset(key.c_str(), pData->szOrderStreamId, j.dump().c_str());
         }
     }
 };
@@ -124,16 +126,19 @@ void IaEtfFollowTradeBotGt::OnRspQryMatch(const TiRspQryMatch* pData, bool isLas
         (*iter)->OnRspQryMatch(pData, isLast);
     }
     */
-    json j;
-    TiTraderFormater::FormatOrderMatchEvent(pData, j);
-    std::cout << "OnRtnOrderMatchEvent: " << j << std::endl;
-    return;
     if (m_config)
     {
         if(!m_config->szMatchKey.empty())
         {
-            TiTraderFormater::FormatOrderMatchEvent(pData, m_json_cash);
-            m_redis->hmset(m_config->szMatchKey.c_str(), m_json_cash["szStreamId"].get<std::string>().c_str(), m_json_cash.dump().c_str());
+            std::string key = m_config->szMatchKey;
+            key += ".";
+            key += pData->szAccount;
+
+            json j;
+            TiTraderFormater::FormatOrderMatchEvent(pData, j);
+            std::cout << "OnRspQryMatch: " << key.c_str() << " " << pData->szStreamId << " " << j << std::endl;
+
+            m_redis->hmset(key.c_str(), pData->szStreamId, j.dump().c_str());
         }
     }
 };
@@ -155,17 +160,43 @@ void IaEtfFollowTradeBotGt::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
 {
     Locker locker(&m_mutex);
     m_trade_center->OnRtnOrderStatusEvent(pData);
-    json j;
-    TiTraderFormater::FormatOrderStatus(pData, j);
-    std::cout << "OnRtnOrderStatusEvent: " << j << std::endl;
+
+    if (m_config)
+    {
+        if(!m_config->szOrderKey.empty())
+        {
+            std::string key = m_config->szOrderKey;
+            key += ".";
+            key += pData->szAccount;
+
+            json j;
+            TiTraderFormater::FormatOrderStatus(pData, j);
+            std::cout << "OnRtnOrderStatusEvent: " << key.c_str() << " " << pData->szOrderStreamId << " " << j << std::endl;
+
+            m_redis->hmset(key.c_str(), pData->szOrderStreamId, j.dump().c_str());
+        }
+    }
 };
 void IaEtfFollowTradeBotGt::OnRtnOrderMatchEvent(const TiRtnOrderMatch* pData)
 {
     Locker locker(&m_mutex);
     m_trade_center->OnRtnOrderMatchEvent(pData);
-    json j;
-    TiTraderFormater::FormatOrderMatchEvent(pData, j);
-    std::cout << "OnRtnOrderMatchEvent: " << j << std::endl;
+
+    if (m_config)
+    {
+        if(!m_config->szMatchKey.empty())
+        {
+            std::string key = m_config->szMatchKey;
+            key += ".";
+            key += pData->szAccount;
+
+            json j;
+            TiTraderFormater::FormatOrderMatchEvent(pData, j);
+            std::cout << "OnRtnOrderMatchEvent: " << key.c_str() << " " << pData->szStreamId << " " << j << std::endl;
+
+            m_redis->hmset(key.c_str(), pData->szStreamId, j.dump().c_str());
+        }
+    }
 };
 
 
@@ -205,6 +236,7 @@ void IaEtfFollowTradeBotGt::OnTimer()
         std::cout << "[IaEtfFollowTradeBotGt::OnTimer] " << "unknown exception" << std::endl;
     }
     
+    return;
     std::time_t currentTime = std::time(nullptr);
     std::tm* localTime = std::localtime(&currentTime);
     /*
