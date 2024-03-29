@@ -117,6 +117,7 @@ private:
     TI_OrderStatusType convertOrderStatus(EEntrustStatus status);
     TI_TradeSideType convertTradeSide(EOperationType operation);
     TI_TradeSideType convertTradeSide(EBrokerPriceType price_type, EOffsetFlagType offset);
+    TI_BusinessType convertBusinessType(EBrokerPriceType price_type);
     
 public:
 	void connect();

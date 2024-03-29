@@ -251,6 +251,7 @@ void TiGtTraderClient::onReqOrderDetail(const char* accountID, int nRequestId, c
     strcpy(order->szSymbol, data->m_strInstrumentID);
     strcpy(order->szAccount, data->m_strAccountID);
 
+    order->nBusinessType = convertBusinessType(data->m_nOrderPriceType);
     order->nTradeSideType = convertTradeSide(data->m_nOrderPriceType, data->m_eOffsetFlag);
     order->nOrderPrice = data->m_dLimitPrice;
     order->nOrderVol = data->m_nTotalVolume;
@@ -431,6 +432,7 @@ void TiGtTraderClient::onRtnOrderDetail(const COrderDetail* data)
     strcpy(order->szSymbol, data->m_strInstrumentID);
     strcpy(order->szAccount, data->m_strAccountID);
 
+    order->nBusinessType = convertBusinessType(data->m_nOrderPriceType);
     order->nTradeSideType = convertTradeSide(data->m_nOrderPriceType, data->m_eOffsetFlag);
     order->nOrderPrice = data->m_dLimitPrice;
     order->nOrderVol = data->m_nTotalVolume;
@@ -630,6 +632,16 @@ TI_TradeSideType TiGtTraderClient::convertTradeSide(EBrokerPriceType price_type,
     }
 
     return TI_TradeSideType_Default;  
+};
+
+TI_BusinessType TiGtTraderClient::convertBusinessType(EBrokerPriceType price_type)
+{
+    if (price_type == BROKER_PRICE_PROP_ETF)
+    {
+        return TI_BusinessType_ETF;
+    }else{
+        return TI_BusinessType_Stock;
+    }
 };
 
 void TiGtTraderClient::connect(){
