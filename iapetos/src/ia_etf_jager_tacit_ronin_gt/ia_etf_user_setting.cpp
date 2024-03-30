@@ -24,7 +24,10 @@ void IaEtfUserSetting::init_monitor_etf_symbol()
 
 void IaEtfUserSetting::init_etf_info()
 {
+    int32_t last_trading_date_num = m_etf_info_mysql_client->QueryLatestTradingDate();
     int date_num = datetime::get_today();
+    date_num = last_trading_date_num ? last_trading_date_num : date_num;
+
     std::set<std::string> symbol_set;
 
     std::vector<IaEtfInfo> etfInfoList;

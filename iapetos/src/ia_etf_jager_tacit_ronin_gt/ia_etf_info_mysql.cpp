@@ -24,6 +24,18 @@ std::string IaEtfInfoMysql::format_vec(const std::vector<std::string>& vec) {
     return str;
 }
 
+int32_t IaEtfInfoMysql::QueryLatestTradingDate()
+{
+    std::vector<std::map<std::string, std::string>> result;
+    std::string sql("SELECT MAX(m_tradeDate) AS max_tradeDate FROM constituent_info;");
+    query(sql, result);
+    for (auto& row : result) {
+        std::cout << "max_tradeDate: " << row["max_tradeDate"] << std::endl;
+        return atoi(row["max_tradeDate"].c_str());
+    }
+    return 0;
+};
+
 void IaEtfInfoMysql::QueryEtfInfoList(int32_t date_num, std::vector<std::string> fund_symbol_vec, std::vector<IaEtfInfo>& out)
 {
     std::vector<std::map<std::string, std::string>> result;
