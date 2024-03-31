@@ -38,8 +38,11 @@ public:
         std::string szOrderKey;
         std::string szMatchKey;
 
+        std::string szAccountKey;
+
         std::string szSignalStream;
         std::string szSignalMap;
+        
 
 
         std::string szSqlIp;

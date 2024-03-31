@@ -79,12 +79,18 @@ void IaEtfFollowTradeBotGt::OnCommonJsonRespones(const json* rspData, int req_id
         std::cout << "OnCommonJsonRespones: rspData json is null, " << req_id << std::endl;
         return;
     }
-    if ((*rspData)["type"] == "OnRspFundQueryResult")
+    std::cout << "OnCommonJsonRespones: " << *rspData << std::endl;
+
+    if ((*rspData)["type"] == "onReqAccountDetail")
     {
-        std::cout << "OnRspFundQueryResult: " << *rspData << std::endl;
-        m_total_asset = (*rspData)["data"]["total_asset"].get<double>();
-        m_cash_asset = (*rspData)["data"]["buying_power"].get<double>();
-        return;
+        if (m_config)
+        {
+            if(!m_config->szAccountKey.empty())
+            {
+                std::string key = m_config->szAccountKey;
+                m_redis->hmset(key.c_str(), std::string((*rspData)["data"]["account_id"]).c_str(), (*rspData)["data"].dump().c_str());
+            }
+        }
     }
 };   
 
@@ -369,6 +375,9 @@ int IaEtfFollowTradeBotGt::loadConfig(std::string iniFileName){
     
     m_config->szOrderKey         = string(_iniFile["ia_etf_follow_trade_bot_gt"]["order_key"]);
     m_config->szMatchKey         = string(_iniFile["ia_etf_follow_trade_bot_gt"]["match_key"]);
+
+    m_config->szAccountKey       = string(_iniFile["ia_etf_follow_trade_bot_gt"]["account_key"]);
+
 
     m_config->szSignalStream    = string(_iniFile["ia_etf_follow_trade_bot_gt"]["signal_stream"]);
     m_config->szSignalMap       = string(_iniFile["ia_etf_follow_trade_bot_gt"]["signal_map"]);

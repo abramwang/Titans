@@ -15,7 +15,7 @@ TiGtTraderAccount::~TiGtTraderAccount()
 
 void TiGtTraderAccount::OnCommonJsonRespones(const json* rspData, int req_id, bool isLast, int err, const char* err_str)
 {
-    std::cout << *rspData << std::endl;
+    //std::cout << "TiGtTraderAccount::OnCommonJsonRespones: " << *rspData << std::endl;
 };
 
 void TiGtTraderAccount::enterOrder(std::shared_ptr<TiRtnOrderStatus> order_ptr)

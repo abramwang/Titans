@@ -163,6 +163,8 @@ void TiGtTraderClient::onReqAccountDetail(const char* accountId, int nRequestId,
         //m_client->reqSecuAccount(accountId, nReqId);
     }
 
+
+    m_cb->OnCommonJsonRespones(&rspData, nRequestId, isLast, error.errorID(), error.errorMsg());
     /* 
     cout << "[onReqAccountDetail]  资金账号 :" << data->m_strAccountID
         << "\n    账号状态:" << data->m_strStatus
