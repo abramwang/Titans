@@ -219,6 +219,7 @@ void TiGtTraderClient::onReqPositionDetail(const char* accountID, int nRequestId
     account_iter->second->enterPosition(position_ptr);
 
     strcpy(position_ptr->szSymbol, data->m_strInstrumentID);
+    strcpy(position_ptr->szName, data->m_strInstrumentName);
     strcpy(position_ptr->szExchange, data->m_strExchangeID);
     strcpy(position_ptr->szAccount, data->m_strAccountID);
     position_ptr->nPosition = data->m_nVolume;
@@ -251,6 +252,7 @@ void TiGtTraderClient::onReqOrderDetail(const char* accountID, int nRequestId, c
 
     strcpy(order->szExchange, data->m_strExchangeID);
     strcpy(order->szSymbol, data->m_strInstrumentID);
+    strcpy(order->szName, data->m_strInstrumentName);
     strcpy(order->szAccount, data->m_strAccountID);
 
     order->nBusinessType = convertBusinessType(data->m_nOrderPriceType);
@@ -322,6 +324,7 @@ void TiGtTraderClient::onReqDealDetail(const char* accountID, int nRequestId, co
     match_ptr->nMatchPrice = data->m_dAveragePrice;
     match_ptr->nMatchVol = data->m_nVolume;
     strcpy(match_ptr->szSymbol, data->m_strInstrumentID);
+    strcpy(match_ptr->szName, data->m_strInstrumentName);
     strcpy(match_ptr->szExchange, data->m_strExchangeID);
     strcpy(match_ptr->szShareholderId, data->m_strSecuAccount);
 
@@ -438,6 +441,7 @@ void TiGtTraderClient::onRtnOrderDetail(const COrderDetail* data)
 
     strcpy(order->szExchange, data->m_strExchangeID);
     strcpy(order->szSymbol, data->m_strInstrumentID);
+    strcpy(order->szName, data->m_strInstrumentName);
     strcpy(order->szAccount, data->m_strAccountID);
 
     order->nBusinessType = convertBusinessType(data->m_nOrderPriceType);
@@ -495,6 +499,7 @@ void TiGtTraderClient::onRtnDealDetail(const CDealDetail* data)
     match_ptr->nMatchPrice = data->m_dAveragePrice;
     match_ptr->nMatchVol = data->m_nVolume;
     strcpy(match_ptr->szSymbol, data->m_strInstrumentID);
+    strcpy(match_ptr->szName, data->m_strInstrumentName);
     strcpy(match_ptr->szExchange, data->m_strExchangeID);
     strcpy(match_ptr->szShareholderId, data->m_strSecuAccount);
 

@@ -64,15 +64,16 @@ struct TiBase_Msg
 /// 下单请求
 struct TiReqOrderInsert : TiBase_Msg
 {
-    TI_SymbolType    szSymbol;       //  证券合约代码
-    TI_ExchangeType  szExchange;     //  交易所
-    TI_AccountType   szAccount;      //  资金帐号
-    TI_TradeSideType nTradeSideType; //  交易类型 买、卖
-    TI_OffsetType    nOffsetType;    //  交易类型 开、平
-    TI_BusinessType  nBusinessType;  //  业务类型
-    double           nOrderPrice;    //  下单价
-    int32_t          nOrderVol;      //  下单量
-    int64_t          nReqTimestamp;  //  下单本地时间
+    TI_SymbolType       szSymbol;       //  证券合约代码
+    TI_SymbolNameType   szName;         //  证券名称
+    TI_ExchangeType     szExchange;     //  交易所
+    TI_AccountType      szAccount;      //  资金帐号
+    TI_TradeSideType    nTradeSideType; //  交易类型 买、卖
+    TI_OffsetType       nOffsetType;    //  交易类型 开、平
+    TI_BusinessType     nBusinessType;  //  业务类型
+    double              nOrderPrice;    //  下单价
+    int32_t             nOrderVol;      //  下单量
+    int64_t             nReqTimestamp;  //  下单本地时间
 };
 
 /// 下单回调
@@ -106,19 +107,21 @@ typedef TiReqOrderDelete TiRspOrderDelete;
 /// 委托查询请求
 struct TiReqQryOrder : TiBase_Msg
 {
-    TI_SymbolType   szSymbol;    //  证券合约代码
-    TI_ExchangeType szExchange;  //  交易所
-    int32_t         nIndex;      //  起始位置(不填默认从头开始)
-    int32_t         nNum;        //  数量（不填默认查全部）
+    TI_SymbolType       szSymbol;    //  证券合约代码
+    TI_SymbolNameType   szName;      //  证券名称 (可以为空)
+    TI_ExchangeType     szExchange;  //  交易所
+    int32_t             nIndex;      //  起始位置(不填默认从头开始)
+    int32_t             nNum;        //  数量（不填默认查全部）
 };
 
 /// 成交查询请求
 struct TiReqQryMatch : TiBase_Msg
 {
-    TI_SymbolType   szSymbol;    //  证券合约代码
-    TI_ExchangeType szExchange;  //  交易所
-    int32_t         nIndex;      //  起始位置(不填默认从头开始)
-    int32_t         nNum;        //  数量（不填默认查全部）
+    TI_SymbolType       szSymbol;    //  证券合约代码
+    TI_SymbolNameType   szName;      //  证券名称 (可以为空)
+    TI_ExchangeType     szExchange;  //  交易所
+    int32_t             nIndex;      //  起始位置(不填默认从头开始)
+    int32_t             nNum;        //  数量（不填默认查全部）
 };
 
 /// 持仓查询请求
@@ -130,30 +133,32 @@ struct TiReqQryPosition : TiBase_Msg
 /// 持仓查询回调
 struct TiRspQryPosition : TiBase_Msg
 {
-    TI_SymbolType    szSymbol;        //  证券合约代码
-    TI_ExchangeType  szExchange;      //  交易所
-    TI_AccountType   szAccount;       //  资金帐号
-    int32_t          nPosition;       //  持仓总量
-    double           nPrice;          //  持仓均价
-    double           nProfit;         //  浮盈（不含手续费）
-    double           nSettledProfit;  //  已结算的盈利（不含手续费）
-    TI_AccountType   szShareholderId; //  股东代码
+    TI_SymbolType       szSymbol;        //  证券合约代码
+    TI_SymbolNameType   szName;          //  证券名称
+    TI_ExchangeType     szExchange;      //  交易所
+    TI_AccountType      szAccount;       //  资金帐号
+    int32_t             nPosition;       //  持仓总量
+    double              nPrice;          //  持仓均价
+    double              nProfit;         //  浮盈（不含手续费）
+    double              nSettledProfit;  //  已结算的盈利（不含手续费）
+    TI_AccountType      szShareholderId; //  股东代码
 };
 
 /// 成交回调通知
 struct TiRtnOrderMatch : TiBase_Msg
 {
-    int64_t          nOrderId;           //  委托编号
-    TI_OrderIdType   szOrderStreamId;    //  委托编号（broker 或交易所的唯一编号）
-    TI_OrderIdType   szStreamId;         //  成交编号（broker 或交易所的唯一编号）
-    double           nMatchPrice;        //  成交价
-    int32_t          nMatchVol;          //  成交量
-    TI_SymbolType    szSymbol;           //  证券代码
-    TI_ExchangeType  szExchange;         //  交易所
-    TI_AccountType   szAccount;          //  资金帐号
-    int64_t          nMatchTimestamp;    //  成交时间戳
-    TI_TradeSideType nTradeSideType;     //  交易类型 买、卖
-    TI_AccountType   szShareholderId;    //  股东代码
+    TI_SymbolType       szSymbol;           //  证券代码
+    TI_SymbolNameType   szName;             //  证券名称
+    TI_ExchangeType     szExchange;         //  交易所
+    int64_t             nOrderId;           //  委托编号
+    TI_OrderIdType      szOrderStreamId;    //  委托编号（broker 或交易所的唯一编号）
+    TI_OrderIdType      szStreamId;         //  成交编号（broker 或交易所的唯一编号）
+    double              nMatchPrice;        //  成交价
+    int32_t             nMatchVol;          //  成交量
+    TI_AccountType      szAccount;          //  资金帐号
+    int64_t             nMatchTimestamp;    //  成交时间戳
+    TI_TradeSideType    nTradeSideType;     //  交易类型 买、卖
+    TI_AccountType      szShareholderId;    //  股东代码
 };
 
 /// 委托查询响应

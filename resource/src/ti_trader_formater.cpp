@@ -10,6 +10,7 @@ void TiTraderFormater::FormatPosition(const TiRspQryPosition* pData, json& j)
 {
     j = {
         {"szSymbol" , pData->szSymbol},
+        {"szName" , pData->szName},
         {"szExchange" , pData->szExchange},
         {"szAccount" , pData->szAccount},
         {"nPosition" , pData->nPosition},
@@ -26,6 +27,7 @@ void TiTraderFormater::FormatOrderStatus(const TiRtnOrderStatus* pData, json& j)
     j ={
         {"nReqId" , pData->nReqId},
         {"szSymbol" , pData->szSymbol},
+        {"szName" , pData->szName},
         {"szExchange" , pData->szExchange},
         {"nTradeSideType" , pData->nTradeSideType},
         {"nOffsetType" , pData->nOffsetType},
@@ -85,13 +87,14 @@ void TiTraderFormater::FormatOrderMatchEvent(const TiRtnOrderMatch* pData, json&
     char order_id[128];
     sprintf(order_id, "%lu", pData->nOrderId);
     j = {
+        {"szSymbol" , pData->szSymbol},
+        {"szName" , pData->szName},
+        {"szExchange" , pData->szExchange},
         {"szOrderId" , order_id},
         {"szOrderStreamId" , pData->szOrderStreamId},
         {"szStreamId" , pData->szStreamId},
         {"nMatchPrice" , pData->nMatchPrice},
         {"nMatchVol" , pData->nMatchVol},
-        {"szSymbol" , pData->szSymbol},
-        {"szExchange" , pData->szExchange},
         {"szMatchTime" , datetime::get_format_timestamp_ms(pData->nMatchTimestamp)},
         {"nTradeSideType" , pData->nTradeSideType},
         {"szShareholderId" , pData->szShareholderId},
