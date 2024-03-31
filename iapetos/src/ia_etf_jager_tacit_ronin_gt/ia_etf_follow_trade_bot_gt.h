@@ -35,6 +35,7 @@ public:
         std::string szCommandStreamGroup;
         std::string szCommandConsumerId;
 
+        std::string szPositionKey;
         std::string szOrderKey;
         std::string szMatchKey;
 

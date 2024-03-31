@@ -155,12 +155,18 @@ void IaEtfFollowTradeBotGt::OnRspQryPosition(const TiRspQryPosition* pData, bool
     json j;
     TiTraderFormater::FormatPosition(pData, j);
     std::cout << "OnRspQryPosition: " << j << std::endl;
-    /*
-    for (auto iter = m_workerList.begin(); iter != m_workerList.end(); iter++)
+
+    if (m_config)
     {
-        (*iter)->OnRspQryPosition(pData, isLast);
+        if(!m_config->szPositionKey.empty())
+        {
+            std::string key = m_config->szPositionKey;
+            key += ".";
+            key += pData->szAccount;
+
+            m_redis->hmset(key.c_str(), pData->szSymbol, j.dump().c_str());
+        }
     }
-    */
 };
 void IaEtfFollowTradeBotGt::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
 {
@@ -373,6 +379,7 @@ int IaEtfFollowTradeBotGt::loadConfig(std::string iniFileName){
     m_config->szCommandStreamGroup      = string(_iniFile["ia_etf_follow_trade_bot_gt"]["command_stream_group"]);
     m_config->szCommandConsumerId       = string(_iniFile["ia_etf_follow_trade_bot_gt"]["command_consumer_id"]);
     
+    m_config->szPositionKey      = string(_iniFile["ia_etf_follow_trade_bot_gt"]["position_key"]);
     m_config->szOrderKey         = string(_iniFile["ia_etf_follow_trade_bot_gt"]["order_key"]);
     m_config->szMatchKey         = string(_iniFile["ia_etf_follow_trade_bot_gt"]["match_key"]);
 
