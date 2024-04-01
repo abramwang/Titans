@@ -834,6 +834,13 @@ int TiGtTraderClient::QueryAsset()
         return -1;
     }
 
+    auto account_iter = m_account_map.begin();
+    for (; account_iter != m_account_map.end(); account_iter++)
+    {
+        ++nReqId;
+        m_client->reqAccountDetail(account_iter->first.c_str(), nReqId);
+    }
+
     return nReqId;
 };
 
@@ -878,10 +885,10 @@ int TiGtTraderClient::QueryPositions()
         return -1;
     }
 
-    ++nReqId;
     auto account_iter = m_account_map.begin();
     for (; account_iter != m_account_map.end(); account_iter++)
     {
+        ++nReqId;
         m_client->reqPositionDetail(account_iter->first.c_str(), nReqId);
     }
 

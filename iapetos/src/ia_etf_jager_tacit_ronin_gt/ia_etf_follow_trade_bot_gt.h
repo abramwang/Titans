@@ -117,12 +117,15 @@ private:
     TiGtTraderClient* m_trade_client;
     ConfigInfo* m_config;
 
+
     IaEtfUserSetting* m_user_setting;
     IaEtfInfoMysql* m_mysql;
     IaEtfQuoteDataCache* m_quote_cache;
     IaEtfSignalCenter* m_signal_center;
     IaEtfTradeWorkerCenter* m_trade_center;
     
+    int64_t m_query_time;
+    int64_t m_query_interval;
 
     json m_json_cash;
     json m_json_msg;
@@ -135,8 +138,6 @@ private:
     void cancelOrder(json &msg);
 
 public:
-    double m_total_asset;   //总资产
-    double m_cash_asset;    //可用资金
     std::mutex m_mutex;
 
     TiTraderClient* GetTraderClient();

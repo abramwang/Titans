@@ -18,8 +18,10 @@ IaEtfFollowTradeBotGt::IaEtfFollowTradeBotGt(uv_loop_s* loop, std::string config
     m_quote_cache = NULL;
     m_signal_center = NULL;
     m_trade_center = NULL;
-    m_total_asset = 0;
-    m_cash_asset = 0;
+
+    m_query_time = datetime::get_time_num();
+    m_query_interval = 60 * 5; //5分钟查询一次
+
     loadConfig(configPath);
 
     ///*
@@ -81,7 +83,13 @@ void IaEtfFollowTradeBotGt::OnCommonJsonRespones(const json* rspData, int req_id
         std::cout << "OnCommonJsonRespones: rspData json is null, " << req_id << std::endl;
         return;
     }
-    std::cout << "OnCommonJsonRespones: " << *rspData << std::endl;
+
+    /*
+    if (isLast)
+    {
+        std::cout << "OnCommonJsonRespones: " << isLast << " data:" <<  *rspData << std::endl;
+    }
+    */
 
     if ((*rspData)["type"] == "onReqAccountDetail")
     {
@@ -120,7 +128,7 @@ void IaEtfFollowTradeBotGt::OnRspQryOrder(const TiRspQryOrder* pData, bool isLas
 
             json j;
             TiTraderFormater::FormatOrderStatus(pData, j);
-            std::cout << "OnRspQryOrder: " << key.c_str() << " " << pData->szOrderStreamId << " " << j << std::endl;
+            //std::cout << "OnRspQryOrder: " << key.c_str() << " " << pData->szOrderStreamId << " " << j << std::endl;
 
             m_redis->hmset(key.c_str(), pData->szOrderStreamId, j.dump().c_str());
         }
@@ -146,7 +154,7 @@ void IaEtfFollowTradeBotGt::OnRspQryMatch(const TiRspQryMatch* pData, bool isLas
 
             json j;
             TiTraderFormater::FormatOrderMatchEvent(pData, j);
-            std::cout << "OnRspQryMatch: " << key.c_str() << " " << pData->szStreamId << " " << j << std::endl;
+            //std::cout << "OnRspQryMatch: " << key.c_str() << " " << pData->szStreamId << " " << j << std::endl;
 
             m_redis->hmset(key.c_str(), pData->szStreamId, j.dump().c_str());
         }
@@ -157,10 +165,6 @@ void IaEtfFollowTradeBotGt::OnRspQryPosition(const TiRspQryPosition* pData, bool
     Locker locker(&m_mutex);
     m_trade_center->OnRspQryPosition(pData, isLast);
 
-    json j;
-    TiTraderFormater::FormatPosition(pData, j);
-    std::cout << "OnRspQryPosition: " << j << std::endl;
-
     if (m_config)
     {
         if(!m_config->szPositionKey.empty())
@@ -168,6 +172,13 @@ void IaEtfFollowTradeBotGt::OnRspQryPosition(const TiRspQryPosition* pData, bool
             std::string key = m_config->szPositionKey;
             key += ".";
             key += pData->szAccount;
+
+            json j;
+            TiTraderFormater::FormatPosition(pData, j);
+            if (isLast)
+            {
+                std::cout << "OnRspQryPosition: " << j << std::endl;
+            }
 
             m_redis->hmset(key.c_str(), pData->szSymbol, j.dump().c_str());
         }
@@ -225,10 +236,12 @@ void IaEtfFollowTradeBotGt::OnTimer()
     json signal_out;
     m_signal_center->GetJsonOut(signal_out);
 
+    ///*
     if(signal_out.empty())
     {
         return;
     }
+    //*/
 
     try{
         json signal_array = json::array();
@@ -251,6 +264,16 @@ void IaEtfFollowTradeBotGt::OnTimer()
         std::cout << "[IaEtfFollowTradeBotGt::OnTimer] " << e.what() << std::endl;
     }catch(...){
         std::cout << "[IaEtfFollowTradeBotGt::OnTimer] " << "unknown exception" << std::endl;
+    }
+
+    int64_t time_num = datetime::get_time_num();
+    if ((time_num - m_query_time) > m_query_interval*1000)
+    {
+        m_trade_client->QueryAsset();
+        m_trade_client->QueryPositions();
+        m_query_time = time_num;
+
+        std::cout << "[IaEtfFollowTradeBotGt::OnTimer] QueryAsset QueryPositions: " << time_num << std::endl;
     }
     
     return;
