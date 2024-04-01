@@ -69,6 +69,7 @@ void IaEtfFollowTradeBotGt::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField
 ////////////////////////////////////////////////////////////////////////
 void IaEtfFollowTradeBotGt::OnCommonJsonRespones(const json* rspData, int req_id, bool isLast, int err, const char* err_str)
 {
+    Locker locker(&m_mutex);
     if (err != 0)
     {
         std::cout << "OnCommonJsonRespones: " << err_str << std::endl;
@@ -100,6 +101,7 @@ void IaEtfFollowTradeBotGt::OnRspOrderDelete(const TiRspOrderDelete* pData)
 };
 void IaEtfFollowTradeBotGt::OnRspQryOrder(const TiRspQryOrder* pData, bool isLast)
 {
+    Locker locker(&m_mutex);
     m_trade_center->OnRspQryOrder(pData, isLast);
     /*
     for (auto iter = m_workerList.begin(); iter != m_workerList.end(); iter++)
@@ -125,6 +127,7 @@ void IaEtfFollowTradeBotGt::OnRspQryOrder(const TiRspQryOrder* pData, bool isLas
 };
 void IaEtfFollowTradeBotGt::OnRspQryMatch(const TiRspQryMatch* pData, bool isLast)
 {
+    Locker locker(&m_mutex);
     m_trade_center->OnRspQryMatch(pData, isLast);
     /*
     for (auto iter = m_workerList.begin(); iter != m_workerList.end(); iter++)
@@ -150,6 +153,7 @@ void IaEtfFollowTradeBotGt::OnRspQryMatch(const TiRspQryMatch* pData, bool isLas
 };
 void IaEtfFollowTradeBotGt::OnRspQryPosition(const TiRspQryPosition* pData, bool isLast)
 {
+    Locker locker(&m_mutex);
     m_trade_center->OnRspQryPosition(pData, isLast);
 
     json j;
@@ -248,7 +252,7 @@ void IaEtfFollowTradeBotGt::OnTimer()
         std::cout << "[IaEtfFollowTradeBotGt::OnTimer] " << "unknown exception" << std::endl;
     }
     
-    return;
+    //return;
     std::time_t currentTime = std::time(nullptr);
     std::tm* localTime = std::localtime(&currentTime);
     /*
