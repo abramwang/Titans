@@ -60,6 +60,7 @@ IaEtfFollowTradeBotGt::~IaEtfFollowTradeBotGt(){
 // 行情回调
 ////////////////////////////////////////////////////////////////////////
 void IaEtfFollowTradeBotGt::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){
+    Locker locker(&m_mutex);
     m_quote_cache->OnL2StockSnapshotRtn(pData);
     m_signal_center->OnL2StockSnapshotRtn(pData);
 };
@@ -252,7 +253,7 @@ void IaEtfFollowTradeBotGt::OnTimer()
         std::cout << "[IaEtfFollowTradeBotGt::OnTimer] " << "unknown exception" << std::endl;
     }
     
-    //return;
+    return;
     std::time_t currentTime = std::time(nullptr);
     std::tm* localTime = std::localtime(&currentTime);
     /*
