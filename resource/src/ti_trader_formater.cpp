@@ -26,6 +26,7 @@ void TiTraderFormater::FormatOrderStatus(const TiRtnOrderStatus* pData, json& j)
     sprintf(order_id, "%lu", pData->nOrderId);
     j ={
         {"nReqId" , pData->nReqId},
+        {"szAccount", pData->szAccount},
         {"szSymbol" , pData->szSymbol},
         {"szName" , pData->szName},
         {"szExchange" , pData->szExchange},
@@ -87,6 +88,7 @@ void TiTraderFormater::FormatOrderMatchEvent(const TiRtnOrderMatch* pData, json&
     char order_id[128];
     sprintf(order_id, "%lu", pData->nOrderId);
     j = {
+        {"szAccount", pData->szAccount},
         {"szSymbol" , pData->szSymbol},
         {"szName" , pData->szName},
         {"szExchange" , pData->szExchange},
