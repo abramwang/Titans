@@ -128,7 +128,11 @@ void IaEtfFollowTradeBotGt::OnRspQryOrder(const TiRspQryOrder* pData, bool isLas
 
             json j;
             TiTraderFormater::FormatOrderStatus(pData, j);
-            //std::cout << "OnRspQryOrder: " << key.c_str() << " " << pData->szOrderStreamId << " " << j << std::endl;
+
+            if (isLast)
+            {
+                std::cout << "OnRspQryOrder: " << key.c_str() << " " << pData->szOrderStreamId << " " << j << std::endl;
+            }
 
             m_redis->hmset(key.c_str(), pData->szOrderStreamId, j.dump().c_str());
         }
@@ -154,7 +158,11 @@ void IaEtfFollowTradeBotGt::OnRspQryMatch(const TiRspQryMatch* pData, bool isLas
 
             json j;
             TiTraderFormater::FormatOrderMatchEvent(pData, j);
-            //std::cout << "OnRspQryMatch: " << key.c_str() << " " << pData->szStreamId << " " << j << std::endl;
+
+            if (isLast)
+            {
+                std::cout << "OnRspQryMatch: " << key.c_str() << " " << pData->szStreamId << " " << j << std::endl;
+            }
 
             m_redis->hmset(key.c_str(), pData->szStreamId, j.dump().c_str());
         }
@@ -200,7 +208,7 @@ void IaEtfFollowTradeBotGt::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
             key += ".";
             key += pData->szAccount;
 
-            std::cout << "OnRtnOrderStatusEvent: " << key.c_str() << " " << pData->szOrderStreamId << " " << j << std::endl;
+            //std::cout << "OnRtnOrderStatusEvent: " << key.c_str() << " " << pData->szOrderStreamId << " " << j << std::endl;
 
             m_redis->hmset(key.c_str(), pData->szOrderStreamId, j.dump().c_str());
 
@@ -228,7 +236,7 @@ void IaEtfFollowTradeBotGt::OnRtnOrderMatchEvent(const TiRtnOrderMatch* pData)
             key += ".";
             key += pData->szAccount;
 
-            std::cout << "OnRtnOrderMatchEvent: " << key.c_str() << " " << pData->szStreamId << " " << j << std::endl;
+            //std::cout << "OnRtnOrderMatchEvent: " << key.c_str() << " " << pData->szStreamId << " " << j << std::endl;
 
             m_redis->hmset(key.c_str(), pData->szStreamId, j.dump().c_str());
         }
