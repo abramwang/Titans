@@ -51,6 +51,7 @@ public:
     /// STREAM
     bool xtrim(const char* key, int count);
     bool xadd(const char* key, const char* message);
+    bool xadd(const char* key, const char* message, int max_len);
 
     bool xadd_binary(const char* key, const char* message, size_t len);
 

@@ -191,18 +191,25 @@ void IaEtfFollowTradeBotGt::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
 
     if (m_config)
     {
+        json j;
+        TiTraderFormater::FormatOrderStatus(pData, j);
+
         if(!m_config->szOrderKey.empty())
         {
             std::string key = m_config->szOrderKey;
             key += ".";
             key += pData->szAccount;
 
-            json j;
-            TiTraderFormater::FormatOrderStatus(pData, j);
             std::cout << "OnRtnOrderStatusEvent: " << key.c_str() << " " << pData->szOrderStreamId << " " << j << std::endl;
 
             m_redis->hmset(key.c_str(), pData->szOrderStreamId, j.dump().c_str());
+
         }
+        if (!m_config->szOrderStream.empty())
+        {
+            m_redis->xadd(m_config->szOrderStream.c_str(), j.dump().c_str(), 20000);   
+        }
+        
     }
 };
 void IaEtfFollowTradeBotGt::OnRtnOrderMatchEvent(const TiRtnOrderMatch* pData)
@@ -212,17 +219,23 @@ void IaEtfFollowTradeBotGt::OnRtnOrderMatchEvent(const TiRtnOrderMatch* pData)
 
     if (m_config)
     {
+        json j;
+        TiTraderFormater::FormatOrderMatchEvent(pData, j);
+
         if(!m_config->szMatchKey.empty())
         {
             std::string key = m_config->szMatchKey;
             key += ".";
             key += pData->szAccount;
 
-            json j;
-            TiTraderFormater::FormatOrderMatchEvent(pData, j);
             std::cout << "OnRtnOrderMatchEvent: " << key.c_str() << " " << pData->szStreamId << " " << j << std::endl;
 
             m_redis->hmset(key.c_str(), pData->szStreamId, j.dump().c_str());
+        }
+
+        if (!m_config->szMatchStream.empty())
+        {
+            m_redis->xadd(m_config->szMatchStream.c_str(), j.dump().c_str(), 20000);   
         }
     }
 };
@@ -258,7 +271,7 @@ void IaEtfFollowTradeBotGt::OnTimer()
             }
             m_redis->hmset(m_config->szSignalMap.c_str(), iter.key().c_str(), iter.value().dump().c_str());
         }
-        m_redis->xadd(m_config->szSignalStream.c_str(), signal_array.dump().c_str());
+        m_redis->xadd(m_config->szSignalStream.c_str(), signal_array.dump().c_str(), 20000);
         //std::cout << "[IaEtfFollowTradeBotGt::OnTimer] signal_size: " << signal_out.size() << std::endl;
     }catch(std::exception& e){
         std::cout << "[IaEtfFollowTradeBotGt::OnTimer] " << e.what() << std::endl;
@@ -410,6 +423,9 @@ int IaEtfFollowTradeBotGt::loadConfig(std::string iniFileName){
     m_config->szPositionKey      = string(_iniFile["ia_etf_follow_trade_bot_gt"]["position_key"]);
     m_config->szOrderKey         = string(_iniFile["ia_etf_follow_trade_bot_gt"]["order_key"]);
     m_config->szMatchKey         = string(_iniFile["ia_etf_follow_trade_bot_gt"]["match_key"]);
+
+    m_config->szOrderStream      = string(_iniFile["ia_etf_follow_trade_bot_gt"]["order_stream"]);
+    m_config->szMatchStream      = string(_iniFile["ia_etf_follow_trade_bot_gt"]["match_stream"]);
 
     m_config->szAccountKey       = string(_iniFile["ia_etf_follow_trade_bot_gt"]["account_key"]);
 

@@ -41,10 +41,11 @@ public:
 
         std::string szAccountKey;
 
+        std::string szOrderStream;
+        std::string szMatchStream;
+
         std::string szSignalStream;
         std::string szSignalMap;
-        
-
 
         std::string szSqlIp;
         int         nSqlPort;
