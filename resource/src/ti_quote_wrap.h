@@ -5,6 +5,7 @@
 
 namespace TiQuoteWrap
 {
+    char* CreatWrap(const TiQuoteSnapshotIndexField* pData);
     char* CreatWrap(const TiQuoteSnapshotFutureField* pData);
     char* CreatWrap(const TiQuoteSnapshotStockField* pData);
     char* CreatWrap(const TiQuoteOrderField* pData);
@@ -12,6 +13,7 @@ namespace TiQuoteWrap
     char* CreatWrap(const TiQuoteOrderBookField* pData);
 
     TI_QUOTE_DATA_TYPE GetDataType(char* buff);
+    TiQuoteSnapshotIndexField* GetSnapshotIndexData(char* buff);
     TiQuoteSnapshotFutureField* GetSnapshotFutureData(char* buff);
     TiQuoteSnapshotStockField* GetSnapshotStockData(char* buff);
     TiQuoteOrderField* GetOrderData(char* buff);

@@ -44,6 +44,15 @@ void TiQuoteIpcClient::recv_data_cb(uv_async_t* handle)
             {
                 switch (dataPtr->dataType)
                 {
+                case TI_QUOTE_DATA_TYPE_SNAPSHOT_INDEX:
+                {
+                    TiQuoteSnapshotIndexField* pData = (TiQuoteSnapshotIndexField*)dataPtr->data;
+                    if (client->isSubscribed(pData->exchange, pData->symbol))
+                    {
+                        client->m_cb->OnL2IndexSnapshotRtn(pData);
+                    }
+                    break;
+                }
                 case TI_QUOTE_DATA_TYPE_SNAPSHOT_FUTURE:
                 {
                     TiQuoteSnapshotFutureField* pData = (TiQuoteSnapshotFutureField*)dataPtr->data;

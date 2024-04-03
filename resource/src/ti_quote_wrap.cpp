@@ -1,6 +1,19 @@
 #include "ti_quote_wrap.h"
 #include <string.h>
 
+
+char* TiQuoteWrap::CreatWrap(const TiQuoteSnapshotIndexField* pData)
+{
+    if (!pData)
+    {
+        return NULL;
+    }
+    char* buff = new char[sizeof(TiQuoteSnapshotIndexField) + 1];
+    buff[0] = TI_QUOTE_DATA_TYPE_SNAPSHOT_INDEX;
+    memcpy(buff + 1, pData, sizeof(TiQuoteSnapshotIndexField));
+    return buff;
+};
+
 char* TiQuoteWrap::CreatWrap(const TiQuoteSnapshotFutureField* pData)
 {
     if (!pData)
@@ -69,6 +82,19 @@ TI_QUOTE_DATA_TYPE TiQuoteWrap::GetDataType(char* buff)
     }
     return buff[0];
 }
+
+TiQuoteSnapshotIndexField* TiQuoteWrap::GetSnapshotIndexData(char* buff)
+{
+    if (!buff)
+    {
+        return NULL;
+    }
+    if (buff[0] != TI_QUOTE_DATA_TYPE_SNAPSHOT_INDEX)
+    {
+        return NULL;
+    }
+    return (TiQuoteSnapshotIndexField*)(buff + 1);
+};
 
 TiQuoteSnapshotFutureField* TiQuoteWrap::GetSnapshotFutureData(char* buff)
 {

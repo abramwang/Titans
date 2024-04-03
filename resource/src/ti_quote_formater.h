@@ -6,6 +6,7 @@
 using namespace nlohmann;
 
 namespace TiQuoteFormater{
+    void FormatSnapshot(const TiQuoteSnapshotIndexField* pData, json& j);
     void FormatSnapshot(const TiQuoteSnapshotFutureField* pData, json& j);
     void FormatSnapshot(const TiQuoteSnapshotStockField* pData, json& j);
     void FormatMatch(const TiQuoteMatchesField* pData, json& j);

@@ -90,6 +90,14 @@ void TiQuoteIpcPublisher::ipc_pub(){
     m_cache->reset();
 };
 
+
+void TiQuoteIpcPublisher::OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData)
+{
+    char* warp = TiQuoteWrap::CreatWrap(pData);
+    m_queue.enqueue(warp);
+    uv_async_send(m_pub_signal);
+};
+
 void TiQuoteIpcPublisher::OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData)
 {
     char* warp = TiQuoteWrap::CreatWrap(pData);

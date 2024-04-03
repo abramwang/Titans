@@ -1,6 +1,29 @@
 #include "ti_quote_formater.h"
 #include "datetime.h"
 
+
+void TiQuoteFormater::FormatSnapshot(const TiQuoteSnapshotIndexField* pData, json& j)
+{
+    j = {
+        {"exchange" , pData->exchange},
+        {"symbol" , pData->symbol},
+        {"date" , pData->date},
+        {"time" , pData->time},
+        {"datetime" , datetime::get_format_timestamp_ms(pData->timestamp)},
+        {"time_str" , pData->time_str},
+        {"recv_time_str" , pData->recv_time_str},
+        {"recv_timestamp" , pData->recv_timestamp},
+        {"last" , pData->last},
+        {"pre_close" , pData->pre_close},
+        {"open" , pData->open},
+        {"high" , pData->high},
+        {"low" , pData->low},
+        {"volume" , pData->volume},
+        {"turnover" , pData->turnover},
+        {"close" , pData->close}
+    };
+};
+
 void TiQuoteFormater::FormatSnapshot(const TiQuoteSnapshotFutureField* pData, json& j)
 {
     j = {

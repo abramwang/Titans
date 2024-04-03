@@ -26,6 +26,7 @@ protected:
     std::mutex m_mutex;
     TiQuoteCache* m_cache;
     int64_t m_last_pub_time;
+    int64_t m_cout_time_index;
     int64_t m_cout_time_snap;
     int64_t m_cout_time_trans;
     int64_t m_cout_time_order;
@@ -58,6 +59,7 @@ public:
         memset(m_buffer, 0, TI_QUOTE_CACHE_MAX_LEN);
         m_cache = new TiQuoteCache(m_buffer, TI_QUOTE_CACHE_MAX_LEN);
         m_last_pub_time = 0;
+        m_cout_time_index = 0;
         m_cout_time_snap = 0;
         m_cout_time_trans = 0;
         m_cout_time_order = 0;
@@ -91,7 +93,28 @@ public:
 
     };
    
-    virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){};
+    virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){
+        m_mutex.lock();
+        if ((pData->time - m_cout_time_index) > 5000)
+        {
+            printf("[OnL2IndexSnapshotRtn] %s, %s, %d, %f, %f, %ld\n", 
+                pData->symbol, pData->time_str, pData->time, pData->last, pData->turnover, pData->volume);
+            json j;
+            TiQuoteFormater::FormatSnapshot(pData, j);
+            //printf("[OnMDSnapshot] %s\n", out);
+            printf("[OnL2IndexSnapshotRtn] %s\n", j.dump().c_str());
+            m_cout_time_index = pData->time;
+        }
+        //return;
+        if(!m_cache->try_addData(TI_QUOTE_DATA_TYPE_SNAPSHOT_INDEX, (void *)pData, sizeof(TiQuoteSnapshotIndexField)))
+        {
+            ipc_pub();
+            m_cache->try_addData(TI_QUOTE_DATA_TYPE_SNAPSHOT_INDEX, (void *)pData, sizeof(TiQuoteSnapshotIndexField));
+        }else{
+            try_ipc_pub();
+        }
+        m_mutex.unlock();
+    };
 
     virtual void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData){};
 

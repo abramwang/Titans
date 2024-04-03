@@ -6,6 +6,7 @@
 #include "ti_quote_callback.h"
 #include "ti_quote_depth_callback.h"
 #include "ti_quote_ipc_client.h"
+#include "ti_quote_formater.h"
 
 class UserCallback : 
     public TiQuoteCallback, public TiQuoteDepthCallback
@@ -22,16 +23,51 @@ public:
         m_cout_match_time = 0;
         m_cout_order_time = 0;
         m_cout_order_book_time = 0;
+        /*
         m_selected_symbols.insert("600000");
         m_selected_symbols.insert("000001");
         m_selected_symbols.insert("688981");
         m_selected_symbols.insert("300152");
+        */
+        /*
+        301129
+        301181
+        301261
+        301317
+        301393
+        301397
+        688075
+        688136
+        688137
+        688162
+        688355
+        */
+        m_selected_symbols.insert("301129");
+        m_selected_symbols.insert("301181");
+        m_selected_symbols.insert("301261");
+        m_selected_symbols.insert("301317");
+        m_selected_symbols.insert("301393");
+        m_selected_symbols.insert("301397");
+        m_selected_symbols.insert("688075");
+        m_selected_symbols.insert("688136");
+        m_selected_symbols.insert("688137");
+        m_selected_symbols.insert("688162");
+        m_selected_symbols.insert("688355");  
+
+        m_selected_symbols.insert("000016");   
+        m_selected_symbols.insert("000300");   
+        m_selected_symbols.insert("000905");   
+        m_selected_symbols.insert("000852");   
     };
     virtual ~UserCallback(){};
 public:
     virtual void OnTradingDayRtn(const unsigned int day, const char* exchangeName){};
    
-    virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){};
+    virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){
+        printf("[OnL2IndexSnapshotRtn] %s, %s, %d, %s, %f, %f\n", 
+            pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->pre_close);
+
+    };
 
     
     virtual void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData)
@@ -53,6 +89,9 @@ public:
         {
             printf("[OnL2StockSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
                 pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
+            //json j;
+            //TiQuoteFormater::FormatSnapshot(pData, j);
+            //std::cout << j << std::endl;
             m_cout_snap_time = pData->time;
         }
     };
