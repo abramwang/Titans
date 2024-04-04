@@ -28,11 +28,11 @@ link_directories( "./" )
 
 add_executable( ${PROJECT_NAME} ${SRCS} )
 
-target_link_libraries(${PROJECT_NAME} -larrow -lparquet -luv -lhiredis -lglog -lrt)
+target_link_libraries(${PROJECT_NAME} -lmysqlclient -larrow -lparquet -luv -lhiredis -lglog -lrt)
 
 # 指定源文件和目标文件路径
 set(SOURCE_FILE "./ia_etf_factors_ipc")
-set(TARGET_DIR "/home/titans/dist/production_env")
+set(TARGET_DIR "/home/dist/production_env")
 
 # 添加自定义命令
 add_custom_command(

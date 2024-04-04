@@ -36,9 +36,68 @@ private:
 
     json m_out;     //输出数据
 
+struct profit_info
+{
+    /// @brief 申购瞬时利润
+    double buy_stock_amount;            //买入股票市值
+    double buy_stock_amount_local;      //买入本市场股票市值
+    double buy_stock_amount_cross;      //买入跨市场股票市值
+    double buy_stock_fee;               //买入股票手续费
+    double buy_stock_fee_local;         //买入本市场手续费
+    double buy_stock_fee_cross;         //买入跨市场手续费
+
+    double buy_stock_replace_amount;    //买入替代股票市值
+    double buy_stock_replace_margin;    //买入替代股票占款
+
+    double buy_stock_cost;              //买入股票成本
+
+    double sell_etf_amount;             //卖出ETF市值
+    double sell_etf_fee;                //卖出ETF手续费
+
+    double creation_turnover;           //申购成交额    
+    
+    double creation_profit;             //申购瞬时利润   
+
+    /// @brief 赎回瞬时利润
+
+    double sell_stock_amount;           //卖出股票市值
+    double sell_stock_amount_local;     //卖出本市场股票市值
+    double sell_stock_amount_cross;     //卖出跨市场股票市值
+    double sell_stock_fee;              //卖出股票手续费
+    double sell_stock_fee_local;        //卖出本市场手续费
+    double sell_stock_fee_cross;        //卖出跨市场手续费
+
+    double sell_stock_replace_amount;   //卖出替代股票市值
+    double sell_stock_replace_margin;   //卖出替代股票占款
+
+    double sell_stock_cost;              //买入股票成本
+
+    double buy_etf_amount;              //买入ETF市值
+    double buy_etf_fee;                 //买入ETF手续费
+
+    double redemption_turnover;         //赎回成交额
+
+    double redemption_profit;           //赎回瞬时利润
+
+    /// @brief diff
+    double diff;                        //现金差值
+
+    /// @brief IOPV
+    double creation_iopv;
+    double redemption_iopv;
+};
+
 private:
+    double get_last_price(const TiQuoteSnapshotStockField* pData);
+    double get_bid_price(const TiQuoteSnapshotStockField* pData);
+    double get_ask_price(const TiQuoteSnapshotStockField* pData);
+
+    //获取期货替代指数行情
+    TiQuoteSnapshotIndexField* get_future_replace_price(std::string future_symbol);
+
     double calc_diff(); //计算现金差值
-    void calc_iopv(double& creation_iopv, double& redemption_iopv); //计算IOPV
+    void calc_iopv(const TiQuoteSnapshotStockField* pEtfSnap, profit_info &info); //计算IOPV
+    void format_json(profit_info &info); //格式化输出
 public:
     IaEtfSignalFactor(std::shared_ptr<IaEtfInfo> etf_info_ptr, 
         std::vector<std::shared_ptr<IaEtfConstituentInfo>> constituent_info_vec, 

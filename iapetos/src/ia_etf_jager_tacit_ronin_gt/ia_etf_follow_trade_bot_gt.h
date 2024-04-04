@@ -75,7 +75,7 @@ public:
 public:
     virtual void OnTradingDayRtn(const unsigned int day, const char* exchangeName){};
    
-    virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){};
+    virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData);
     virtual void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData){};
 
     virtual void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData);

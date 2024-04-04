@@ -58,12 +58,20 @@ public:
         m_selected_symbols.insert("000300");   
         m_selected_symbols.insert("000905");   
         m_selected_symbols.insert("000852");   
+
+        m_selected_symbols.insert("399905");  
+        m_selected_symbols.insert("399852");  
+        m_selected_symbols.insert("399300");  
     };
     virtual ~UserCallback(){};
 public:
     virtual void OnTradingDayRtn(const unsigned int day, const char* exchangeName){};
    
     virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){
+        auto iter = m_selected_symbols.find(pData->symbol);
+        if(iter == m_selected_symbols.end()){
+            return;
+        }
         printf("[OnL2IndexSnapshotRtn] %s, %s, %d, %s, %f, %f\n", 
             pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->pre_close);
 

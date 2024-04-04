@@ -1,6 +1,8 @@
 #include "ia_etf_user_setting.h"
 #include "datetime.h"
 
+#include <iostream>
+
 IaEtfUserSetting::IaEtfUserSetting(RedisSyncHandle* redis_client, IaEtfInfoMysql* etf_info_mysql)
 {
     m_redis_client = redis_client;
@@ -27,6 +29,8 @@ void IaEtfUserSetting::init_etf_info()
     int32_t last_trading_date_num = m_etf_info_mysql_client->QueryLatestTradingDate();
     int date_num = datetime::get_today();
     date_num = last_trading_date_num ? last_trading_date_num : date_num;
+
+    //date_num = 20240402;
 
     std::set<std::string> symbol_set;
 

@@ -14,11 +14,12 @@ class IaEtfQuoteDataCache
 {
 private:
     std::unordered_map<int64_t, std::shared_ptr<TiQuoteSnapshotStockField>> m_snapshot_map;
+    std::unordered_map<int64_t, std::shared_ptr<TiQuoteSnapshotIndexField>> m_index_map;
 
 public:     /*   行情回调   */
     virtual void OnTradingDayRtn(const unsigned int day, const char* exchangeName){};
    
-    virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){};
+    virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData);
     virtual void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData){};
 
     virtual void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData);
@@ -30,7 +31,8 @@ public:
     ~IaEtfQuoteDataCache();
 
 public:
-    TiQuoteSnapshotStockField* GetSnapshot(const char* symbol, const char* exchange);
+    TiQuoteSnapshotStockField* GetStockSnapshot(const char* symbol, const char* exchange);
+    TiQuoteSnapshotIndexField* GetIndexSnapshot(const char* symbol, const char* exchange);
 };
 
 

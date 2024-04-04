@@ -61,6 +61,12 @@ IaEtfFollowTradeBotGt::~IaEtfFollowTradeBotGt(){
 ////////////////////////////////////////////////////////////////////////
 // 行情回调
 ////////////////////////////////////////////////////////////////////////
+void IaEtfFollowTradeBotGt::OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData)
+{
+    Locker locker(&m_mutex);
+    m_quote_cache->OnL2IndexSnapshotRtn(pData);
+};
+
 void IaEtfFollowTradeBotGt::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){
     Locker locker(&m_mutex);
     m_quote_cache->OnL2StockSnapshotRtn(pData);
