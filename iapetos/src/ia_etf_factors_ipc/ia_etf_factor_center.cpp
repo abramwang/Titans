@@ -180,7 +180,7 @@ void IaETFFactorCenter::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pD
                 if (flag)
                 {
                     flag = m_redis.connect(m_config->szIp.c_str(), m_config->nPort, m_config->szAuth.c_str());
-                    flag = m_redis.xadd(m_config->szStreamKey.c_str(), j.dump().c_str());
+                    flag = m_redis.xadd(m_config->szStreamKey.c_str(), j.dump().c_str(), 2000);
                 }
             }
         }
@@ -205,7 +205,7 @@ void IaETFFactorCenter::OnFactorRtn(const char* symbol, const char* factor_name,
         if (flag)
         {
             flag = m_redis.connect(m_config->szIp.c_str(), m_config->nPort, m_config->szAuth.c_str());
-            flag = m_redis.xadd(m_config->szUiFactorKey.c_str(), j.dump().c_str());
+            flag = m_redis.xadd(m_config->szUiFactorKey.c_str(), j.dump().c_str(), 2000);
         }
     }        
 };

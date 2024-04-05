@@ -221,7 +221,7 @@ void IaEtfFollowTradeBotGt::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
         }
         if (!m_config->szOrderStream.empty())
         {
-            m_redis->xadd(m_config->szOrderStream.c_str(), j.dump().c_str(), 20000);   
+            m_redis->xadd(m_config->szOrderStream.c_str(), j.dump().c_str(), 2000);   
         }
         
     }
@@ -249,7 +249,7 @@ void IaEtfFollowTradeBotGt::OnRtnOrderMatchEvent(const TiRtnOrderMatch* pData)
 
         if (!m_config->szMatchStream.empty())
         {
-            m_redis->xadd(m_config->szMatchStream.c_str(), j.dump().c_str(), 20000);   
+            m_redis->xadd(m_config->szMatchStream.c_str(), j.dump().c_str(), 2000);   
         }
     }
 };
@@ -285,7 +285,7 @@ void IaEtfFollowTradeBotGt::OnTimer()
             }
             m_redis->hmset(m_config->szSignalMap.c_str(), iter.key().c_str(), iter.value().dump().c_str());
         }
-        m_redis->xadd(m_config->szSignalStream.c_str(), signal_array.dump().c_str(), 20000);
+        m_redis->xadd(m_config->szSignalStream.c_str(), signal_array.dump().c_str(), 2000);
         //std::cout << "[IaEtfFollowTradeBotGt::OnTimer] signal_size: " << signal_out.size() << std::endl;
     }catch(std::exception& e){
         std::cout << "[IaEtfFollowTradeBotGt::OnTimer] " << e.what() << std::endl;
