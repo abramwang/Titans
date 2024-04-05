@@ -250,30 +250,27 @@ void IaEtfSignalFactor::calc_iopv(const TiQuoteSnapshotStockField* pEtfSnap, pro
     info.buy_stock_amount = info.buy_stock_amount_local + info.buy_stock_amount_cross;
     info.buy_stock_fee = info.buy_stock_fee_local + info.buy_stock_fee_cross;
 
-    info.buy_stock_cost = info.buy_stock_amount + info.buy_stock_fee + info.buy_stock_replace_amount + info.buy_stock_replace_margin;
-
     info.sell_etf_amount = get_bid_price(pEtfSnap) * m_etf_info_ptr->m_minUnit;
     info.sell_etf_fee = info.sell_etf_amount * 0.00008;
 
     info.creation_turnover = info.sell_etf_amount + info.buy_stock_amount_local;
-    info.creation_profit = (info.sell_etf_amount - info.sell_etf_fee) - info.buy_stock_cost - info.buy_stock_replace_margin + info.diff;
 
     //赎回
     info.sell_stock_amount = info.sell_stock_amount_local + info.sell_stock_amount_cross;
     info.sell_stock_fee = info.sell_stock_fee_local + info.sell_stock_fee_cross;
 
-    info.sell_stock_cost = info.sell_stock_amount - info.sell_stock_fee  + info.sell_stock_replace_amount - info.sell_stock_replace_margin;
-
     info.buy_etf_amount = get_ask_price(pEtfSnap) * m_etf_info_ptr->m_minUnit;
     info.buy_etf_fee = info.buy_etf_amount * 0.00008;
 
     info.redemption_turnover = info.buy_etf_amount + info.sell_stock_amount_local;
-    info.redemption_profit = (info.sell_stock_cost - info.sell_stock_replace_margin - info.sell_stock_fee) - info.buy_etf_amount - info.buy_etf_fee - info.diff;
 
     //creation_iopv = creation_iopv + m_etf_info_ptr->m_publicEstimatedCashDifference;
     //redemption_iopv = redemption_iopv + m_etf_info_ptr->m_publicEstimatedCashDifference;
     info.creation_iopv = (info.creation_iopv + m_etf_info_ptr->m_publicEstimatedCashDifference) / m_etf_info_ptr->m_minUnit;
-    info.redemption_iopv = (info.redemption_iopv - m_etf_info_ptr->m_publicEstimatedCashDifference) / m_etf_info_ptr->m_minUnit;
+    info.redemption_iopv = (info.redemption_iopv + m_etf_info_ptr->m_publicEstimatedCashDifference) / m_etf_info_ptr->m_minUnit;
+
+    info.creation_profit = info.sell_etf_amount - info.creation_iopv *  m_etf_info_ptr->m_minUnit + info.diff - info.buy_stock_fee - info.sell_etf_fee; 
+    info.redemption_profit = info.redemption_iopv *  m_etf_info_ptr->m_minUnit - info.buy_etf_amount + info.diff - info.sell_stock_fee - info.buy_etf_fee;
 };
 
 void IaEtfSignalFactor::format_json(profit_info &info)
@@ -288,7 +285,6 @@ void IaEtfSignalFactor::format_json(profit_info &info)
     m_out["profit"]["creation"]["buy_stock_fee_cross"] = info.buy_stock_fee_cross;
     m_out["profit"]["creation"]["buy_stock_replace_amount"] = info.buy_stock_replace_amount;
     m_out["profit"]["creation"]["buy_stock_replace_margin"] = info.buy_stock_replace_margin;
-    m_out["profit"]["creation"]["buy_stock_cost"] = info.buy_stock_cost;
     m_out["profit"]["creation"]["sell_etf_amount"] = info.sell_etf_amount;
     m_out["profit"]["creation"]["sell_etf_fee"] = info.sell_etf_fee;
     m_out["profit"]["creation_turnover"] = info.creation_turnover;
@@ -304,7 +300,6 @@ void IaEtfSignalFactor::format_json(profit_info &info)
     m_out["profit"]["redemption"]["sell_stock_fee_cross"] = info.sell_stock_fee_cross;
     m_out["profit"]["redemption"]["sell_stock_replace_amount"] = info.sell_stock_replace_amount;
     m_out["profit"]["redemption"]["sell_stock_replace_margin"] = info.sell_stock_replace_margin;
-    m_out["profit"]["redemption"]["sell_stock_cost"] = info.sell_stock_cost;
     m_out["profit"]["redemption"]["buy_etf_amount"] = info.buy_etf_amount;
     m_out["profit"]["redemption"]["buy_etf_fee"] = info.buy_etf_fee;
     m_out["profit"]["redemption_turnover"] = info.redemption_turnover;
@@ -313,6 +308,7 @@ void IaEtfSignalFactor::format_json(profit_info &info)
     m_out["profit"]["diff"] = info.diff;
     m_out["profit"]["creation_iopv"] = info.creation_iopv;
     m_out["profit"]["redemption_iopv"] = info.redemption_iopv;
+
 };
 
 bool IaEtfSignalFactor::GetJsonOut(json& j)

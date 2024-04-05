@@ -49,8 +49,6 @@ struct profit_info
     double buy_stock_replace_amount;    //买入替代股票市值
     double buy_stock_replace_margin;    //买入替代股票占款
 
-    double buy_stock_cost;              //买入股票成本
-
     double sell_etf_amount;             //卖出ETF市值
     double sell_etf_fee;                //卖出ETF手续费
 
@@ -69,8 +67,6 @@ struct profit_info
 
     double sell_stock_replace_amount;   //卖出替代股票市值
     double sell_stock_replace_margin;   //卖出替代股票占款
-
-    double sell_stock_cost;              //买入股票成本
 
     double buy_etf_amount;              //买入ETF市值
     double buy_etf_fee;                 //买入ETF手续费
