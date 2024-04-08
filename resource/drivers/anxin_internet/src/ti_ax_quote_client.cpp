@@ -140,16 +140,16 @@ void TiAxQuoteClient::OnMDIndexSnapshot(amd::ama::MDIndexSnapshot* snapshot, uin
         datetime::get_format_now_time_us(_snapIndexCash.recv_time_str, TI_TIME_STR_LEN);
         _snapIndexCash.recv_timestamp  = datetime::get_now_timestamp_ms();
 
-        _snapIndexCash.last             = ((double)snapshot[i].last_index)/10000000;
-        _snapIndexCash.pre_close        = ((double)snapshot[i].pre_close_index)/10000000;
-        _snapIndexCash.open             = ((double)snapshot[i].open_index)/10000000;
-        _snapIndexCash.high             = ((double)snapshot[i].high_index)/10000000;
-        _snapIndexCash.low              = ((double)snapshot[i].low_index)/10000000;
-        _snapIndexCash.close            = ((double)snapshot[i].close_index)/10000000;
+        _snapIndexCash.last             = ((double)snapshot[i].last_index)/1000000;
+        _snapIndexCash.pre_close        = ((double)snapshot[i].pre_close_index)/1000000;
+        _snapIndexCash.open             = ((double)snapshot[i].open_index)/1000000;
+        _snapIndexCash.high             = ((double)snapshot[i].high_index)/1000000;
+        _snapIndexCash.low              = ((double)snapshot[i].low_index)/1000000;
+        _snapIndexCash.close            = ((double)snapshot[i].close_index)/1000000;
         _snapIndexCash.volume           = 0;
         _snapIndexCash.turnover         = 0;
         _snapIndexCash.volume           = snapshot[i].total_volume_trade / 100;
-        _snapIndexCash.turnover         = snapshot[i].total_value_trade / 10000000;
+        _snapIndexCash.turnover         = snapshot[i].total_value_trade / 1000000;
         
         if(m_cb){
             m_cb->OnL2IndexSnapshotRtn(&_snapIndexCash);
