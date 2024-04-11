@@ -20,7 +20,7 @@ IaEtfSignalFactor::~IaEtfSignalFactor()
 void IaEtfSignalFactor::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData)
 {
 #if __TEST__
-    if (strcmp(pData->symbol, "159531") != 0)
+    if (strcmp(pData->symbol, "159845") != 0)
     {
         return;
     }
@@ -145,11 +145,16 @@ double IaEtfSignalFactor::calc_diff()
                 continue;
             }
 
+            //json j;
+            //TiQuoteFormater::FormatSnapshot(index_snap_ptr, j);
+
+
             double last = index_snap_ptr->last;
-            double diff = constituent_info->m_reality_vol ? (constituent_info->m_reality_vol - constituent_info->m_disclosure_vol) * (last - index_snap_ptr->pre_close) * 200 : 0;
+            double diff = constituent_info->m_reality_vol ? (constituent_info->m_reality_vol - constituent_info->m_disclosure_vol) * (last - index_snap_ptr->pre_close) * 1 : 0;
             
             total_diff += diff;
             //std::cout << "[calc_diff future] " << constituent_info->m_symbol << ", " << constituent_info->m_exchange << ", " << diff << ", " << last << ", " << index_snap_ptr->pre_close << ", " << constituent_info->m_reality_vol << ", " << constituent_info->m_disclosure_vol << std::endl;
+            //std::cout << "[index data]:" << j << std::endl;
         }
         
         if(snap_ptr)
@@ -181,10 +186,12 @@ double IaEtfSignalFactor::calc_diff()
                 }
             }
 #if __TEST__
+/*
             printf("[calc_diff constituent_info] %s, %s, %f, %f, %f, %f, %d, %d, %f\n", 
                 constituent_info->m_symbol.c_str(), constituent_info->m_exchange.c_str(), diff,
                 last, snap_ptr->pre_close, constituent_info->m_reality_vol, constituent_info->m_disclosure_vol, 
                 is_replace, replace_amount);
+*/
 #endif
             total_diff += diff;
         }

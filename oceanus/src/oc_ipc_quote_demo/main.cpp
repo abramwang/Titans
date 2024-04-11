@@ -42,6 +42,8 @@ public:
         688162
         688355
         */
+
+        /*
         m_selected_symbols.insert("301129");
         m_selected_symbols.insert("301181");
         m_selected_symbols.insert("301261");
@@ -60,8 +62,9 @@ public:
         m_selected_symbols.insert("000852");   
 
         m_selected_symbols.insert("399905");  
+        */
         m_selected_symbols.insert("399852");  
-        m_selected_symbols.insert("399300");  
+        //m_selected_symbols.insert("399300");  
     };
     virtual ~UserCallback(){};
 public:

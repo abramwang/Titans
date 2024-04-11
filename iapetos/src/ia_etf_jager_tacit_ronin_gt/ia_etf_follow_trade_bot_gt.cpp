@@ -263,34 +263,30 @@ void IaEtfFollowTradeBotGt::OnTimer()
     json signal_out;
     m_signal_center->GetJsonOut(signal_out);
 
-    ///*
-    if(signal_out.empty())
+    if(!signal_out.empty())
     {
-        return;
-    }
-    //*/
-
-    try{
-        json signal_array = json::array();
-        for (auto iter = signal_out.begin(); iter != signal_out.end(); iter++)
-        {
-            signal_array.push_back(iter.value());
-            if (iter.key().empty())
+        try{
+            json signal_array = json::array();
+            for (auto iter = signal_out.begin(); iter != signal_out.end(); iter++)
             {
-                continue;
+                signal_array.push_back(iter.value());
+                if (iter.key().empty())
+                {
+                    continue;
+                }
+                if (iter.value().empty())
+                {
+                    continue;
+                }
+                m_redis->hmset(m_config->szSignalMap.c_str(), iter.key().c_str(), iter.value().dump().c_str());
             }
-            if (iter.value().empty())
-            {
-                continue;
-            }
-            m_redis->hmset(m_config->szSignalMap.c_str(), iter.key().c_str(), iter.value().dump().c_str());
+            m_redis->xadd(m_config->szSignalStream.c_str(), signal_array.dump().c_str(), 2000);
+            //std::cout << "[IaEtfFollowTradeBotGt::OnTimer] signal_size: " << signal_out.size() << std::endl;
+        }catch(std::exception& e){
+            std::cout << "[IaEtfFollowTradeBotGt::OnTimer] " << e.what() << std::endl;
+        }catch(...){
+            std::cout << "[IaEtfFollowTradeBotGt::OnTimer] " << "unknown exception" << std::endl;
         }
-        m_redis->xadd(m_config->szSignalStream.c_str(), signal_array.dump().c_str(), 2000);
-        //std::cout << "[IaEtfFollowTradeBotGt::OnTimer] signal_size: " << signal_out.size() << std::endl;
-    }catch(std::exception& e){
-        std::cout << "[IaEtfFollowTradeBotGt::OnTimer] " << e.what() << std::endl;
-    }catch(...){
-        std::cout << "[IaEtfFollowTradeBotGt::OnTimer] " << "unknown exception" << std::endl;
     }
 
     int64_t time_num = datetime::get_time_num();
@@ -303,15 +299,15 @@ void IaEtfFollowTradeBotGt::OnTimer()
         std::cout << "[IaEtfFollowTradeBotGt::OnTimer] QueryAsset QueryPositions: " << time_num << std::endl;
     }
     
-    return;
+    //return;
     std::time_t currentTime = std::time(nullptr);
     std::tm* localTime = std::localtime(&currentTime);
-    /*
+    ///*
     std::cout << "当前时间: "
             << localTime->tm_year + 1900 << "-" << localTime->tm_mon + 1 << "-" << localTime->tm_mday << " "
             << localTime->tm_hour << ":" << localTime->tm_min << ":" << localTime->tm_sec
             << std::endl;
-    */
+    //*/
     if (localTime->tm_hour > 16 )
     {
         std::cout << "terminate" << std::endl;
