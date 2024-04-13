@@ -10,6 +10,7 @@ def cb(type_, data_):
     print(type_, data_)
     
 def main():
+    #data.SetRootPath("http://192.168.124.5")
     data.SetRootPath("http://172.17.0.1")
 
     df = data.GetBaseData(["600000", "000001"], "ex_factor")

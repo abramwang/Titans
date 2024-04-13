@@ -71,8 +71,12 @@ void TiGtTraderClient::onUserLogin(const char* userName, const char* password, i
 
 void TiGtTraderClient::onRtnLoginStatus(const char* accountId, EBrokerLoginStatus status, int brokerType, const char* errorMsg)
 {
+    if (status)
+    {
+        return;
+    }
     cout << "[onRtnLoginStatus] account id: " << accountId << ", type: " << brokerType << ", status: " << status << endl;
-
+    //return;
     TI_BrokerType ti_broker_type;
     switch (brokerType)
     {
@@ -91,6 +95,7 @@ void TiGtTraderClient::onRtnLoginStatus(const char* accountId, EBrokerLoginStatu
     default:
         break;
     }
+    
     TI_AccountType account_id = {0};
     strncpy(account_id, accountId, sizeof(account_id));
 
@@ -103,68 +108,75 @@ void TiGtTraderClient::onRtnLoginStatus(const char* accountId, EBrokerLoginStatu
  // 资金账号信息
 void TiGtTraderClient::onReqAccountDetail(const char* accountId, int nRequestId, const CAccountDetail* data, bool isLast, const XtError& error)
 {
-    json rspData = {
-        {"type", "onReqAccountDetail"},
-        {"api_type", "gt"},
-        {"account_id", accountId},
-        {"data", {
-            {"account_id", data->m_strAccountID},
-            {"account_type", data->m_nAccountType},
-            {"status", data->m_strStatus},
-            {"trading_date", data->m_strTradingDate},
+    try {
+        if (data == NULL)
+        {
+            return;
+        }
+        json rspData = {
+            {"type", "onReqAccountDetail"},
+            {"api_type", "gt"},
+            {"account_id", accountId},
+            {"data", {
+                {"account_id", data->m_strAccountID},
+                {"account_type", data->m_nAccountType},
+                {"status", data->m_strStatus},
+                {"trading_date", data->m_strTradingDate},
 
-            {"frozen_margin", data->m_dFrozenMargin},
-            {"frozen_cash", data->m_dFrozenCash},
-            {"frozen_commission", data->m_dFrozenCommission},
-            {"risk", data->m_dRisk},
-            {"nav", data->m_dNav},
-            {"pre_balance", data->m_dPreBalance},
-            {"balance", data->m_dBalance},
-            {"available", data->m_dAvailable},
-            {"commission", data->m_dCommission},
-            {"position_profit", data->m_dPositionProfit},
-            {"close_profit", data->m_dCloseProfit},
-            {"cash_in", data->m_dCashIn},
-            {"curr_margin", data->m_dCurrMargin},
-            {"instrument_value", data->m_dInstrumentValue},
-            {"deposit", data->m_dDeposit},
-            {"withdraw", data->m_dWithdraw},
-            {"credit", data->m_dCredit},
-            {"mortgage", data->m_dMortgage},
-            {"stock_value", data->m_dStockValue},
-            {"loan_value", data->m_dLoanValue},
-            {"fund_value", data->m_dFundValue},
-            {"repurchase_value", data->m_dRepurchaseValue},
-            {"long_value", data->m_dLongValue},
-            {"short_value", data->m_dShortValue},
-            {"net_value", data->m_dNetValue},
-            {"assure_asset", data->m_dAssureAsset},
-            {"total_debit", data->m_dTotalDebit},
-            {"premium_net_expense", data->m_dPremiumNetExpense},
-            {"enable_margin", data->m_dEnableMargin},
-            {"fetch_balance", data->m_dFetchBalance},
-            {"dual_status", data->m_eDualStatus},
-            {"available_sh", data->m_dAvailableSH},
-            {"available_sz", data->m_dAvailableSZ},
-            {"account_key", data->m_strAccountKey},
-            {"product_id", data->m_nProductId},
-            {"used_margin", data->m_dUsedMargin},
-            {"royalty", data->m_dRoyalty},
-            {"product_name", data->m_strProductName},
-            {"days_profit", data->m_dDaysProfit}
-        }}
-    };
-    
-    auto account_iter = m_account_map.find(accountId);
-    if (account_iter != m_account_map.end())
-    {
-        account_iter->second->OnCommonJsonRespones(&rspData, nRequestId, isLast, error.errorID(), error.errorMsg());
-        //nReqId ++;
-        //m_client->reqSecuAccount(accountId, nReqId);
+                {"frozen_margin", data->m_dFrozenMargin},
+                {"frozen_cash", data->m_dFrozenCash},
+                {"frozen_commission", data->m_dFrozenCommission},
+                {"risk", data->m_dRisk},
+                {"nav", data->m_dNav},
+                {"pre_balance", data->m_dPreBalance},
+                {"balance", data->m_dBalance},
+                {"available", data->m_dAvailable},
+                {"commission", data->m_dCommission},
+                {"position_profit", data->m_dPositionProfit},
+                {"close_profit", data->m_dCloseProfit},
+                {"cash_in", data->m_dCashIn},
+                {"curr_margin", data->m_dCurrMargin},
+                {"instrument_value", data->m_dInstrumentValue},
+                {"deposit", data->m_dDeposit},
+                {"withdraw", data->m_dWithdraw},
+                {"credit", data->m_dCredit},
+                {"mortgage", data->m_dMortgage},
+                {"stock_value", data->m_dStockValue},
+                {"loan_value", data->m_dLoanValue},
+                {"fund_value", data->m_dFundValue},
+                {"repurchase_value", data->m_dRepurchaseValue},
+                {"long_value", data->m_dLongValue},
+                {"short_value", data->m_dShortValue},
+                {"net_value", data->m_dNetValue},
+                {"assure_asset", data->m_dAssureAsset},
+                {"total_debit", data->m_dTotalDebit},
+                {"premium_net_expense", data->m_dPremiumNetExpense},
+                {"enable_margin", data->m_dEnableMargin},
+                {"fetch_balance", data->m_dFetchBalance},
+                {"dual_status", data->m_eDualStatus},
+                {"available_sh", data->m_dAvailableSH},
+                {"available_sz", data->m_dAvailableSZ},
+                {"account_key", data->m_strAccountKey},
+                {"product_id", data->m_nProductId},
+                {"used_margin", data->m_dUsedMargin},
+                {"royalty", data->m_dRoyalty},
+                {"product_name", data->m_strProductName},
+                {"days_profit", data->m_dDaysProfit}
+            }}
+        };
+        
+        auto account_iter = m_account_map.find(accountId);
+        if (account_iter != m_account_map.end())
+        {
+            account_iter->second->OnCommonJsonRespones(&rspData, nRequestId, isLast, error.errorID(), error.errorMsg());
+            //nReqId ++;
+            //m_client->reqSecuAccount(accountId, nReqId);
+        }
+
+        m_cb->OnCommonJsonRespones(&rspData, nRequestId, isLast, error.errorID(), error.errorMsg());
+    }catch(...){
+        std::cout << "[TiGtTraderClient::onReqAccountDetail] " << "unknown exception" << std::endl;
     }
-
-
-    m_cb->OnCommonJsonRespones(&rspData, nRequestId, isLast, error.errorID(), error.errorMsg());
     /* 
     cout << "[onReqAccountDetail]  资金账号 :" << data->m_strAccountID
         << "\n    账号状态:" << data->m_strStatus
