@@ -29,7 +29,6 @@ protected:
     int64_t m_cout_time_snap;
     int64_t m_cout_time_trans;
     int64_t m_cout_time_order;
-    RedisSyncHandle m_redis;
     
     void try_ipc_pub(){
         int64_t time = datetime::get_now_timestamp_ms();
@@ -62,16 +61,14 @@ public:
         m_cout_time_trans = 0;
         m_cout_time_order = 0;
 
-        m_client = new TiCtpQuoteClient("./config.ini", this);;
-        m_redis.connect("47.103.74.35", 20184, "W_P!ViW+d7xAFept6");    
+        m_client = new TiCtpQuoteClient("./config.ini", this);
     };
     virtual ~Callback(){};
     
     TiCtpQuoteClient* m_client;
 public:
     virtual void OnEventRtn(TI_QUOTE_EVENT_TYPE event){
-        return;       
-        m_redis.hset("task_worked_time", "etf_factor.disclosure_info.anxin", datetime::get_format_now_time_ms().c_str());
+        return;
     };
 
     virtual void OnTradingDayRtn(const unsigned int day, const char* exchangeName){
@@ -82,6 +79,11 @@ public:
     virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){};
 
     virtual void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData){
+        json j;
+        TiQuoteFormater::FormatSnapshot(pData, j);
+        //printf("[OnMDSnapshot] %s\n", out);
+        printf("[OnL2FutureSnapshotRtn] %s\n", j.dump().c_str());
+
         m_mutex.lock();
         if ((pData->time - m_cout_time_snap) > 5000)
         {

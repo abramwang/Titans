@@ -1,4 +1,6 @@
 #include "ti_ctp_quote_client.h"
+#include "ti_encoding_tool.h"
+#include "ti_cf_contract_tool.h"
 #include <string.h>
 #include <glog/logging.h>
 #include <algorithm>
@@ -40,7 +42,7 @@ void TiCtpQuoteClient::OnFrontConnected()
     
     CThostFtdcReqUserLoginField req = {0};
 
-    strcpy(req.BrokerID, "9999");
+    strcpy(req.BrokerID, "10010");
     strcpy(req.UserID, "207960");
     strcpy(req.Password, "ikdlKJFHE%#^8");
 
@@ -58,10 +60,15 @@ void TiCtpQuoteClient::OnRspUserLogin(
     CThostFtdcRspInfoField *pRspInfo, 
     int nRequestID, 
     bool bIsLast)
-{
-    char *g_pInstrumentID[] = {"IM2310", "IH2310", "IF2310", "IC2310", 
-        "RB2310",  "JM2310" , "CF401"}; // 行情合约代码列表，中、上、大、郑交易所各选一种
-    int instrumentNum = 7;   
+{   
+
+    std::vector<std::string> contracts_vec;
+    //TiCFContractTool::getContractCodes("IF");
+    TiCFContractTool::getContractCodes("IF", contracts_vec);
+    TiCFContractTool::getContractCodes("IM", contracts_vec);
+    TiCFContractTool::getContractCodes("IC", contracts_vec);
+    TiCFContractTool::getContractCodes("IH", contracts_vec);
+    //return;
 
     bool bResult = pRspInfo && (pRspInfo->ErrorID != 0);
     if (!bResult)
@@ -72,21 +79,45 @@ void TiCtpQuoteClient::OnRspUserLogin(
         std::cout << "经纪商： " << pRspUserLogin->BrokerID << std::endl;
         std::cout << "帐户名： " << pRspUserLogin->UserID << std::endl;
         // 开始订阅行情
-        int rt = m_api->SubscribeMarketData(g_pInstrumentID, instrumentNum);
+
+        int instrumentNum = contracts_vec.size();   
+    
+        char **pInstrumentID = new char*[instrumentNum];
+        for (int i = 0; i < instrumentNum; i++)
+        {
+            pInstrumentID[i] = new char[10];
+            strcpy(pInstrumentID[i], contracts_vec[i].c_str());
+        }
+
+        int rt = m_api->SubscribeMarketData(pInstrumentID, instrumentNum);
         if (!rt)
             std::cout << ">>>>>>发送订阅行情请求成功" << std::endl;
         else
             std::cerr << "--->>>发送订阅行情请求失败" << std::endl;
+
+        for (int i = 0; i < instrumentNum; i++)
+        {
+            delete[] pInstrumentID[i];
+        }
+        delete[] pInstrumentID;
     }
     else
+    {
         std::cerr << "返回错误--->>> ErrorID=" << pRspInfo->ErrorID << ", ErrorMsg=" << pRspInfo->ErrorMsg << std::endl;
+    }
 }
 
 void TiCtpQuoteClient::OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
 {
-    std::cout << "错误回报：" << pRspInfo->ErrorMsg << std::endl;
+    std::cout << "错误回报：" << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg).c_str() << std::endl;
     // 错误回报的处理
 }
+
+void TiCtpQuoteClient::OnRspQryMulticastInstrument(CThostFtdcMulticastInstrumentField *pMulticastInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+
+    std::cout << "OnRspQryMulticastInstrument:" << bIsLast << std::endl;
+};
 
 ///订阅行情应答
 void TiCtpQuoteClient::OnRspSubMarketData(CThostFtdcSpecificInstrumentField *pSpecificInstrument, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) 
@@ -115,6 +146,7 @@ void TiCtpQuoteClient::OnRspUnSubForQuoteRsp(CThostFtdcSpecificInstrumentField *
 ///深度行情通知
 void TiCtpQuoteClient::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData) 
 {
+    std::cout << "行情通知" << std::endl;
     memset(&m_snapCash, 0, sizeof(m_snapCash));
     
     strcpy(m_snapCash.exchange, "CF");
@@ -220,12 +252,14 @@ void TiCtpQuoteClient::connect(){
         return;
     }
 
-    m_api->RegisterFront("tcp://180.168.146.187:10211");
+    m_api->RegisterFront("tcp://210.14.72.12:4602");
     std::string api_version = m_api->GetApiVersion();
 
     std::cout << "API版本：" << api_version << std::endl;
     
     m_api->Init();
+    //m_api->Join();
+    std::cout << "TiCtpQuoteClient::connect over" << std::endl;
 };
 
 void TiCtpQuoteClient::subData(const char* exchangeName, char* codeList[], size_t len){
