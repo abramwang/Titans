@@ -53,7 +53,7 @@ protected:
 
 public:
     Callback(){
-        sprintf(m_topic, "quote_data");
+        sprintf(m_topic, "future_quote_data");
         memset(m_buffer, 0, TI_QUOTE_CACHE_MAX_LEN);
         m_cache = new TiQuoteCache(m_buffer, TI_QUOTE_CACHE_MAX_LEN);
         m_last_pub_time = 0;
@@ -79,11 +79,6 @@ public:
     virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){};
 
     virtual void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData){
-        json j;
-        TiQuoteFormater::FormatSnapshot(pData, j);
-        //printf("[OnMDSnapshot] %s\n", out);
-        printf("[OnL2FutureSnapshotRtn] %s\n", j.dump().c_str());
-
         m_mutex.lock();
         if ((pData->time - m_cout_time_snap) > 5000)
         {
