@@ -1,11 +1,14 @@
 #include "ti_ctp_quote_client.h"
-#include "ti_encoding_tool.h"
-#include "ti_cf_contract_tool.h"
+#include <cmath>
+#include <limits>
 #include <string.h>
 #include <glog/logging.h>
 #include <algorithm>
 #include "iniFile.h"
 #include "datetime.h"
+#include "ti_encoding_tool.h"
+#include "ti_cf_contract_tool.h"
+#include "ti_number_tool.h"
 
 TiCtpQuoteClient::TiCtpQuoteClient(std::string configPath, TiQuoteCallback* userCb)
 {
@@ -38,13 +41,16 @@ TiCtpQuoteClient::~TiCtpQuoteClient()
 void TiCtpQuoteClient::OnFrontConnected()
 {
     std::cout << "行情前置已连接" << std::endl;
-    // 连接成功后可以进行行情操作
+    if(!m_config){
+        LOG(INFO) << "[loadConfig] Do not have config info";
+        return;
+    }
     
     CThostFtdcReqUserLoginField req = {0};
 
-    strcpy(req.BrokerID, "10010");
-    strcpy(req.UserID, "207960");
-    strcpy(req.Password, "ikdlKJFHE%#^8");
+    strcpy(req.BrokerID, m_config->szBrokerId.c_str());
+    strcpy(req.UserID, m_config->szUser.c_str());
+    strcpy(req.Password, m_config->szPass.c_str());
 
     m_api->ReqUserLogin(&req, nReqId++);
 }
@@ -89,7 +95,7 @@ void TiCtpQuoteClient::OnRspUserLogin(
             strcpy(pInstrumentID[i], contracts_vec[i].c_str());
         }
 
-        int rt = m_api->SubscribeMarketData(pInstrumentID, instrumentNum);
+        int rt = m_api->SubscribeMarketData(pInstrumentID, 1);
         if (!rt)
             std::cout << ">>>>>>发送订阅行情请求成功" << std::endl;
         else
@@ -146,7 +152,6 @@ void TiCtpQuoteClient::OnRspUnSubForQuoteRsp(CThostFtdcSpecificInstrumentField *
 ///深度行情通知
 void TiCtpQuoteClient::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDepthMarketData) 
 {
-    std::cout << "行情通知" << std::endl;
     memset(&m_snapCash, 0, sizeof(m_snapCash));
     
     strcpy(m_snapCash.exchange, "CF");
@@ -159,46 +164,54 @@ void TiCtpQuoteClient::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDep
     m_snapCash.time = atoi(time_str.c_str())* 1000 + pDepthMarketData->UpdateMillisec;
     m_snapCash.timestamp = datetime::get_timestamp_ms(m_snapCash.date, m_snapCash.time);
     
-    m_snapCash.last = pDepthMarketData->LastPrice;
-    m_snapCash.pre_settlement_close = pDepthMarketData->PreSettlementPrice;
-    m_snapCash.pre_open_interest = pDepthMarketData->PreOpenInterest;
-    m_snapCash.pre_close = pDepthMarketData->PreClosePrice;
-    m_snapCash.open = pDepthMarketData->OpenPrice;
-    m_snapCash.high = pDepthMarketData->HighestPrice;
-    m_snapCash.low = pDepthMarketData->LowestPrice;
-    m_snapCash.close = pDepthMarketData->ClosePrice;
-    m_snapCash.settlement = pDepthMarketData->SettlementPrice;
-    m_snapCash.high_limit = pDepthMarketData->UpperLimitPrice;
-    m_snapCash.low_limit = pDepthMarketData->LowerLimitPrice;
-    //m_snapCash.volume = pDepthMarketData->Volume;
-    //m_snapCash.turnover = pDepthMarketData->Turnover;
-    m_snapCash.acc_volume = pDepthMarketData->Volume;
-    m_snapCash.acc_turnover = pDepthMarketData->Turnover;
-    m_snapCash.open_interest = pDepthMarketData->OpenInterest;
-    m_snapCash.pre_delta = pDepthMarketData->PreDelta;
-    m_snapCash.curr_delta = pDepthMarketData->CurrDelta;
-    m_snapCash.ave_price = pDepthMarketData->AveragePrice;
+    std::cout << std::numeric_limits<double>::max() << " " << std::numeric_limits<double>::infinity() << std::endl;
 
-    m_snapCash.ask_price[0] = pDepthMarketData->AskPrice1;
-    //m_snapCash.ask_price[1] = pDepthMarketData->AskPrice2;
-    //m_snapCash.ask_price[2] = pDepthMarketData->AskPrice3;
-    //m_snapCash.ask_price[3] = pDepthMarketData->AskPrice4;
-    //m_snapCash.ask_price[4] = pDepthMarketData->AskPrice5;
-    m_snapCash.ask_volume[0] = pDepthMarketData->AskVolume1;
-    //m_snapCash.ask_volume[1] = pDepthMarketData->AskVolume2;
-    //m_snapCash.ask_volume[2] = pDepthMarketData->AskVolume3;
-    //m_snapCash.ask_volume[3] = pDepthMarketData->AskVolume4;
-    //m_snapCash.ask_volume[4] = pDepthMarketData->AskVolume5;
-    m_snapCash.bid_price[0] = pDepthMarketData->BidPrice1;
-    //m_snapCash.bid_price[1] = pDepthMarketData->BidPrice2;
-    //m_snapCash.bid_price[2] = pDepthMarketData->BidPrice3;
-    //m_snapCash.bid_price[3] = pDepthMarketData->BidPrice4;
-    //m_snapCash.bid_price[4] = pDepthMarketData->BidPrice5;
-    m_snapCash.bid_volume[0] = pDepthMarketData->BidVolume1;
-    //m_snapCash.bid_volume[1] = pDepthMarketData->BidVolume2;
-    //m_snapCash.bid_volume[2] = pDepthMarketData->BidVolume3;
-    //m_snapCash.bid_volume[3] = pDepthMarketData->BidVolume4;
-    //m_snapCash.bid_volume[4] = pDepthMarketData->BidVolume5;
+    m_snapCash.last = pDepthMarketData->LastPrice;
+
+    m_snapCash.pre_settlement_close = TiNumberTool::checkSpecialValue(pDepthMarketData->PreSettlementPrice);
+    m_snapCash.pre_open_interest = TiNumberTool::checkSpecialValue(pDepthMarketData->PreOpenInterest);
+    m_snapCash.pre_close = TiNumberTool::checkSpecialValue(pDepthMarketData->PreClosePrice);
+    m_snapCash.open = TiNumberTool::checkSpecialValue(pDepthMarketData->OpenPrice);
+    m_snapCash.high = TiNumberTool::checkSpecialValue(pDepthMarketData->HighestPrice);
+    m_snapCash.low = TiNumberTool::checkSpecialValue(pDepthMarketData->LowestPrice);
+    m_snapCash.close = TiNumberTool::checkSpecialValue(pDepthMarketData->ClosePrice);
+    m_snapCash.settlement = TiNumberTool::checkSpecialValue(pDepthMarketData->SettlementPrice);
+    m_snapCash.high_limit = TiNumberTool::checkSpecialValue(pDepthMarketData->UpperLimitPrice);
+    m_snapCash.low_limit = TiNumberTool::checkSpecialValue(pDepthMarketData->LowerLimitPrice);
+    m_snapCash.volume = TiNumberTool::checkSpecialValue(pDepthMarketData->Volume);
+    m_snapCash.turnover = TiNumberTool::checkSpecialValue(pDepthMarketData->Turnover);
+    m_snapCash.acc_volume = TiNumberTool::checkSpecialValue(pDepthMarketData->Volume);
+    m_snapCash.acc_turnover = TiNumberTool::checkSpecialValue(pDepthMarketData->Turnover);
+    m_snapCash.open_interest = TiNumberTool::checkSpecialValue(pDepthMarketData->OpenInterest);
+    m_snapCash.pre_delta = TiNumberTool::checkSpecialValue(pDepthMarketData->PreDelta);
+    m_snapCash.curr_delta = TiNumberTool::checkSpecialValue(pDepthMarketData->CurrDelta);
+    m_snapCash.ave_price = TiNumberTool::checkSpecialValue(pDepthMarketData->AveragePrice);
+
+   
+    m_snapCash.ask_price[0] = TiNumberTool::checkSpecialValue(pDepthMarketData->AskPrice1);
+    m_snapCash.ask_price[1] = TiNumberTool::checkSpecialValue(pDepthMarketData->AskPrice2);
+    m_snapCash.ask_price[2] = TiNumberTool::checkSpecialValue(pDepthMarketData->AskPrice3);
+    m_snapCash.ask_price[3] = TiNumberTool::checkSpecialValue(pDepthMarketData->AskPrice4);
+    m_snapCash.ask_price[4] = TiNumberTool::checkSpecialValue(pDepthMarketData->AskPrice5);
+
+    m_snapCash.ask_volume[0] = TiNumberTool::checkSpecialValue(pDepthMarketData->AskVolume1);
+    m_snapCash.ask_volume[1] = TiNumberTool::checkSpecialValue(pDepthMarketData->AskVolume2);
+    m_snapCash.ask_volume[2] = TiNumberTool::checkSpecialValue(pDepthMarketData->AskVolume3);
+    m_snapCash.ask_volume[3] = TiNumberTool::checkSpecialValue(pDepthMarketData->AskVolume4);
+    m_snapCash.ask_volume[4] = TiNumberTool::checkSpecialValue(pDepthMarketData->AskVolume5);
+
+    m_snapCash.bid_price[0] = TiNumberTool::checkSpecialValue(pDepthMarketData->BidPrice1);
+    m_snapCash.bid_price[1] = TiNumberTool::checkSpecialValue(pDepthMarketData->BidPrice2);
+    m_snapCash.bid_price[2] = TiNumberTool::checkSpecialValue(pDepthMarketData->BidPrice3);
+    m_snapCash.bid_price[3] = TiNumberTool::checkSpecialValue(pDepthMarketData->BidPrice4);
+    m_snapCash.bid_price[4] = TiNumberTool::checkSpecialValue(pDepthMarketData->BidPrice5);
+
+    m_snapCash.bid_volume[0] = TiNumberTool::checkSpecialValue(pDepthMarketData->BidVolume1);
+    m_snapCash.bid_volume[1] = TiNumberTool::checkSpecialValue(pDepthMarketData->BidVolume2);
+    m_snapCash.bid_volume[2] = TiNumberTool::checkSpecialValue(pDepthMarketData->BidVolume3);
+    m_snapCash.bid_volume[3] = TiNumberTool::checkSpecialValue(pDepthMarketData->BidVolume4);
+    m_snapCash.bid_volume[4] = TiNumberTool::checkSpecialValue(pDepthMarketData->BidVolume5);
+
 
     if (m_cb)
     {
@@ -252,7 +265,7 @@ void TiCtpQuoteClient::connect(){
         return;
     }
 
-    m_api->RegisterFront("tcp://210.14.72.12:4602");
+    m_api->RegisterFront((char*)m_config->szLocation.c_str());
     std::string api_version = m_api->GetApiVersion();
 
     std::cout << "API版本：" << api_version << std::endl;
