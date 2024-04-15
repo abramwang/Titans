@@ -95,7 +95,7 @@ void TiCtpQuoteClient::OnRspUserLogin(
             strcpy(pInstrumentID[i], contracts_vec[i].c_str());
         }
 
-        int rt = m_api->SubscribeMarketData(pInstrumentID, 1);
+        int rt = m_api->SubscribeMarketData(pInstrumentID, instrumentNum);
         if (!rt)
             std::cout << ">>>>>>发送订阅行情请求成功" << std::endl;
         else
@@ -163,9 +163,9 @@ void TiCtpQuoteClient::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDep
             [charToRemove](char c) { return c == charToRemove; }), time_str.end());
     m_snapCash.time = atoi(time_str.c_str())* 1000 + pDepthMarketData->UpdateMillisec;
     m_snapCash.timestamp = datetime::get_timestamp_ms(m_snapCash.date, m_snapCash.time);
-    
-    std::cout << std::numeric_limits<double>::max() << " " << std::numeric_limits<double>::infinity() << std::endl;
 
+    datetime::get_format_timestamp_ms(m_snapCash.timestamp, m_snapCash.time_str, sizeof(m_snapCash.time_str));
+    
     m_snapCash.last = pDepthMarketData->LastPrice;
 
     m_snapCash.pre_settlement_close = TiNumberTool::checkSpecialValue(pDepthMarketData->PreSettlementPrice);
@@ -211,7 +211,6 @@ void TiCtpQuoteClient::OnRtnDepthMarketData(CThostFtdcDepthMarketDataField *pDep
     m_snapCash.bid_volume[2] = TiNumberTool::checkSpecialValue(pDepthMarketData->BidVolume3);
     m_snapCash.bid_volume[3] = TiNumberTool::checkSpecialValue(pDepthMarketData->BidVolume4);
     m_snapCash.bid_volume[4] = TiNumberTool::checkSpecialValue(pDepthMarketData->BidVolume5);
-
 
     if (m_cb)
     {
