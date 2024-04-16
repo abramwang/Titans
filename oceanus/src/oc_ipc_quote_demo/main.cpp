@@ -12,6 +12,7 @@ class UserCallback :
     public TiQuoteCallback, public TiQuoteDepthCallback
 {
 private:
+    int64_t m_cout_future_time;
     int64_t m_cout_snap_time;
     int64_t m_cout_match_time;
     int64_t m_cout_order_time;
@@ -19,6 +20,7 @@ private:
     std::set<std::string> m_selected_symbols;
 public:
     UserCallback(){
+        m_cout_future_time = 0;
         m_cout_snap_time = 0;
         m_cout_match_time = 0;
         m_cout_order_time = 0;
@@ -83,11 +85,11 @@ public:
     
     virtual void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData)
     {
-        if ((pData->time - m_cout_snap_time) > 1000)
+        if ((pData->time - m_cout_future_time) > 1000)
         {
             printf("[OnL2FutureSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
                 pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
-            m_cout_snap_time = pData->time;
+            m_cout_future_time = pData->time;
         }
     };
 

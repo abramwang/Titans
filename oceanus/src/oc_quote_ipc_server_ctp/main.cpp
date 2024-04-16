@@ -84,10 +84,11 @@ public:
         {
             printf("[OnL2FutureSnapshotRtn] %s, %s, %d, %f, %ld, %f\n", 
                 pData->symbol, pData->time_str, pData->time, pData->last, pData->acc_volume, pData->acc_turnover);
+            /*
             json j;
             TiQuoteFormater::FormatSnapshot(pData, j);
-            //printf("[OnMDSnapshot] %s\n", out);
             printf("[OnL2FutureSnapshotRtn] %s\n", j.dump().c_str());
+            */
             m_cout_time_snap = pData->time;
         }
         //return;
