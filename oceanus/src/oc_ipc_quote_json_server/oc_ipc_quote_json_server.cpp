@@ -1,12 +1,12 @@
 #include <iostream>
 #include <unistd.h>
-#include "oc_quote_commander.h"
+#include "oc_ipc_quote_json_server.h"
 #include "iniFile.h"
 #include "datetime.h"
 #include <glog/logging.h>
 #include "ti_quote_formater.h"
 
-OcQuoteCommander::OcQuoteCommander(uv_loop_s* loop, std::string configPath)
+OcIpcQuoteJsonServer::OcIpcQuoteJsonServer(uv_loop_s* loop, std::string configPath)
     : RedisCommander(loop)
 {
     m_quote_client = new TiQuoteIpcClient(configPath, loop, this, this);
@@ -17,7 +17,7 @@ OcQuoteCommander::OcQuoteCommander(uv_loop_s* loop, std::string configPath)
         connect(m_config->szIp.c_str(), m_config->nPort, m_config->szAuth.c_str());
         
         bool flag = m_redis.connect(m_config->szIp.c_str(), m_config->nPort, m_config->szAuth.c_str());
-        LOG(INFO) << "[OcQuoteCommander] flag: " << flag;
+        LOG(INFO) << "[OcIpcQuoteJsonServer] flag: " << flag;
 
         resetStreamKey();
     }
@@ -26,7 +26,7 @@ OcQuoteCommander::OcQuoteCommander(uv_loop_s* loop, std::string configPath)
     uv_timer_init(loop, &m_timer);
     uv_timer_start(&m_timer, onTimer, 1000, 500);
 }
-OcQuoteCommander::~OcQuoteCommander(){
+OcIpcQuoteJsonServer::~OcIpcQuoteJsonServer(){
     if(m_quote_client){
         delete m_quote_client;
         m_quote_client = NULL;
@@ -40,7 +40,7 @@ OcQuoteCommander::~OcQuoteCommander(){
 ////////////////////////////////////////////////////////////////////////
 // 回调方法
 ////////////////////////////////////////////////////////////////////////
-void OcQuoteCommander::OnCommandRtn(const char* type, const char* command)
+void OcIpcQuoteJsonServer::OnCommandRtn(const char* type, const char* command)
 {
     std::cout << "OnCommandRtn: " << type << " " << command << std::endl;
     
@@ -52,7 +52,7 @@ void OcQuoteCommander::OnCommandRtn(const char* type, const char* command)
     }
 };
 
-void OcQuoteCommander::OnTimer()
+void OcIpcQuoteJsonServer::OnTimer()
 {
     std::time_t currentTime = std::time(nullptr);
     std::tm* localTime = std::localtime(&currentTime);
@@ -80,11 +80,11 @@ void OcQuoteCommander::OnTimer()
 };
 
 
-void OcQuoteCommander::OnTradingDayRtn(const unsigned int day, const char* exchangeName){};
+void OcIpcQuoteJsonServer::OnTradingDayRtn(const unsigned int day, const char* exchangeName){};
    
-void OcQuoteCommander::OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){};
-void OcQuoteCommander::OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData){};
-void OcQuoteCommander::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){
+void OcIpcQuoteJsonServer::OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){};
+void OcIpcQuoteJsonServer::OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData){};
+void OcIpcQuoteJsonServer::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){
     int64_t symbol_id = TiQuoteTools::GetSymbolID(pData->exchange, pData->symbol);
     if (m_subscribed_snapshot_symbol_ids.find(symbol_id) == m_subscribed_snapshot_symbol_ids.end())
     {
@@ -101,7 +101,7 @@ void OcQuoteCommander::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pDa
 
     m_json_cash.push_back(j);    
 };
-void OcQuoteCommander::OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){
+void OcIpcQuoteJsonServer::OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){
     int64_t symbol_id = TiQuoteTools::GetSymbolID(pData->exchange, pData->symbol);
     if (m_subscribed_snapshot_symbol_ids.find(symbol_id) == m_subscribed_snapshot_symbol_ids.end())
     {
@@ -114,7 +114,7 @@ void OcQuoteCommander::OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){
 
     m_json_cash.push_back(j);
 };
-void OcQuoteCommander::OnL2StockOrderRtn(const TiQuoteOrderField* pData){
+void OcIpcQuoteJsonServer::OnL2StockOrderRtn(const TiQuoteOrderField* pData){
     int64_t symbol_id = TiQuoteTools::GetSymbolID(pData->exchange, pData->symbol);
     if (m_subscribed_snapshot_symbol_ids.find(symbol_id) == m_subscribed_snapshot_symbol_ids.end())
     {
@@ -135,7 +135,7 @@ void OcQuoteCommander::OnL2StockOrderRtn(const TiQuoteOrderField* pData){
 /// @brief 
 /// @param err 
 /// @param errStr 
-void OcQuoteCommander::onAuth(int err, const char* errStr){
+void OcIpcQuoteJsonServer::onAuth(int err, const char* errStr){
     if(m_config){
         subStream(m_config->szCommandStreamGroup.c_str(),
             m_config->szCommandStreamKey.c_str(),
@@ -157,18 +157,18 @@ void OcQuoteCommander::onAuth(int err, const char* errStr){
     }
 }
 
-void OcQuoteCommander::onCommand(int err, std::vector<std::string> *rsp)
+void OcIpcQuoteJsonServer::onCommand(int err, std::vector<std::string> *rsp)
 {
     std::cout << "onCommand:" << err << " " << rsp->size() <<  std::endl;
 };
 
-void OcQuoteCommander::onXreadgroupMsg(const char* streamKey, const char* id, const char* type, const char* msg){
+void OcIpcQuoteJsonServer::onXreadgroupMsg(const char* streamKey, const char* id, const char* type, const char* msg){
     OnCommandRtn(type, msg);
 };
 
-void OcQuoteCommander::onTimer(uv_timer_t* handle)
+void OcIpcQuoteJsonServer::onTimer(uv_timer_t* handle)
 {
-    OcQuoteCommander* pThis = (OcQuoteCommander*)handle->data;
+    OcIpcQuoteJsonServer* pThis = (OcIpcQuoteJsonServer*)handle->data;
     pThis->OnTimer();
 };
 
@@ -178,7 +178,7 @@ void OcQuoteCommander::onTimer(uv_timer_t* handle)
 
 /// @brief 加载配置文件
 /// @param iniFilePath 
-int OcQuoteCommander::loadConfig(std::string iniFileName){
+int OcIpcQuoteJsonServer::loadConfig(std::string iniFileName){
     if(m_config){
         return -1;
     }
@@ -188,19 +188,19 @@ int OcQuoteCommander::loadConfig(std::string iniFileName){
 
     m_config = new ConfigInfo();
 
-    m_config->szIp        = string(_iniFile["oc_quote_commander"]["ip"]);
-    m_config->nPort       = _iniFile["oc_quote_commander"]["port"];
-    m_config->szAuth      = string(_iniFile["oc_quote_commander"]["auth"]);
+    m_config->szIp        = string(_iniFile["oc_ipc_quote_json_server"]["ip"]);
+    m_config->nPort       = _iniFile["oc_ipc_quote_json_server"]["port"];
+    m_config->szAuth      = string(_iniFile["oc_ipc_quote_json_server"]["auth"]);
 
-    m_config->szQuoteTopic      = string(_iniFile["oc_quote_commander"]["ipc_quote_topic"]);
+    m_config->szQuoteTopic      = string(_iniFile["oc_ipc_quote_json_server"]["ipc_quote_topic"]);
 
-    m_config->nBlock                    = _iniFile["oc_quote_commander"]["block"];
-    m_config->szCommandStreamKey        = string(_iniFile["oc_quote_commander"]["command_stream_key"]);
-    m_config->szCommandStreamGroup      = string(_iniFile["oc_quote_commander"]["command_stream_group"]);
-    m_config->szCommandConsumerId       = string(_iniFile["oc_quote_commander"]["command_consumer_id"]);
+    m_config->nBlock                    = _iniFile["oc_ipc_quote_json_server"]["block"];
+    m_config->szCommandStreamKey        = string(_iniFile["oc_ipc_quote_json_server"]["command_stream_key"]);
+    m_config->szCommandStreamGroup      = string(_iniFile["oc_ipc_quote_json_server"]["command_stream_group"]);
+    m_config->szCommandConsumerId       = string(_iniFile["oc_ipc_quote_json_server"]["command_consumer_id"]);
     
-    m_config->szSubscribedInfoKey       = string(_iniFile["oc_quote_commander"]["subscribed_info_key"]);
-    m_config->szQuoteStreamKey          = string(_iniFile["oc_quote_commander"]["quote_notify_stream_key"]);
+    m_config->szSubscribedInfoKey       = string(_iniFile["oc_ipc_quote_json_server"]["subscribed_info_key"]);
+    m_config->szQuoteStreamKey          = string(_iniFile["oc_ipc_quote_json_server"]["quote_notify_stream_key"]);
     
     if( m_config->szIp.empty() |
         !m_config->nPort |
@@ -216,7 +216,7 @@ int OcQuoteCommander::loadConfig(std::string iniFileName){
     return 0;
 };
 
-void OcQuoteCommander::updateQuoteInfo(std::string quoteInfo)
+void OcIpcQuoteJsonServer::updateQuoteInfo(std::string quoteInfo)
 {
     bool flag = m_redis.set(m_config->szSubscribedInfoKey.c_str(), quoteInfo.c_str());
     if (!flag)
@@ -225,7 +225,7 @@ void OcQuoteCommander::updateQuoteInfo(std::string quoteInfo)
     }
 };
 
-void OcQuoteCommander::initQuoteInfo(std::string quoteInfo)
+void OcIpcQuoteJsonServer::initQuoteInfo(std::string quoteInfo)
 {
     json j;
 
@@ -280,7 +280,7 @@ void OcQuoteCommander::initQuoteInfo(std::string quoteInfo)
     std::cout << "m_subscribed_snapshot_symbol_ids: " << m_subscribed_snapshot_symbol_ids.size() << std::endl;
 };
 
-void OcQuoteCommander::resetStreamKey()
+void OcIpcQuoteJsonServer::resetStreamKey()
 {
     if (!m_config)
     {

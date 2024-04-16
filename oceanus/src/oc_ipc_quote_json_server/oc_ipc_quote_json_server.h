@@ -1,5 +1,5 @@
-#ifndef __OC_QUOTE_COMMANDER_H__
-#define __OC_QUOTE_COMMANDER_H__
+#ifndef __OC_IPC_QUOTE_JSON_SERVER_H__
+#define __OC_IPC_QUOTE_JSON_SERVER_H__
 #include <string>
 #include <list>
 #include <mutex>
@@ -17,7 +17,7 @@ using namespace nlohmann;
 
 using namespace std;
 
-class OcQuoteCommander
+class OcIpcQuoteJsonServer
     : public RedisCommander, public TiQuoteCallback, public TiQuoteDepthCallback
 {
 public:
@@ -81,8 +81,8 @@ private:
 
     virtual void onXreadgroupMsg(const char* streamKey, const char* id, const char* type, const char* msg);
 public:
-	OcQuoteCommander(uv_loop_s* loop, std::string configPath);
-	virtual ~OcQuoteCommander();
+	OcIpcQuoteJsonServer(uv_loop_s* loop, std::string configPath);
+	virtual ~OcIpcQuoteJsonServer();
 
 
     static void onTimer(uv_timer_t* handle);

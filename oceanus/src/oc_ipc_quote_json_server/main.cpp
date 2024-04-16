@@ -7,7 +7,7 @@
 #include "ti_quote_depth_callback.h"
 #include "ti_quote_ipc_client.h"
 
-#include "oc_quote_commander.h"
+#include "oc_ipc_quote_json_server.h"
 
 
 int main(int argc, char* argv[]) {
@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
 
     uv_loop_t* loop = uv_default_loop();
 
-    OcQuoteCommander commander(loop, "./config.ini");
+    OcIpcQuoteJsonServer commander(loop, "./config.ini");
     
     return uv_run(loop, UV_RUN_DEFAULT);
 }
