@@ -23,12 +23,12 @@ public:
         m_cout_match_time = 0;
         m_cout_order_time = 0;
         m_cout_order_book_time = 0;
-        /*
+        ///*
         m_selected_symbols.insert("600000");
         m_selected_symbols.insert("000001");
         m_selected_symbols.insert("688981");
         m_selected_symbols.insert("300152");
-        */
+        //*/
         /*
         301129
         301181

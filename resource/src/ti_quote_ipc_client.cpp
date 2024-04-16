@@ -204,6 +204,11 @@ int TiQuoteIpcClient::loadConfig(std::string iniFileName)
 
     m_config = new ConfigInfo();
     m_config->szQuoteTopic                  = string(_iniFile["ti_quote_ipc_client"]["quote_topic"]);
+
+    std::cout << "szQuoteTopic: " << m_config->szQuoteTopic << std::endl;
+
+    parseTopics();
+
     
     if( m_config->szQuoteTopic.empty())
     {
@@ -213,6 +218,17 @@ int TiQuoteIpcClient::loadConfig(std::string iniFileName)
         return -1;
     }
     return 0;
+};
+
+void TiQuoteIpcClient::parseTopics()
+{
+    std::istringstream iss(m_config->szQuoteTopic);
+    m_config->szQuoteCodeVec.clear();
+    std::string topic;
+    while (std::getline(iss, topic, ',')) {
+        std::cout << "topic:" << topic << std::endl;
+        m_config->szQuoteCodeVec.push_back(topic);
+    }
 };
 
 void TiQuoteIpcClient::subData(const char* exchangeName, char* codeList[], size_t len)
@@ -247,14 +263,32 @@ void TiQuoteIpcClient::subData(const char* exchangeName, char* codeList[], size_
 
 void TiQuoteIpcClient::run(const char* topic)
 {
+    if (topic)
+    {
+        m_config->szQuoteTopic = topic;
+        parseTopics();
+    }
+    for (size_t i = 0; i < m_config->szQuoteCodeVec.size(); i++)
+    {
+        std::string topic = m_config->szQuoteCodeVec[i];
+        SubQuoteReqInfo* reqInfo = NULL;
+        uv_work_t* req = NULL;
+        //SH
+        reqInfo = new SubQuoteReqInfo();
+
+        reqInfo->m_topic = topic;
+        reqInfo->m_cb_ptr = quote_cb;
+        reqInfo->m_client = this;
+        req = new uv_work_t();
+        req->data = reqInfo;
+        uv_queue_work(m_loop, req, init_sub_quote_work, after_sub_quote_work);
+    }
+    /*
     SubQuoteReqInfo* reqInfo = NULL;
     uv_work_t* req = NULL;
     //SH
     reqInfo = new SubQuoteReqInfo();
-    if (topic)
-    {
-        m_config->szQuoteTopic = topic;
-    }
+
     reqInfo->m_topic = m_config->szQuoteTopic;
     reqInfo->m_cb_ptr = quote_cb;
     reqInfo->m_client = this;
@@ -262,6 +296,7 @@ void TiQuoteIpcClient::run(const char* topic)
     req->data = reqInfo;
     uv_queue_work(m_loop, req, init_sub_quote_work, after_sub_quote_work);
     return;
+    */
 };
 
 void TiQuoteIpcClient::stop()

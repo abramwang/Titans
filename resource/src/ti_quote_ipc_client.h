@@ -2,6 +2,8 @@
 #define TI_QUOTE_IPC_CLIENT_LOCAL_H
 
 #include <string>
+#include <sstream>
+#include <vector>
 #include <set>
 #include <uv.h>
 #include <csignal>
@@ -19,6 +21,7 @@ public:
     typedef struct ConfigInfo
     {
         std::string szQuoteTopic;
+        std::vector<std::string> szQuoteCodeVec;
     } ConfigInfo;
 
     static void quote_cb(const char* topic_, void* data_, size_t len_);
@@ -53,6 +56,7 @@ protected:
     bool isSubscribed(const char* exchangeName, const char* symbol);
 private:
     int loadConfig(std::string iniFileName);
+    void parseTopics();
 public:
 	void connect(){};
     void subData(const char* exchangeName, char* codeList[], size_t len);
