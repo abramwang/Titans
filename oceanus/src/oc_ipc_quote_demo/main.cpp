@@ -65,7 +65,7 @@ public:
 
         m_selected_symbols.insert("399905");  
         */
-        m_selected_symbols.insert("399852");  
+        m_selected_symbols.insert("400174");  
         //m_selected_symbols.insert("399300");  
     };
     virtual ~UserCallback(){};
@@ -85,7 +85,7 @@ public:
     
     virtual void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData)
     {
-        if ((pData->time - m_cout_future_time) > 1000)
+        if ((pData->time - m_cout_future_time) > 5000)
         {
             printf("[OnL2FutureSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
                 pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
@@ -98,7 +98,7 @@ public:
         if(iter == m_selected_symbols.end()){
             return;
         }
-        if ((pData->time - m_cout_snap_time) > 1000)
+        if ((pData->time - m_cout_snap_time) > 5000)
         {
             printf("[OnL2StockSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
                 pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
@@ -109,9 +109,9 @@ public:
         }
     };
     virtual void OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){
-        return;
-        if ((pData->time - m_cout_match_time) > 1000)
-        {
+        //return;
+        if ((pData->time - m_cout_match_time) > 5000)
+        {     
             printf("[OnL2StockMatchesRtn] %s, %s, %s, %d, %d, %f, %d, %c, %c\n", 
                 pData->symbol, pData->exchange, pData->time_str, pData->time, pData->seq, pData->price, pData->volume, 
                 pData->bs_flag, pData->function_code);
@@ -119,8 +119,8 @@ public:
         }
     };
     virtual void OnL2StockOrderRtn(const TiQuoteOrderField* pData){
-        return;
-        if ((pData->time - m_cout_order_time) > 1000)
+        //return;
+        if ((pData->time - m_cout_order_time) > 5000)
         {
             printf("[OnL2StockOrderRtn] %s, %s, %s, %d, %d, %f, %d, %c, %c\n", 
                 pData->symbol, pData->exchange, pData->time_str, pData->time,  pData->seq, pData->price, pData->volume, 
