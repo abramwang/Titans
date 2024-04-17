@@ -41,6 +41,7 @@ def main():
     """
     quote.Init('172.17.0.1', 20184, 'lw', "P7pO48Lw4AZTOLXKlR")
 
+    """
     quote.SubQuote("snapshot", "SH", [
         "000053",
         "600000",
@@ -61,6 +62,8 @@ def main():
         "IC2402",
         "IM2402"
     ])
+    """
+    quote.SubQuote("snapshot", "CF", ["*"])
 
     new_cb = MyCallback()
     quote.ReadLoop(new_cb)

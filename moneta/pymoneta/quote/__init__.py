@@ -87,7 +87,8 @@ def ReadLoop(cb_:CallBack):
                 data_array = json.loads(fields[b'msg'].decode())
                 for data in data_array:
                     if data["type"] == "snapshot":
-                        if data["symbol"] in __user_data__["sub_info"]["snapshot"][data["exchange"]]:
+                        if data["symbol"] in __user_data__["sub_info"]["snapshot"][data["exchange"]] \
+                            or "*" in __user_data__["sub_info"]["snapshot"][data["exchange"]]:
                             cb_.OnSnapshotRtn(data)
                     #cb_(data["type"], data)
                 __user_data__["redis_conn"].xack(
