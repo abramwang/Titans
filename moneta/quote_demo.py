@@ -2,15 +2,19 @@
 # coding=utf-8
 
 import pymoneta.quote as quote
+import pymoneta.quote.callback as cb
 import pymoneta.data as data
 from datetime import datetime
 
 
-def cb(type_, data_):
-    print(type_, data_)
+class MyCallback(cb.CallBack):
+    def OnSnapshotRtn(self, data):
+        print(data)
+    
     
 def main():
     #data.SetRootPath("http://192.168.124.5")
+    """
     data.SetRootPath("http://172.17.0.1")
 
     df = data.GetBaseData(["600000", "000001"], "ex_factor")
@@ -34,40 +38,32 @@ def main():
 
     print(df)
     exit()
-    quote.Init('127.0.0.1', 20184, 'lw', "P7pO48Lw4AZTOLXKlR")
+    """
+    quote.Init('172.17.0.1', 20184, 'lw', "P7pO48Lw4AZTOLXKlR")
 
     quote.SubQuote("snapshot", "SH", [
+        "000053",
         "600000",
         "600004",
         "688788"
     ])
 
     quote.SubQuote("snapshot", "SZ", [
-        "000001"
-    ])
-
-    quote.SubQuote("orders", "SH", [
-        "600000",
-        "600004",
+        "000001",
+        "000006",
+        "000053",
         "688788"
     ])
 
-    quote.SubQuote("orders", "SZ", [
-        "000001"
+    quote.SubQuote("snapshot", "CF", [
+        "IF2402",
+        "IH2402",
+        "IC2402",
+        "IM2402"
     ])
 
-    quote.SubQuote("matches", "SH", [
-        "600000",
-        "600004",
-        "688788"
-    ])
-
-    quote.SubQuote("matches", "SZ", [
-        "000001"
-    ])
-
-
-    quote.ReadLoop(cb)
+    new_cb = MyCallback()
+    quote.ReadLoop(new_cb)
         #time.sleep(1)
     pass
 

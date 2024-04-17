@@ -7,17 +7,15 @@ __all__ = [
 ]
 __author__ = 'bo wang <bo.wang@sci-inv.cn>'
 
-from types import FunctionType
+from .callback import CallBack
 
 __user_data__ = None
-__history_root__ = "/home/ti_data/"
+
 """
 __user_data__ = {
     "redis_conn": obj,
     "user": "lw",
-    "commander_key": "oc_quote_commander.lw",
     "response_key": "oc_quote_commander",
-    "response_group": "g1",
     "sub_info" : {
         "SH.snapshot": [],
         "SH.orders": [],
@@ -43,16 +41,14 @@ def Init(host_:str, port_:int, user_:str, pwd_:str):
         __user_data__ = {
             'redis_conn': redis_conn,
             'user': user_,
-            'commander_key': f"oc_quote_commander.{user_}",
-            'response_key': f"oc_quote_commander.response.{user_}",
+            'response_key': f"oc_ipc_quote_json_server.response",
             "response_group": "g1",
             "sub_info" : {
-                "SH.snapshot": [],
-                "SH.orders": [],
-                "SH.matches": [],
-                "SZ.snapshot": [],
-                "SZ.orders": [],
-                "SZ.matches": []
+                "snapshot": {
+                    "SH": set(),
+                    "SZ": set(),
+                    "CF": set(),
+                },
             }
         }
         try:
@@ -63,19 +59,17 @@ def Init(host_:str, port_:int, user_:str, pwd_:str):
         return 0
     return -1
 
-def SubQuote(dateType:str, exchange:str, symbol_list:list):
-    print(dateType, exchange, symbol_list)
+def SubQuote(dataType:str, exchange:str, symbol_list:list):
     global __user_data__
     if not __user_data__:
         return -1
     import json
-    __user_data__["sub_info"][f"{exchange}.{dateType}"] = symbol_list
-    __user_data__["redis_conn"].xadd(__user_data__["commander_key"], {
-            "update_sub_info": json.dumps(__user_data__["sub_info"])
-        })
+    if dataType == "snapshot":
+        for symbol in symbol_list:
+            __user_data__["sub_info"]["snapshot"][exchange].add(symbol)
     return 0
 
-def ReadLoop(cb_:FunctionType):
+def ReadLoop(cb_:CallBack):
     global __user_data__
     if not __user_data__:
         return -1
@@ -92,7 +86,10 @@ def ReadLoop(cb_:FunctionType):
             for entry_id, fields in entries:
                 data_array = json.loads(fields[b'msg'].decode())
                 for data in data_array:
-                    cb_(data["type"], data)
+                    if data["type"] == "snapshot":
+                        if data["symbol"] in __user_data__["sub_info"]["snapshot"][data["exchange"]]:
+                            cb_.OnSnapshotRtn(data)
+                    #cb_(data["type"], data)
                 __user_data__["redis_conn"].xack(
                     __user_data__["response_key"], 
                     __user_data__["response_group"], 
