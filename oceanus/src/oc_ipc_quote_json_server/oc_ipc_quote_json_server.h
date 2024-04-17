@@ -29,13 +29,6 @@ public:
 
         std::string szQuoteTopic;
 
-        int nBlock;
-        std::string szCommandStreamKey;
-        std::string szCommandStreamGroup;
-        std::string szCommandConsumerId;
-
-        std::string szSubscribedInfoKey;
-
         std::string szQuoteStreamKey;
 
     } ConfigInfo;
@@ -77,9 +70,9 @@ private:
     virtual void onConnect(int status){};
     virtual void onDisconnect(int status){};
     virtual void onAuth(int err, const char* errStr);
-    virtual void onCommand(int err, std::vector<std::string> *rsp);
+    virtual void onCommand(int err, std::vector<std::string> *rsp){};
 
-    virtual void onXreadgroupMsg(const char* streamKey, const char* id, const char* type, const char* msg);
+    virtual void onXreadgroupMsg(const char* streamKey, const char* id, const char* type, const char* msg){};
 public:
 	OcIpcQuoteJsonServer(uv_loop_s* loop, std::string configPath);
 	virtual ~OcIpcQuoteJsonServer();
@@ -91,17 +84,12 @@ private:
     uv_timer_t m_timer;
     ConfigInfo* m_config;
     json m_json_cash;
-
-    std::set<int64_t> m_subscribed_snapshot_symbol_ids;
-    std::set<int64_t> m_subscribed_matches_symbol_ids;
-    std::set<int64_t> m_subscribed_orders_symbol_ids;
+    int64_t m_cout_time_snap;
 
     TiQuoteIpcClient* m_quote_client;
 
 private:
     int loadConfig(std::string iniFileName);
-    void updateQuoteInfo(std::string quoteInfo);
-    void initQuoteInfo(std::string quoteInfo);
     void resetStreamKey();
 
 public:

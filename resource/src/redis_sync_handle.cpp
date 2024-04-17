@@ -286,7 +286,7 @@ bool RedisSyncHandle::xtrim(const char* key, int count)
 
 bool RedisSyncHandle::xadd(const char* key, const char* message)
 {
-    LOG(INFO) << "key: " << key << ", message: " << message;
+    //LOG(INFO) << "key: " << key << ", message: " << message;
     redisReply *reply = (redisReply *)redisCommand(_context, "XADD %s * msg %s", key, message);
     if (nullptr == reply)
     {
@@ -299,7 +299,7 @@ bool RedisSyncHandle::xadd(const char* key, const char* message)
 
 bool RedisSyncHandle::xadd(const char* key, const char* message, int max_len)
 {
-    LOG(INFO) << "key: " << key << ", message: " << message;
+    //LOG(INFO) << "key: " << key << ", message: " << message;
     redisReply *reply = (redisReply *)redisCommand(_context, "XADD %s MAXLEN %d * msg %s", key, max_len, message);
     if (nullptr == reply)
     {
