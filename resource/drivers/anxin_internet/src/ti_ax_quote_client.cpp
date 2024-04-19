@@ -106,6 +106,9 @@ void TiAxQuoteClient::OnMDSnapshot(amd::ama::MDSnapshot* snapshot, uint32_t cnt)
             _snapStockCash.bid_price[j]    = ((double)snapshot[i].bid_price[j])/1000000;
             _snapStockCash.bid_volume[j]   = snapshot[i].bid_volume[j] / 100;
         }
+
+        _snapStockCash.iopv             = ((double)snapshot[i].IOPV)/1000000;
+        _snapStockCash.pre_close_iopv   = ((double)snapshot[i].pre_close_iopv)/1000000;
         
         if(m_cb){
             m_cb->OnL2StockSnapshotRtn(&_snapStockCash);

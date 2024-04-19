@@ -112,22 +112,12 @@ void OcIpcQuoteJsonServer::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField*
             pData->symbol, pData->time_str, pData->time, pData->last, pData->acc_volume, pData->acc_turnover);
         m_cout_time_snap = pData->time;
     }
-    /*
-    int64_t symbol_id = TiQuoteTools::GetSymbolID(pData->exchange, pData->symbol);
-    if (m_subscribed_snapshot_symbol_ids.find(symbol_id) == m_subscribed_snapshot_symbol_ids.end())
-    {
-        return;
-    }
-    */
-    /*
-    printf("[OnL2StockSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
-                pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
-    */
 
-        json j;
-        TiQuoteFormater::FormatSnapshot(pData, j);
-        j["type"] = "snapshot";
+    json j;
+    TiQuoteFormater::FormatSnapshot(pData, j);
+    j["type"] = "snapshot";
 
+    m_json_cash.push_back(j);
 };
 
 void OcIpcQuoteJsonServer::OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){

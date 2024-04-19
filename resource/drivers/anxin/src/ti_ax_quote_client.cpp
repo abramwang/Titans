@@ -88,11 +88,11 @@ void TiAxQuoteClient::OnMDSnapshot(amd::ama::MDSnapshot* snapshot, uint32_t cnt)
         _snapStockCash.low_limit        = ((double)snapshot[i].low_limited)/1000000;
         _snapStockCash.volume           = 0;
         _snapStockCash.turnover         = 0;
-        _snapStockCash.acc_volume       = snapshot[i].total_volume_trade;
-        _snapStockCash.acc_turnover     = snapshot[i].total_value_trade;
+        _snapStockCash.acc_volume       = snapshot[i].total_volume_trade / 100;
+        _snapStockCash.acc_turnover     = snapshot[i].total_value_trade / 100000;
         _snapStockCash.match_items      = snapshot[i].num_trades;
-        _snapStockCash.total_ask_qty    = snapshot[i].total_offer_volume;
-        _snapStockCash.total_bid_qty    = snapshot[i].total_bid_volume;
+        _snapStockCash.total_ask_qty    = snapshot[i].total_offer_volume / 100;
+        _snapStockCash.total_bid_qty    = snapshot[i].total_bid_volume / 100;
         _snapStockCash.wavg_ask         = ((double)snapshot[i].weighted_avg_offer_price)/1000000;
         _snapStockCash.wavg_bid         = ((double)snapshot[i].weighted_avg_bid_price)/1000000;
         _snapStockCash.interest         = 0;
@@ -101,11 +101,14 @@ void TiAxQuoteClient::OnMDSnapshot(amd::ama::MDSnapshot* snapshot, uint32_t cnt)
         {
             // ask
             _snapStockCash.ask_price[j]    = ((double)snapshot[i].offer_price[j])/1000000;
-            _snapStockCash.ask_volume[j]   = snapshot[i].offer_volume[j];
+            _snapStockCash.ask_volume[j]   = snapshot[i].offer_volume[j] / 100;
             // bid
             _snapStockCash.bid_price[j]    = ((double)snapshot[i].bid_price[j])/1000000;
-            _snapStockCash.bid_volume[j]   = snapshot[i].bid_volume[j];
+            _snapStockCash.bid_volume[j]   = snapshot[i].bid_volume[j] / 100;
         }
+
+        _snapStockCash.iopv             = ((double)snapshot[i].IOPV)/1000000;
+        _snapStockCash.pre_close_iopv   = ((double)snapshot[i].pre_close_iopv)/1000000;
         
         if(m_cb){
             m_cb->OnL2StockSnapshotRtn(&_snapStockCash);
@@ -148,8 +151,8 @@ void TiAxQuoteClient::OnMDIndexSnapshot(amd::ama::MDIndexSnapshot* snapshot, uin
         _snapIndexCash.close            = ((double)snapshot[i].close_index)/1000000;
         _snapIndexCash.volume           = 0;
         _snapIndexCash.turnover         = 0;
-        _snapIndexCash.volume           = snapshot[i].total_volume_trade;
-        _snapIndexCash.turnover         = snapshot[i].total_value_trade;
+        _snapIndexCash.volume           = snapshot[i].total_volume_trade / 100;
+        _snapIndexCash.turnover         = snapshot[i].total_value_trade / 1000000;
         
         if(m_cb){
             m_cb->OnL2IndexSnapshotRtn(&_snapIndexCash);
@@ -186,7 +189,7 @@ void TiAxQuoteClient::OnMDTickOrder(amd::ama::MDTickOrder* ticks, uint32_t cnt)
         _orderCash.channel         = ticks[i].channel_no;
         _orderCash.seq             = ticks[i].biz_index;
         _orderCash.price           = ((double)ticks[i].order_price) / 1000000;
-        _orderCash.volume          = ticks[i].order_volume;
+        _orderCash.volume          = ticks[i].order_volume / 100;
         _orderCash.function_code   = ticks[i].side;
         _orderCash.order_type      = ticks[i].order_type;
         _orderCash.order_orino     = ticks[i].orig_order_no;

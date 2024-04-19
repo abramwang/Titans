@@ -67,6 +67,8 @@ struct TiQuoteSnapshotStockField
     double bid_price[TI_STOCK_ARRAY_LEN];
     int32_t bid_volume[TI_STOCK_ARRAY_LEN];
     int32_t bid_order_num[TI_STOCK_ARRAY_LEN];
+    double iopv;
+    double pre_close_iopv; 
 };
 
 /// @brief 快照定义

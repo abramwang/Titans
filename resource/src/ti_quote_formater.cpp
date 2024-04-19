@@ -102,7 +102,9 @@ void TiQuoteFormater::FormatSnapshot(const TiQuoteSnapshotStockField* pData, jso
         {"ask_order_num", json::array()},
         {"bid_price", json::array()},
         {"bid_volume", json::array()},
-        {"bid_order_num",json::array()}
+        {"bid_order_num",json::array()},
+        {"iopv", pData->iopv},
+        {"pre_close_iopv", pData->pre_close_iopv}
     };
     for (size_t i = 0; i < TI_STOCK_ARRAY_LEN; i++)
     {
