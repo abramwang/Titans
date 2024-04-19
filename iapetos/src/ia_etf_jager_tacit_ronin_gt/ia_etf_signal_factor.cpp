@@ -34,6 +34,7 @@ void IaEtfSignalFactor::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pD
     m_out["company"] = m_etf_info_ptr->m_company;
     m_out["update_time"] = datetime::get_format_time_ms(pData->date, pData->time);
     m_out["last"] = get_last_price(pData);
+    m_out["iopv"] = pData->iopv;    //行情的iopv
     profit_info info = {0};
     info.diff = calc_diff();
     m_out["diff"] = info.diff;
@@ -131,30 +132,34 @@ double IaEtfSignalFactor::calc_diff()
     for(auto &constituent_info : m_constituent_info_vec)
     {
         TiQuoteSnapshotStockField* snap_ptr = m_quote_data_cache->GetStockSnapshot(constituent_info->m_symbol.c_str(), constituent_info->m_exchange.c_str());
+        TiQuoteSnapshotFutureField* future_snap_ptr = nullptr;
         TiQuoteSnapshotIndexField* index_snap_ptr = nullptr;
         if (constituent_info->m_exchange != "SH" && constituent_info->m_exchange != "SZ")
         {
-            index_snap_ptr = get_future_replace_price(constituent_info->m_symbol);
-            //std::cout << constituent_info->m_symbol << " exchange: " << constituent_info->m_exchange << std::endl;
-            
-            if (!index_snap_ptr)
+            double last = 0;
+            double pre_close = 0;
+
+            future_snap_ptr = m_quote_data_cache->GetFutureSnapshot(constituent_info->m_symbol.c_str(), "CF");
+            if (future_snap_ptr)
             {
-#if __TEST__
-                std::cout << "get_future_replace_price failed" << std::endl;
-#endif
-                continue;
+                last = future_snap_ptr->last;
+                pre_close = future_snap_ptr->pre_close;
+            }
+            
+            if (!last)
+            {
+                index_snap_ptr = get_future_replace_price(constituent_info->m_symbol);
+                //printf("[calc_diff:index_snap_ptr] %s\n", constituent_info->m_symbol.c_str());
+                if (index_snap_ptr)
+                {
+                    last = index_snap_ptr->last;
+                    pre_close = index_snap_ptr->pre_close;
+                }
             }
 
-            //json j;
-            //TiQuoteFormater::FormatSnapshot(index_snap_ptr, j);
-
-
-            double last = index_snap_ptr->last;
-            double diff = constituent_info->m_reality_vol ? (constituent_info->m_reality_vol - constituent_info->m_disclosure_vol) * (last - index_snap_ptr->pre_close) * 1 : 0;
+            double diff = constituent_info->m_reality_vol ? (constituent_info->m_reality_vol - constituent_info->m_disclosure_vol) * (last - pre_close) * 1 : 0;
             
             total_diff += diff;
-            //std::cout << "[calc_diff future] " << constituent_info->m_symbol << ", " << constituent_info->m_exchange << ", " << diff << ", " << last << ", " << index_snap_ptr->pre_close << ", " << constituent_info->m_reality_vol << ", " << constituent_info->m_disclosure_vol << std::endl;
-            //std::cout << "[index data]:" << j << std::endl;
         }
         
         if(snap_ptr)
@@ -211,9 +216,11 @@ void IaEtfSignalFactor::calc_iopv(const TiQuoteSnapshotStockField* pEtfSnap, pro
         {
             double bid_price = get_bid_price(snap_ptr);
             double ask_price = get_ask_price(snap_ptr);
+            double last_price = get_last_price(snap_ptr);
 
             double c_iopv = 0.0;
             double r_iopv = 0.0;
+            double iopv = 0.0;
 
             if ((constituent_info->m_replace_flag == IA_ERT_CASH_MUST) ||
                 (constituent_info->m_replace_flag == IA_ERT_CASH_MUST_INTER_SZ) ||
@@ -222,6 +229,7 @@ void IaEtfSignalFactor::calc_iopv(const TiQuoteSnapshotStockField* pEtfSnap, pro
             {
                 c_iopv = constituent_info->m_creation_amount ? constituent_info->m_creation_amount : constituent_info->m_disclosure_vol * ask_price;
                 r_iopv = constituent_info->m_redemption_amount ? constituent_info->m_redemption_amount : constituent_info->m_disclosure_vol * bid_price;
+                iopv = constituent_info->m_redemption_amount ? constituent_info->m_redemption_amount : constituent_info->m_disclosure_vol * last_price;
 
                 info.buy_stock_replace_amount += c_iopv;
                 info.sell_stock_replace_amount += r_iopv;
@@ -231,6 +239,7 @@ void IaEtfSignalFactor::calc_iopv(const TiQuoteSnapshotStockField* pEtfSnap, pro
             }else{
                 c_iopv = ask_price * constituent_info->m_disclosure_vol;
                 r_iopv = bid_price * constituent_info->m_disclosure_vol;
+                iopv = last_price * constituent_info->m_disclosure_vol;
 
                 if (m_etf_info_ptr->m_exchange == constituent_info->m_exchange) //本市场自己买
                 {
@@ -250,6 +259,7 @@ void IaEtfSignalFactor::calc_iopv(const TiQuoteSnapshotStockField* pEtfSnap, pro
 
             info.creation_iopv += c_iopv;
             info.redemption_iopv += r_iopv;
+            info.iopv += iopv;
         }
     }
 
@@ -275,6 +285,7 @@ void IaEtfSignalFactor::calc_iopv(const TiQuoteSnapshotStockField* pEtfSnap, pro
     //redemption_iopv = redemption_iopv + m_etf_info_ptr->m_publicEstimatedCashDifference;
     info.creation_iopv = (info.creation_iopv + m_etf_info_ptr->m_publicEstimatedCashDifference) / m_etf_info_ptr->m_minUnit;
     info.redemption_iopv = (info.redemption_iopv + m_etf_info_ptr->m_publicEstimatedCashDifference) / m_etf_info_ptr->m_minUnit;
+    info.iopv = (info.iopv + m_etf_info_ptr->m_publicEstimatedCashDifference) / m_etf_info_ptr->m_minUnit;
 
     info.creation_profit = info.sell_etf_amount - info.creation_iopv *  m_etf_info_ptr->m_minUnit + info.diff - info.buy_stock_fee - info.sell_etf_fee; 
     info.redemption_profit = info.redemption_iopv *  m_etf_info_ptr->m_minUnit - info.buy_etf_amount + info.diff - info.sell_stock_fee - info.buy_etf_fee;
@@ -313,6 +324,7 @@ void IaEtfSignalFactor::format_json(profit_info &info)
     m_out["profit"]["redemption_profit"] = info.redemption_profit;
 
     m_out["profit"]["diff"] = info.diff;
+    m_out["profit"]["iopv"] = info.iopv;
     m_out["profit"]["creation_iopv"] = info.creation_iopv;
     m_out["profit"]["redemption_iopv"] = info.redemption_iopv;
 

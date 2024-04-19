@@ -79,6 +79,7 @@ struct profit_info
     double diff;                        //现金差值
 
     /// @brief IOPV
+    double iopv;                        //IOPV 自己计算的iopv
     double creation_iopv;
     double redemption_iopv;
 };

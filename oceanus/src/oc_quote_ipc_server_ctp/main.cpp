@@ -179,7 +179,14 @@ int main(int argc, char* argv[]) {
 
     while (1)
     {
-        usleep(1000);
+        usleep(1000000);
+        std::time_t currentTime = std::time(nullptr);
+        std::tm* localTime = std::localtime(&currentTime);
+        
+        if (localTime->tm_hour > 16 )
+        {
+            return 0;
+        }
     }
     
     return 0;
