@@ -41,8 +41,7 @@ public:
 
         std::string szAccountKey;
 
-        std::string szOrderStream;
-        std::string szMatchStream;
+        std::string szTradeStream;
 
         std::string szSignalStream;
         std::string szSignalMap;
@@ -76,7 +75,7 @@ public:
     virtual void OnTradingDayRtn(const unsigned int day, const char* exchangeName){};
    
     virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData);
-    virtual void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData){};
+    virtual void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData);
 
     virtual void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData);
     virtual void OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){};

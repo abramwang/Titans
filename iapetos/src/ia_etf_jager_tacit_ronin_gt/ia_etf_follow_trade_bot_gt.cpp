@@ -67,6 +67,12 @@ void IaEtfFollowTradeBotGt::OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField
     m_quote_cache->OnL2IndexSnapshotRtn(pData);
 };
 
+void IaEtfFollowTradeBotGt::OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData)
+{
+    Locker locker(&m_mutex);
+    m_quote_cache->OnL2FutureSnapshotRtn(pData);
+};
+
 void IaEtfFollowTradeBotGt::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){
     Locker locker(&m_mutex);
     m_quote_cache->OnL2StockSnapshotRtn(pData);
@@ -219,11 +225,14 @@ void IaEtfFollowTradeBotGt::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
             m_redis->hmset(key.c_str(), pData->szOrderStreamId, j.dump().c_str());
 
         }
-        if (!m_config->szOrderStream.empty())
-        {
-            m_redis->xadd(m_config->szOrderStream.c_str(), j.dump().c_str(), 2000);   
-        }
         
+        if (!m_config->szTradeStream.empty())
+        {
+            json msg;
+            msg["type"] = "order";
+            msg["data"] = j;
+            m_redis->xadd(m_config->szTradeStream.c_str(), msg.dump().c_str(), 2000);   
+        }
     }
 };
 void IaEtfFollowTradeBotGt::OnRtnOrderMatchEvent(const TiRtnOrderMatch* pData)
@@ -242,14 +251,15 @@ void IaEtfFollowTradeBotGt::OnRtnOrderMatchEvent(const TiRtnOrderMatch* pData)
             key += ".";
             key += pData->szAccount;
 
-            //std::cout << "OnRtnOrderMatchEvent: " << key.c_str() << " " << pData->szStreamId << " " << j << std::endl;
-
             m_redis->hmset(key.c_str(), pData->szStreamId, j.dump().c_str());
         }
 
-        if (!m_config->szMatchStream.empty())
+        if (!m_config->szTradeStream.empty())
         {
-            m_redis->xadd(m_config->szMatchStream.c_str(), j.dump().c_str(), 2000);   
+            json msg;
+            msg["type"] = "match";
+            msg["data"] = j;
+            m_redis->xadd(m_config->szTradeStream.c_str(), msg.dump().c_str(), 2000);   
         }
     }
 };
@@ -434,8 +444,7 @@ int IaEtfFollowTradeBotGt::loadConfig(std::string iniFileName){
     m_config->szOrderKey         = string(_iniFile["ia_etf_follow_trade_bot_gt"]["order_key"]);
     m_config->szMatchKey         = string(_iniFile["ia_etf_follow_trade_bot_gt"]["match_key"]);
 
-    m_config->szOrderStream      = string(_iniFile["ia_etf_follow_trade_bot_gt"]["order_stream"]);
-    m_config->szMatchStream      = string(_iniFile["ia_etf_follow_trade_bot_gt"]["match_stream"]);
+    m_config->szTradeStream      = string(_iniFile["ia_etf_follow_trade_bot_gt"]["trade_stream"]);
 
     m_config->szAccountKey       = string(_iniFile["ia_etf_follow_trade_bot_gt"]["account_key"]);
 

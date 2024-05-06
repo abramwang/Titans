@@ -136,7 +136,7 @@ int main(int argc, char** argv) {
         sleep_speed = atoi(argv[1]);
     }
 
-    int trading_day = 20231201;
+    int trading_day = 20240426;
     if (argc > 2)
     {
         trading_day = atoi(argv[2]);
