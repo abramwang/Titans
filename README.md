@@ -45,6 +45,11 @@ apt install libuv1-dev
 apt install libhiredis-dev
 ```
 
+### 安装 curl
+```shell
+apt install libcurl4-openssl-dev
+```
+
 #### 安装mysql
 ```shell
 apt install libmariadb-dev
@@ -110,6 +115,11 @@ yum --enablerepo=remi install redis
 ### 安装 hiredis
 ```shell
 yum install hiredis-devel -y
+```
+
+### 安装 curl
+```shell
+yum install libcurl-devel
 ```
 
 #### 安装mysql
