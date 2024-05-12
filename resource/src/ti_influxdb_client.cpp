@@ -49,7 +49,7 @@ void TiInfluxdbClient::write(std::string bucket, std::string org, std::string pr
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
-        std::cout << data << std::endl;
+        //std::cout << data << std::endl;
         res = curl_easy_perform(curl);
         if (res != CURLE_OK)
         {

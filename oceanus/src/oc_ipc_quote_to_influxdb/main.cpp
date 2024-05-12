@@ -21,7 +21,6 @@ private:
     int64_t m_cout_match_time;
     int64_t m_cout_order_time;
     int64_t m_cout_order_book_time;
-    std::set<std::string> m_selected_symbols;
 public:
     UserCallback(){
         m_influxdb_client = new TiInfluxdbClient(
@@ -33,39 +32,25 @@ public:
         m_cout_match_time = 0;
         m_cout_order_time = 0;
         m_cout_order_book_time = 0;
-        ///*
-        m_selected_symbols.insert("600000");
-        m_selected_symbols.insert("000001");
-        m_selected_symbols.insert("688981");
-        m_selected_symbols.insert("300152");
-        //*/
-        /*
-        301129
-        301181
-        */
-
-        m_selected_symbols.insert("400174");  
-        //m_selected_symbols.insert("399300");  
     };
     virtual ~UserCallback(){};
 public:
     virtual void OnTradingDayRtn(const unsigned int day, const char* exchangeName){};
    
     virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){
-        auto iter = m_selected_symbols.find(pData->symbol);
-        if(iter == m_selected_symbols.end()){
-            return;
-        }
-
-        return;
+    
         auto rtn = m_influxdb_client->add_point();
         rtn->meas("index");
         rtn->tag("symbol", pData->symbol);
         rtn->tag("exchange", pData->exchange);
-        rtn->field("close", pData->close);
+        rtn->field("volume", pData->volume);
+        rtn->field("turnover", pData->turnover);
+        rtn->field("open", pData->open);
+        rtn->field("high", pData->high);
+        rtn->field("low", pData->low);
+        rtn->field("last", pData->last);
+        rtn->field("pre_close", pData->pre_close);
         rtn->timestamp(pData->timestamp);
-
-        m_influxdb_client->write("ti_test", "timely", "ms");
 
         printf("[OnL2IndexSnapshotRtn] %s, %s, %d, %s, %f, %f\n", 
             pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->pre_close);
@@ -75,8 +60,31 @@ public:
     
     virtual void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData)
     {
+        auto rtn = m_influxdb_client->add_point();
+        rtn->meas("future");
+        rtn->tag("symbol", pData->symbol);
+        rtn->tag("exchange", pData->exchange);
+        rtn->field("volume", pData->volume);
+        rtn->field("turnover", pData->turnover);
+        rtn->field("acc_volume", pData->acc_volume);
+        rtn->field("acc_turnover", pData->acc_turnover);
+        rtn->field("open", pData->open);
+        rtn->field("high", pData->high);
+        rtn->field("low", pData->low);
+        rtn->field("last", pData->last);
+        rtn->field("high_limit", pData->high_limit);
+        rtn->field("low_limit", pData->low_limit);
+        rtn->field("pre_close", pData->pre_close);
+        rtn->field("bid_price_1", pData->bid_price[0]);
+        rtn->field("bid_volume_1", pData->bid_volume[0]);
+        rtn->field("ask_price_1", pData->ask_price[0]);
+        rtn->field("ask_volume_1", pData->ask_volume[0]);
+        rtn->timestamp(pData->timestamp);
+
+
         if ((pData->time - m_cout_future_time) > 5000)
         {
+            m_influxdb_client->write("ti_tick_snapshot", "timely", "ms");
             printf("[OnL2FutureSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
                 pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
             m_cout_future_time = pData->time;
@@ -84,23 +92,45 @@ public:
     };
 
     virtual void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){
+        /*
         auto iter = m_selected_symbols.find(pData->symbol);
         if(iter == m_selected_symbols.end()){
             return;
         }
+        */
 
         auto rtn = m_influxdb_client->add_point();
         rtn->meas("stock");
         rtn->tag("symbol", pData->symbol);
         rtn->tag("exchange", pData->exchange);
+        rtn->field("volume", pData->volume);
+        rtn->field("turnover", pData->turnover);
+        rtn->field("acc_volume", pData->acc_volume);
+        rtn->field("acc_turnover", pData->acc_turnover);
+        rtn->field("match_items", pData->match_items);
+        rtn->field("open", pData->open);
+        rtn->field("high", pData->high);
+        rtn->field("low", pData->low);
         rtn->field("last", pData->last);
+        rtn->field("high_limit", pData->high_limit);
+        rtn->field("low_limit", pData->low_limit);
+        rtn->field("pre_close", pData->pre_close);
+        rtn->field("bid_price_1", pData->bid_price[0]);
+        rtn->field("bid_volume_1", pData->bid_volume[0]);
+        rtn->field("ask_price_1", pData->ask_price[0]);
+        rtn->field("ask_volume_1", pData->ask_volume[0]);
+        rtn->field("match_items", pData->match_items);
+        rtn->field("total_ask_qty", pData->total_ask_qty);
+        rtn->field("total_bid_qty", pData->total_bid_qty);
+        rtn->field("wavg_ask", pData->wavg_ask);
+        rtn->field("wavg_bid", pData->wavg_bid);
+        rtn->field("iopv", pData->iopv);
+        
         rtn->timestamp(pData->timestamp);
 
-        m_influxdb_client->write("ti_tick_snapshot", "timely", "ms");
-
-        return;
         if ((pData->time - m_cout_snap_time) > 5000)
         {
+            m_influxdb_client->write("ti_tick_snapshot", "timely", "ms");
             printf("[OnL2StockSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
                 pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
             //json j;
