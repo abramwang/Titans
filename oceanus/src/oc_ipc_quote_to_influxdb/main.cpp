@@ -16,13 +16,15 @@ class UserCallback :
 private:
     TiInfluxdbClient* m_influxdb_client;
 
+    uv_timer_t m_timer;
+
     int64_t m_cout_future_time;
     int64_t m_cout_snap_time;
     int64_t m_cout_match_time;
     int64_t m_cout_order_time;
     int64_t m_cout_order_book_time;
 public:
-    UserCallback(){
+    UserCallback(uv_loop_s* loop){
         m_influxdb_client = new TiInfluxdbClient(
             "http://192.168.124.6:8086", 
             "mFdhDhbwTEAmaXHyYDDEyIJHhM8vjZt0w2ZQePhoAv5cMOZriLiMLpXLKH8_c5tooZ5LPYN9-eB5CC2Owd4u8A==");
@@ -32,9 +34,26 @@ public:
         m_cout_match_time = 0;
         m_cout_order_time = 0;
         m_cout_order_book_time = 0;
+
+            
+        m_timer.data = this;
+        uv_timer_init(loop, &m_timer);
+        uv_timer_start(&m_timer, onTimer, 1000, 100);
     };
     virtual ~UserCallback(){};
 public:
+    virtual void OnTimer()
+    {
+        std::time_t currentTime = std::time(nullptr);
+        std::tm* localTime = std::localtime(&currentTime);
+
+        if (localTime->tm_hour > 15 )
+        {
+            std::cout << "std::terminate" << std::endl;
+            std::terminate();
+        }
+    };
+
     virtual void OnTradingDayRtn(const unsigned int day, const char* exchangeName){};
    
     virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){
@@ -57,7 +76,6 @@ public:
 
     };
 
-    
     virtual void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData)
     {
         auto rtn = m_influxdb_client->add_point();
@@ -179,6 +197,11 @@ public:
             m_cout_order_book_time = pData->time;
         }
     };
+    
+    static void onTimer(uv_timer_t* handle){
+        UserCallback* pThis = (UserCallback*)handle->data;
+        pThis->OnTimer();
+    };
 };
 
 int main(int argc, char* argv[]) {
@@ -187,7 +210,7 @@ int main(int argc, char* argv[]) {
 
     uv_loop_t* loop = uv_default_loop();
 
-    UserCallback cb;
+    UserCallback cb(loop);
 
     TiQuoteIpcClient client("./config.ini", loop, &cb, &cb);
 	
