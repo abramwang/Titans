@@ -309,7 +309,7 @@ void IaEtfFollowTradeBotGt::OnTimer()
         std::cout << "[IaEtfFollowTradeBotGt::OnTimer] QueryAsset QueryPositions: " << time_num << std::endl;
     }
     
-    //return;
+    return;
     std::time_t currentTime = std::time(nullptr);
     std::tm* localTime = std::localtime(&currentTime);
     /*

@@ -8,7 +8,7 @@ IaEtfUserSetting::IaEtfUserSetting(RedisSyncHandle* redis_client, IaEtfInfoMysql
     m_redis_client = redis_client;
     m_etf_info_mysql_client = etf_info_mysql;
 
-    init_monitor_etf_symbol();
+    //init_monitor_etf_symbol();
     init_etf_info();
 
     std::cout << m_monitor_etf_symbol_vec.size() << std::endl;
@@ -35,7 +35,8 @@ void IaEtfUserSetting::init_etf_info()
     std::set<std::string> symbol_set;
 
     std::vector<IaEtfInfo> etfInfoList;
-    m_etf_info_mysql_client->QueryEtfInfoList(date_num, m_monitor_etf_symbol_vec, etfInfoList);
+    m_etf_info_mysql_client->QueryEtfInfoList(date_num, etfInfoList);
+    //m_etf_info_mysql_client->QueryEtfInfoList(date_num, m_monitor_etf_symbol_vec, etfInfoList);
 
     std::cout << etfInfoList.size() << std::endl;
 
