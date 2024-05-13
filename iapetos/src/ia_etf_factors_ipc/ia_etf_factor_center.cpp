@@ -172,7 +172,7 @@ void IaETFFactorCenter::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pD
 #endif
             }
             
-            bool flag = m_redis.xadd(m_config->szStreamKey.c_str(), j.dump().c_str());
+            bool flag = m_redis.xadd(m_config->szStreamKey.c_str(), j.dump().c_str(), 2000);
             
             if (!flag){
                 std::cout << "try reconnect" << std::endl;
@@ -198,7 +198,7 @@ void IaETFFactorCenter::OnFactorRtn(const char* symbol, const char* factor_name,
         { "symbol", symbol},
         { "data", *pFactor}
     };
-    bool flag = m_redis.xadd(m_config->szUiFactorKey.c_str(), j.dump().c_str());
+    bool flag = m_redis.xadd(m_config->szUiFactorKey.c_str(), j.dump().c_str(), 2000);
     if (!flag){
         std::cout << "try reconnect" << std::endl;
         flag = m_redis.disconnect();
