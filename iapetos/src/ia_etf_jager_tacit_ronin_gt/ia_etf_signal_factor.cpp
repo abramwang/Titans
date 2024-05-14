@@ -26,7 +26,7 @@ void IaEtfSignalFactor::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pD
     }
 #endif
     /*
-    printf("[OnL2StockSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
+    printf("[IaEtfSignalFactor::OnL2StockSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
             pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
     */
     m_out["symbol"] = m_etf_info_ptr->m_fundId;
@@ -39,7 +39,8 @@ void IaEtfSignalFactor::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pD
     info.diff = calc_diff();
     m_out["diff"] = info.diff;
     calc_iopv(pData, info);
-    format_json(info);
+    format_json_profit(info);
+    format_influx_factor(pData, info);
     m_out["c_iopv"] = info.creation_iopv;
     m_out["r_iopv"] = info.redemption_iopv;
 };
@@ -291,7 +292,7 @@ void IaEtfSignalFactor::calc_iopv(const TiQuoteSnapshotStockField* pEtfSnap, pro
     info.redemption_profit = info.redemption_iopv *  m_etf_info_ptr->m_minUnit - info.buy_etf_amount + info.diff - info.sell_stock_fee - info.buy_etf_fee;
 };
 
-void IaEtfSignalFactor::format_json(profit_info &info)
+void IaEtfSignalFactor::format_json_profit(profit_info &info)
 {
     m_out["profit"] = json::object();
     m_out["profit"]["creation"] = json::object();
@@ -327,7 +328,33 @@ void IaEtfSignalFactor::format_json(profit_info &info)
     m_out["profit"]["iopv"] = info.iopv;
     m_out["profit"]["creation_iopv"] = info.creation_iopv;
     m_out["profit"]["redemption_iopv"] = info.redemption_iopv;
+};
 
+void IaEtfSignalFactor::format_influx_factor(const TiQuoteSnapshotStockField* pEtfSnap, profit_info &info)
+{
+    m_out["influx"] = json::object();
+    m_out["influx"]["tags"] = json::object();
+    m_out["influx"]["tags"]["exchange"] = pEtfSnap->exchange;
+    m_out["influx"]["tags"]["symbol"] = pEtfSnap->symbol;
+
+    m_out["influx"]["fields"] = json::object();
+
+    m_out["influx"]["fields"]["last"] = pEtfSnap->last;
+    m_out["influx"]["fields"]["iopv"] = pEtfSnap->iopv;
+    m_out["influx"]["fields"]["diff"] = info.diff;
+    m_out["influx"]["fields"]["calc_iopv"] = info.iopv;
+    m_out["influx"]["fields"]["creation_iopv"] = info.creation_iopv;
+    m_out["influx"]["fields"]["redemption_iopv"] = info.redemption_iopv;
+
+    m_out["influx"]["fields"]["last_multi"] =  pEtfSnap->last * m_etf_info_ptr->m_minUnit;
+    m_out["influx"]["fields"]["iopv_multi"] = pEtfSnap->iopv * m_etf_info_ptr->m_minUnit;
+    m_out["influx"]["fields"]["calc_iopv_multi"] = info.iopv * m_etf_info_ptr->m_minUnit;
+    m_out["influx"]["fields"]["creation_iopv_multi"] = info.creation_iopv * m_etf_info_ptr->m_minUnit;
+    m_out["influx"]["fields"]["redemption_iopv_multi"] = info.redemption_iopv * m_etf_info_ptr->m_minUnit;
+
+    m_out["influx"]["timestamp"] = datetime::get_timestamp_ms(pEtfSnap->date, pEtfSnap->time);
+
+    //std::cout <<  m_out["influx"] << std::endl;
 };
 
 bool IaEtfSignalFactor::GetJsonOut(json& j)

@@ -18,12 +18,6 @@ IaEtfUserSetting::~IaEtfUserSetting()
 {
 }
 
-
-void IaEtfUserSetting::init_monitor_etf_symbol()
-{
-    m_redis_client->smembers("ia_etf_jager_tacit_ronin_gt.monitor_symbol", m_monitor_etf_symbol_vec);
-}
-
 void IaEtfUserSetting::init_etf_info()
 {
     int32_t last_trading_date_num = m_etf_info_mysql_client->QueryLatestTradingDate();
@@ -35,8 +29,7 @@ void IaEtfUserSetting::init_etf_info()
     std::set<std::string> symbol_set;
 
     std::vector<IaEtfInfo> etfInfoList;
-    m_etf_info_mysql_client->QueryEtfInfoList(date_num, etfInfoList);
-    //m_etf_info_mysql_client->QueryEtfInfoList(date_num, m_monitor_etf_symbol_vec, etfInfoList);
+    m_etf_info_mysql_client->QueryEtfInfoList(date_num, m_monitor_etf_symbol_vec, etfInfoList);
 
     std::cout << etfInfoList.size() << std::endl;
 

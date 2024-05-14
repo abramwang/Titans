@@ -37,6 +37,7 @@ IaEtfFollowTradeBotGt::IaEtfFollowTradeBotGt(uv_loop_s* loop, std::string config
         m_quote_cache = new IaEtfQuoteDataCache();
         m_signal_center = new IaEtfSignalCenter(m_user_setting, m_quote_cache);
         m_trade_center = new IaEtfTradeWorkerCenter(m_trade_client, m_quote_cache, m_user_setting);
+        m_influxdb_client = new IaEtfFactorToInflux(m_config->szInfluxUrl.c_str(), m_config->szInfluxToken.c_str());
     }
 
     m_timer.data = this;
@@ -220,18 +221,8 @@ void IaEtfFollowTradeBotGt::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
             key += ".";
             key += pData->szAccount;
 
-            //std::cout << "OnRtnOrderStatusEvent: " << key.c_str() << " " << pData->szOrderStreamId << " " << j << std::endl;
-
             m_redis->hmset(key.c_str(), pData->szOrderStreamId, j.dump().c_str());
 
-        }
-        
-        if (!m_config->szTradeStream.empty())
-        {
-            json msg;
-            msg["type"] = "order";
-            msg["data"] = j;
-            m_redis->xadd(m_config->szTradeStream.c_str(), msg.dump().c_str(), 2000);   
         }
     }
 };
@@ -252,14 +243,6 @@ void IaEtfFollowTradeBotGt::OnRtnOrderMatchEvent(const TiRtnOrderMatch* pData)
             key += pData->szAccount;
 
             m_redis->hmset(key.c_str(), pData->szStreamId, j.dump().c_str());
-        }
-
-        if (!m_config->szTradeStream.empty())
-        {
-            json msg;
-            msg["type"] = "match";
-            msg["data"] = j;
-            m_redis->xadd(m_config->szTradeStream.c_str(), msg.dump().c_str(), 2000);   
         }
     }
 };
@@ -289,9 +272,11 @@ void IaEtfFollowTradeBotGt::OnTimer()
                     continue;
                 }
                 m_redis->hmset(m_config->szSignalMap.c_str(), iter.key().c_str(), iter.value().dump().c_str());
+                m_influxdb_client->add_point("jager", iter.value()["influx"]);
             }
-            m_redis->xadd(m_config->szSignalStream.c_str(), signal_array.dump().c_str(), 2000);
-            //std::cout << "[IaEtfFollowTradeBotGt::OnTimer] signal_size: " << signal_out.size() << std::endl;
+            m_influxdb_client->write(m_config->szInfluxBucket.c_str(), m_config->szInfluxOrg.c_str(), "ms");
+            //m_redis->xadd(m_config->szSignalStream.c_str(), signal_array.dump().c_str(), 2000);
+            std::cout << "[IaEtfFollowTradeBotGt::OnTimer] signal_size: " << signal_out.size() << std::endl;
         }catch(std::exception& e){
             std::cout << "[IaEtfFollowTradeBotGt::OnTimer] " << e.what() << std::endl;
         }catch(...){
@@ -444,12 +429,8 @@ int IaEtfFollowTradeBotGt::loadConfig(std::string iniFileName){
     m_config->szOrderKey         = string(_iniFile["ia_etf_follow_trade_bot_gt"]["order_key"]);
     m_config->szMatchKey         = string(_iniFile["ia_etf_follow_trade_bot_gt"]["match_key"]);
 
-    m_config->szTradeStream      = string(_iniFile["ia_etf_follow_trade_bot_gt"]["trade_stream"]);
-
     m_config->szAccountKey       = string(_iniFile["ia_etf_follow_trade_bot_gt"]["account_key"]);
 
-
-    m_config->szSignalStream    = string(_iniFile["ia_etf_follow_trade_bot_gt"]["signal_stream"]);
     m_config->szSignalMap       = string(_iniFile["ia_etf_follow_trade_bot_gt"]["signal_map"]);
     
     m_config->szSqlIp       = string(_iniFile["ia_etf_follow_trade_bot_gt"]["sql_ip"]);
@@ -458,9 +439,14 @@ int IaEtfFollowTradeBotGt::loadConfig(std::string iniFileName){
     m_config->szSqlPassword = string(_iniFile["ia_etf_follow_trade_bot_gt"]["sql_password"]);
     m_config->szSqlDb       = string(_iniFile["ia_etf_follow_trade_bot_gt"]["sql_db"]);
 
+    m_config->szInfluxUrl   = string(_iniFile["ia_etf_follow_trade_bot_gt"]["influx_url"]);
+    m_config->szInfluxToken = string(_iniFile["ia_etf_follow_trade_bot_gt"]["influx_token"]);
+    m_config->szInfluxOrg   = string(_iniFile["ia_etf_follow_trade_bot_gt"]["influx_org"]);
+    m_config->szInfluxBucket= string(_iniFile["ia_etf_follow_trade_bot_gt"]["influx_bucket"]);
+
+
     if( m_config->szIp.empty() |
         !m_config->nPort |
-        m_config->szSignalStream.empty() |
         m_config->szSignalMap.empty() | 
         m_config->szCommandStreamGroup.empty() |
         m_config->szCommandStreamKey.empty() | 
@@ -484,10 +470,6 @@ void IaEtfFollowTradeBotGt::resetStreamKey()
     if (time_num  > 95000000 && time_num < 155000000)   //交易时段不重置了
     {
         return;
-    }
-    if(!m_config->szSignalStream.empty())
-    {
-        m_redis->del(m_config->szSignalStream.c_str());
     }
     if(!m_config->szOrderKey.empty())
     {

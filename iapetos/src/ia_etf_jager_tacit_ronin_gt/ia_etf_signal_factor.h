@@ -34,7 +34,7 @@ private:
     std::vector<std::shared_ptr<IaEtfConstituentInfo>>  m_constituent_info_vec;
     IaEtfQuoteDataCache* m_quote_data_cache;
 
-    json m_out;     //输出数据
+    json m_out;         //输出数据
 
 struct profit_info
 {
@@ -94,7 +94,10 @@ private:
 
     double calc_diff(); //计算现金差值
     void calc_iopv(const TiQuoteSnapshotStockField* pEtfSnap, profit_info &info); //计算IOPV
-    void format_json(profit_info &info); //格式化输出
+    //格式化输出
+    void format_json_profit(profit_info &info);
+    //格式化influx数据
+    void format_influx_factor(const TiQuoteSnapshotStockField* pEtfSnap, profit_info &info);
 public:
     IaEtfSignalFactor(std::shared_ptr<IaEtfInfo> etf_info_ptr, 
         std::vector<std::shared_ptr<IaEtfConstituentInfo>> constituent_info_vec, 

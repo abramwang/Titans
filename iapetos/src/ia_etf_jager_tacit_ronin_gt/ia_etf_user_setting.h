@@ -24,7 +24,6 @@ private:
 
     //std::set<int64_t> m_etf_user_id_set;  //etf user id set
 private:
-    void init_monitor_etf_symbol();
     void init_etf_info();
 
 public:

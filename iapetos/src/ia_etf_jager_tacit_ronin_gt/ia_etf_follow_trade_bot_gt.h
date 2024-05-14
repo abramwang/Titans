@@ -16,6 +16,7 @@
 #include "ia_etf_quote_data_cache.h"
 #include "ia_etf_signal_center.h"
 #include "ia_etf_trade_worker_center.h"
+#include "ia_etf_factor_to_influx.h"
 
 #include <nlohmann/json.hpp>
 using namespace nlohmann;
@@ -41,9 +42,6 @@ public:
 
         std::string szAccountKey;
 
-        std::string szTradeStream;
-
-        std::string szSignalStream;
         std::string szSignalMap;
 
         std::string szSqlIp;
@@ -51,6 +49,11 @@ public:
         std::string szSqlUser;
         std::string szSqlPassword;
         std::string szSqlDb;
+
+        std::string szInfluxUrl;
+        std::string szInfluxToken;
+        std::string szInfluxOrg;
+        std::string szInfluxBucket;
 
     } ConfigInfo;
 
@@ -123,6 +126,7 @@ private:
     IaEtfQuoteDataCache* m_quote_cache;
     IaEtfSignalCenter* m_signal_center;
     IaEtfTradeWorkerCenter* m_trade_center;
+    IaEtfFactorToInflux* m_influxdb_client;
     
     int64_t m_query_time;
     int64_t m_query_interval;

@@ -31,6 +31,11 @@ curl -X POST "http://192.168.124.6:8086/api/v2/write?org=timely&bucket=ti_test&p
 */
 void TiInfluxdbClient::write(std::string bucket, std::string org, std::string precision)
 {
+    if (m_records_vec.empty())
+    {
+        return;
+    }
+    
     CURL *curl;
     CURLcode res;
     struct curl_slist *headers = NULL;
