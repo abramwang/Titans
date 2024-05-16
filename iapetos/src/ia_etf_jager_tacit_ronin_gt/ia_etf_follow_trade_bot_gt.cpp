@@ -111,21 +111,19 @@ void IaEtfFollowTradeBotGt::OnCommonJsonRespones(const json* rspData, int req_id
         {
             if(!m_config->szAccountKey.empty())
             {
-                std::string key = m_config->szAccountKey;
-                m_redis->hmset(key.c_str(), std::string((*rspData)["data"]["account_id"]).c_str(), (*rspData)["data"].dump().c_str());
+                json data = (*rspData)["data"];
 
-                std::string account_id = std::string((*rspData)["data"]["account_id"]);
-                account_id = "280094803";
-                std::cout << "OnCommonJsonRespones: " << key.c_str() << " " << account_id << " " << (*rspData)["data"] << std::endl;
-
+                std::string account_id = std::string(data["account_id"]);
 
                 std::shared_ptr<IaAccountDBInfo> account_info_ptr;
                 if (m_user_setting->GetAccountDBInfo(account_id, account_info_ptr))
                 {
-                    std::cout << "GetAccountDBInfo: " << account_info_ptr->funding_account << " " << account_info_ptr->product_name  << std::endl;
+                    std::cout << "GetAccountDBInfo: " << account_info_ptr->funding_account << " " << account_info_ptr->product_name << std::endl;
+                    data["product_name"] = account_info_ptr->product_name;
                 }
 
-
+                std::string key = m_config->szAccountKey;
+                m_redis->hmset(key.c_str(), account_id.c_str(), data.dump().c_str());
             }
         }
     }
@@ -134,7 +132,20 @@ void IaEtfFollowTradeBotGt::OnCommonJsonRespones(const json* rspData, int req_id
 void IaEtfFollowTradeBotGt::OnRspAccountInfo(const TiRspAccountInfo* pData)
 {
     Locker locker(&m_mutex);
-    m_trade_center->OnRspAccountInfo(pData);
+    TiRspAccountInfo data = {0};
+    memcpy(&data, pData, sizeof(TiRspAccountInfo));
+
+    //strcpy(data.szAccount, "280094803");
+
+    std::shared_ptr<IaAccountDBInfo> account_info_ptr;
+    if (m_user_setting->GetAccountDBInfo(data.szAccount, account_info_ptr))
+    {
+        strcpy(data.szName, account_info_ptr->product_name.c_str());
+    }
+
+    std::cout << "OnRspAccountInfo: " << data.szAccount << " " << data.szName << std::endl;
+
+    m_trade_center->OnRspAccountInfo(&data);
 };
 
 void IaEtfFollowTradeBotGt::OnRspOrderDelete(const TiRspOrderDelete* pData)
