@@ -91,3 +91,26 @@ void IaEtfInfoMysql::QueryEtfConstituentInfoList(int32_t date_num, std::vector<s
         out.push_back(constituentInfo);
     }
 };
+
+
+
+void IaEtfInfoMysql::QueryAccountInfoList(std::vector<IaAccountDBInfo>& out)
+{
+    std::vector<std::map<std::string, std::string>> result;
+    std::string sql("SELECT * FROM account;");
+    m_ref_db->query(sql, result);
+    for (auto& row : result) {
+        IaAccountDBInfo accountInfo;
+        accountInfo.security_account = row["security_account"];
+        accountInfo.exchange = row["exchange"];
+        accountInfo.funding_account = row["funding_account"];
+        accountInfo.uni_account = row["uni_account"];
+        accountInfo.broker = row["broker"];
+        accountInfo.broker_branch = row["broker_branch"];
+        accountInfo.product_name = row["product_name"];
+        accountInfo.tafundcode = row["tafundcode"];
+        accountInfo.account_open_date = row["account_open_date"];
+        accountInfo.last_update_timestamp = row["last_update_timestamp"];
+        out.push_back(accountInfo);
+    }
+};

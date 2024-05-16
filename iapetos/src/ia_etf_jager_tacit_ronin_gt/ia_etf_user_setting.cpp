@@ -10,6 +10,7 @@ IaEtfUserSetting::IaEtfUserSetting(RedisSyncHandle* redis_client, IaEtfInfoMysql
 
     //init_monitor_etf_symbol();
     init_etf_info();
+    init_account_info();
 
     std::cout << m_monitor_etf_symbol_vec.size() << std::endl;
 }
@@ -24,7 +25,7 @@ void IaEtfUserSetting::init_etf_info()
     int date_num = datetime::get_today();
     date_num = last_trading_date_num ? last_trading_date_num : date_num;
 
-    //date_num = 20240514;
+    date_num = 20240514;
 
     std::set<std::string> symbol_set;
 
@@ -55,6 +56,17 @@ void IaEtfUserSetting::init_etf_info()
     std::cout << symbol_set.size() << std::endl;
 };
 
+void IaEtfUserSetting::init_account_info()
+{
+    std::vector<IaAccountDBInfo> accountInfoList;
+    m_etf_info_mysql_client->QueryAccountInfoList(accountInfoList);
+
+    for (auto& accountInfo : accountInfoList) {
+        std::shared_ptr<IaAccountDBInfo> info_ptr = std::make_shared<IaAccountDBInfo>(accountInfo);
+        m_account_info_map[accountInfo.funding_account] = info_ptr;
+    }
+};
+
 
 bool IaEtfUserSetting::GetMonitorEtfSymbol(std::vector<std::string> &monitor_etf_symbol_vec)
 {
@@ -80,5 +92,16 @@ bool IaEtfUserSetting::GetEtfInfo(std::string fund_symbol, std::shared_ptr<IaEtf
         constituent_info_vec.push_back(it->second);
     }
 
+    return true;
+};
+
+bool IaEtfUserSetting::GetAccountDBInfo(std::string account, std::shared_ptr<IaAccountDBInfo> &account_info_ptr)
+{
+    auto iter = m_account_info_map.find(account);
+    if (iter == m_account_info_map.end())
+    {
+        return false;
+    }
+    account_info_ptr = iter->second;
     return true;
 };

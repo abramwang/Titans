@@ -4,6 +4,39 @@
 #include <string>
 
 /*
+CREATE TABLE `account` (
+  `security_account` varchar(255) NOT NULL,
+  `exchange` varchar(8) DEFAULT NULL,
+  `funding_account` varchar(255) DEFAULT NULL,
+  `uni_account` varchar(255) DEFAULT NULL,
+  `broker` varchar(255) DEFAULT NULL,
+  `broker_branch` varchar(255) DEFAULT NULL,
+  `product_name` varchar(255) DEFAULT NULL,
+  `tafundcode` varchar(255) DEFAULT NULL,
+  `account_open_date` date DEFAULT NULL,
+  `last_update_timestamp` datetime DEFAULT NULL,
+  PRIMARY KEY (`security_account`),
+  KEY `ix_account_exchange` (`exchange`),
+  KEY `ix_account_uni_account` (`uni_account`),
+  KEY `ix_account_funding_account` (`funding_account`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+*/
+
+struct IaAccountDBInfo {
+    std::string security_account;
+    std::string exchange;
+    std::string funding_account;
+    std::string uni_account;
+    std::string broker;
+    std::string broker_branch;
+    std::string product_name;
+    std::string tafundcode;
+    std::string account_open_date;
+    std::string last_update_timestamp;
+};
+
+
+/*
 CREATE TABLE `etf_info` (
   `m_tradeDate` varchar(8) NOT NULL,
   `m_fundId` varchar(255) NOT NULL,

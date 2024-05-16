@@ -19,6 +19,8 @@ public:
     int32_t QueryLatestTradingDate();
     void QueryEtfInfoList(int32_t date_num, std::vector<std::string>& fund_symbol_vec, std::vector<IaEtfInfo>& out);
     void QueryEtfConstituentInfoList(int32_t date_num, std::vector<std::string> fund_symbol_vec, std::vector<IaEtfConstituentInfo>& out);
+
+    void QueryAccountInfoList(std::vector<IaAccountDBInfo>& out);
 };
 
 #endif // __IA_ETF_INFO_MYSQL_H__

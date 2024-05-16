@@ -113,6 +113,19 @@ void IaEtfFollowTradeBotGt::OnCommonJsonRespones(const json* rspData, int req_id
             {
                 std::string key = m_config->szAccountKey;
                 m_redis->hmset(key.c_str(), std::string((*rspData)["data"]["account_id"]).c_str(), (*rspData)["data"].dump().c_str());
+
+                std::string account_id = std::string((*rspData)["data"]["account_id"]);
+                account_id = "280094803";
+                std::cout << "OnCommonJsonRespones: " << key.c_str() << " " << account_id << " " << (*rspData)["data"] << std::endl;
+
+
+                std::shared_ptr<IaAccountDBInfo> account_info_ptr;
+                if (m_user_setting->GetAccountDBInfo(account_id, account_info_ptr))
+                {
+                    std::cout << "GetAccountDBInfo: " << account_info_ptr->funding_account << " " << account_info_ptr->product_name  << std::endl;
+                }
+
+
             }
         }
     }

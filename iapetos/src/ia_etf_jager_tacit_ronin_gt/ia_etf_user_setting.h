@@ -22,9 +22,10 @@ private:
     std::unordered_map<std::string, std::shared_ptr<IaEtfInfo>> m_etf_info_map;                     //etf info map              fund_symbol -> etf info
     std::multimap<std::string, std::shared_ptr<IaEtfConstituentInfo>> m_etf_constituent_info_map;   //etf constituent info map  fund_symbol -> etf constituent info
 
-    //std::set<int64_t> m_etf_user_id_set;  //etf user id set
+    std::unordered_map<std::string, std::shared_ptr<IaAccountDBInfo>> m_account_info_map;           //account info map          account_id -> account info
 private:
     void init_etf_info();
+    void init_account_info();
 
 public:
     IaEtfUserSetting(RedisSyncHandle* redis_client, IaEtfInfoMysql* etf_info_mysql);
@@ -33,6 +34,7 @@ public:
 public:
     bool GetMonitorEtfSymbol(std::vector<std::string> &monitor_etf_symbol_vec);
     bool GetEtfInfo(std::string fund_symbol, std::shared_ptr<IaEtfInfo> &etf_info_ptr, std::vector<std::shared_ptr<IaEtfConstituentInfo>> &constituent_info_vec);
+    bool GetAccountDBInfo(std::string account, std::shared_ptr<IaAccountDBInfo> &account_info_ptr);
 
 };
 
