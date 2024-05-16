@@ -20,7 +20,7 @@ IaEtfSignalFactor::~IaEtfSignalFactor()
 void IaEtfSignalFactor::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData)
 {
 #if __TEST__
-    if (strcmp(pData->symbol, "159845") != 0)
+    if (strcmp(pData->symbol, "510300") != 0)
     {
         return;
     }
@@ -35,14 +35,14 @@ void IaEtfSignalFactor::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pD
     m_out["update_time"] = datetime::get_format_time_ms(pData->date, pData->time);
     m_out["last"] = get_last_price(pData);
     m_out["iopv"] = pData->iopv;    //行情的iopv
-    profit_info info = {0};
-    info.diff = calc_diff();
-    m_out["diff"] = info.diff;
-    calc_iopv(pData, info);
-    format_json_profit(info);
-    format_influx_factor(pData, info);
-    m_out["c_iopv"] = info.creation_iopv;
-    m_out["r_iopv"] = info.redemption_iopv;
+    m_info = {0};
+    m_info.diff = calc_diff();
+    m_out["diff"] = m_info.diff;
+    calc_iopv(pData, m_info);
+    format_json_profit(m_info);
+    format_influx_factor(pData, m_info);
+    m_out["c_iopv"] = m_info.creation_iopv;
+    m_out["r_iopv"] = m_info.redemption_iopv;
 };
 
 void IaEtfSignalFactor::OnTimer()

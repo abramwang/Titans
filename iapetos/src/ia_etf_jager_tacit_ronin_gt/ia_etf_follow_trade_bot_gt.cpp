@@ -36,7 +36,7 @@ IaEtfFollowTradeBotGt::IaEtfFollowTradeBotGt(uv_loop_s* loop, std::string config
         m_user_setting = new IaEtfUserSetting(m_redis, m_mysql);
         m_quote_cache = new IaEtfQuoteDataCache();
         m_signal_center = new IaEtfSignalCenter(m_user_setting, m_quote_cache);
-        m_trade_center = new IaEtfTradeWorkerCenter(m_trade_client, m_quote_cache, m_user_setting);
+        m_trade_center = new IaEtfTradeWorkerCenter(m_trade_client, m_quote_cache, m_user_setting, m_signal_center);
         m_influxdb_client = new IaEtfFactorToInflux(m_config->szInfluxUrl.c_str(), m_config->szInfluxToken.c_str());
     }
 
@@ -74,7 +74,8 @@ void IaEtfFollowTradeBotGt::OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureFie
     m_quote_cache->OnL2FutureSnapshotRtn(pData);
 };
 
-void IaEtfFollowTradeBotGt::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){
+void IaEtfFollowTradeBotGt::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData)
+{
     Locker locker(&m_mutex);
     m_quote_cache->OnL2StockSnapshotRtn(pData);
     m_signal_center->OnL2StockSnapshotRtn(pData);
@@ -117,10 +118,17 @@ void IaEtfFollowTradeBotGt::OnCommonJsonRespones(const json* rspData, int req_id
     }
 };   
 
+void IaEtfFollowTradeBotGt::OnRspAccountInfo(const TiRspAccountInfo* pData)
+{
+    Locker locker(&m_mutex);
+    m_trade_center->OnRspAccountInfo(pData);
+};
+
 void IaEtfFollowTradeBotGt::OnRspOrderDelete(const TiRspOrderDelete* pData)
 {
     Locker locker(&m_mutex);
 };
+
 void IaEtfFollowTradeBotGt::OnRspQryOrder(const TiRspQryOrder* pData, bool isLast)
 {
     Locker locker(&m_mutex);
@@ -290,7 +298,6 @@ void IaEtfFollowTradeBotGt::OnTimer()
         m_trade_client->QueryAsset();
         m_trade_client->QueryPositions();
         m_query_time = time_num;
-
         std::cout << "[IaEtfFollowTradeBotGt::OnTimer] QueryAsset QueryPositions: " << time_num << std::endl;
     }
     
@@ -303,8 +310,12 @@ void IaEtfFollowTradeBotGt::OnTimer()
             << localTime->tm_hour << ":" << localTime->tm_min << ":" << localTime->tm_sec
             << std::endl;
     */
-    if (localTime->tm_hour > 16 )
+    if (localTime->tm_hour >= 15 )
     {
+        if (localTime->tm_hour == 15 && localTime->tm_min < 10)
+        {
+            return;
+        }
         std::cout << "terminate" << std::endl;
         std::terminate();
     }
@@ -314,6 +325,14 @@ void IaEtfFollowTradeBotGt::OnTimer()
 void IaEtfFollowTradeBotGt::OnCommandRtn(const char* type, const char* command)
 {
     std::cout << "OnCommandRtn: " << type << " " << command << std::endl;
+
+    if (!strcmp(type, "etfTradingSignal"))
+    {
+        json j = json::parse(command);
+        m_trade_center->OnTradingSignal(j);
+        return;
+    }
+
     if (!strcmp(type, "enterOrder"))
     {
         json j = json::parse(command);

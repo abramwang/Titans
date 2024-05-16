@@ -146,7 +146,7 @@ int main(int argc, char** argv) {
     TiQuoteHistoryClientLocal client("./config.ini", &cb);
 
     //TI_QUOTE_DATA_TYPE dataTypeList[3] = {TI_QUOTE_DATA_TYPE_SNAPSHOT_STOCK, TI_QUOTE_DATA_TYPE_MATCH, TI_QUOTE_DATA_TYPE_ORDER};
-    TI_QUOTE_DATA_TYPE dataTypeList[3] = {TI_QUOTE_DATA_TYPE_SNAPSHOT_STOCK};
+    TI_QUOTE_DATA_TYPE dataTypeList[1] = {TI_QUOTE_DATA_TYPE_SNAPSHOT_STOCK};
 
     client.replay(trading_day, dataTypeList, 1);
     cb.ipc_pub();   //发送缓存中最后的数据

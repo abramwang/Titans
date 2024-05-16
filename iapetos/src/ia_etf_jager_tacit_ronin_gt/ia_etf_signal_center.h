@@ -46,6 +46,7 @@ public:
 
 public:
     void GetJsonOut(json& j);
+    bool GetEtfFactor(const std::string etf_symbol, std::shared_ptr<IaEtfSignalFactor> &etf_factor);
 };
 
 #endif

@@ -60,3 +60,14 @@ void IaEtfSignalCenter::GetJsonOut(json& j)
     j = m_out;
     m_out.clear();
 };
+
+bool IaEtfSignalCenter::GetEtfFactor(const std::string etf_symbol, std::shared_ptr<IaEtfSignalFactor> &etf_factor)
+{
+    auto iter = m_etf_signal_factor_map.find(etf_symbol);
+    if(iter == m_etf_signal_factor_map.end())
+    {
+        return false;
+    }
+    etf_factor = iter->second;
+    return true;
+};
