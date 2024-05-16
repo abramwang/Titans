@@ -113,6 +113,23 @@ void TiGtTraderClient::onReqAccountDetail(const char* accountId, int nRequestId,
         {
             return;
         }
+        
+        TiRspAccountInfo account_info = {0};
+        strcpy(account_info.szAccount, data->m_strAccountID);
+        strcpy(account_info.szName, data->m_strProductName);
+        account_info.nNav = data->m_dNav;
+        account_info.nBalance = data->m_dBalance;
+        account_info.nAvailable = data->m_dAvailable;
+        account_info.nAssureAsset = data->m_dAssureAsset;
+        account_info.nCommission = data->m_dCommission;
+        account_info.nDaysProfit = data->m_dDaysProfit;
+        account_info.nPositionProfit = data->m_dPositionProfit;
+        account_info.nCloseProfit = data->m_dCloseProfit;
+        account_info.nCredit = data->m_dCredit;
+        account_info.nStockValue = data->m_dStockValue;
+        account_info.nFundValue = data->m_dFundValue;
+
+
         json rspData = {
             {"type", "onReqAccountDetail"},
             {"api_type", "gt"},
@@ -169,11 +186,14 @@ void TiGtTraderClient::onReqAccountDetail(const char* accountId, int nRequestId,
         if (account_iter != m_account_map.end())
         {
             account_iter->second->OnCommonJsonRespones(&rspData, nRequestId, isLast, error.errorID(), error.errorMsg());
+            account_iter->second->OnRspAccountInfo(&account_info);
             //nReqId ++;
             //m_client->reqSecuAccount(accountId, nReqId);
         }
 
         m_cb->OnCommonJsonRespones(&rspData, nRequestId, isLast, error.errorID(), error.errorMsg());
+        m_cb->OnRspAccountInfo(&account_info);
+
     }catch(...){
         std::cout << "[TiGtTraderClient::onReqAccountDetail] " << "unknown exception" << std::endl;
     }

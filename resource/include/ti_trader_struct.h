@@ -166,5 +166,22 @@ typedef TiRtnOrderStatus TiRspQryOrder;
 /// 成交查询响应
 typedef TiRtnOrderMatch TiRspQryMatch;
 
+struct TiRspAccountInfo
+{
+    TI_AccountType szAccount;       //  资金帐号
+    TI_Text        szName;          //  产品名称
+    double         nNav;            //  单位净值
+    double         nBalance;        //  总资产
+    double         nAvailable;      //  可用资金
+    double         nAssureAsset;    //  净资产
+    double         nCommission;     //  手续费
+    double         nDaysProfit;     //  当日盈亏
+    double         nPositionProfit; //  持仓盈亏
+    double         nCloseProfit;    //  平仓盈亏
+    double         nCredit;         //  信用额度
+    double         nStockValue;     //  股票市值
+    double         nFundValue;      //  基金市值
+};
+
 #pragma pack()
 #endif

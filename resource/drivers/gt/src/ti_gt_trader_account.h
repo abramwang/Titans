@@ -22,6 +22,8 @@ public:
 public:
     void OnCommonJsonRespones(const json* rspData, int req_id, bool isLast, int err, const char* err_str);     //非交易逻辑的统一实现接口
     
+    void OnRspAccountInfo(const TiRspAccountInfo* pData){};
+    
     void OnRspOrderDelete(const TiRspOrderDelete* pData){};
     
     void OnRspQryOrder(const TiRspQryOrder* pData, bool isLast){};
