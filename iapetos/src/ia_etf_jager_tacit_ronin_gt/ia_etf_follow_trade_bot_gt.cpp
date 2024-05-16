@@ -32,7 +32,7 @@ IaEtfFollowTradeBotGt::IaEtfFollowTradeBotGt(uv_loop_s* loop, std::string config
         LOG(INFO) << "[IaEtfFollowTradeBotGt] flag: " << flag;
         resetStreamKey();
 
-        m_mysql = new IaEtfInfoMysql(m_config->szSqlIp.c_str(), m_config->nSqlPort, m_config->szSqlUser.c_str(), m_config->szSqlPassword.c_str(), m_config->szSqlDb.c_str());
+        m_mysql = new IaEtfInfoMysql(m_config->szSqlIp.c_str(), m_config->nSqlPort, m_config->szSqlUser.c_str(), m_config->szSqlPassword.c_str());
         m_user_setting = new IaEtfUserSetting(m_redis, m_mysql);
         m_quote_cache = new IaEtfQuoteDataCache();
         m_signal_center = new IaEtfSignalCenter(m_user_setting, m_quote_cache);
@@ -456,7 +456,6 @@ int IaEtfFollowTradeBotGt::loadConfig(std::string iniFileName){
     m_config->nSqlPort      = _iniFile["ia_etf_follow_trade_bot_gt"]["sql_port"];
     m_config->szSqlUser     = string(_iniFile["ia_etf_follow_trade_bot_gt"]["sql_user"]);
     m_config->szSqlPassword = string(_iniFile["ia_etf_follow_trade_bot_gt"]["sql_password"]);
-    m_config->szSqlDb       = string(_iniFile["ia_etf_follow_trade_bot_gt"]["sql_db"]);
 
     m_config->szInfluxUrl   = string(_iniFile["ia_etf_follow_trade_bot_gt"]["influx_url"]);
     m_config->szInfluxToken = string(_iniFile["ia_etf_follow_trade_bot_gt"]["influx_token"]);

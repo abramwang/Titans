@@ -4,19 +4,14 @@
 #include "ti_mysql_client.h"
 #include "ia_etf_info_struct.h"
 
-class IaEtfInfoMysql:
-    public TiMysqlClient
+class IaEtfInfoMysql
 {
-
 public:
-    IaEtfInfoMysql(
-        const std::string& szIp,
-        int nPort,
-        const std::string& szUser,
-        const std::string& szPassword,
-        const std::string& szDb
-    );
+    IaEtfInfoMysql(const std::string& szIp, int nPort, const std::string& szUser, const std::string& szPassword);
     ~IaEtfInfoMysql();
+private:
+    TiMysqlClient* m_pcf_db;
+    TiMysqlClient* m_ref_db;
 
 private:
     std::string format_vec(const std::vector<std::string>& vec);

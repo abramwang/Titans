@@ -48,7 +48,6 @@ public:
         int         nSqlPort;
         std::string szSqlUser;
         std::string szSqlPassword;
-        std::string szSqlDb;
 
         std::string szInfluxUrl;
         std::string szInfluxToken;

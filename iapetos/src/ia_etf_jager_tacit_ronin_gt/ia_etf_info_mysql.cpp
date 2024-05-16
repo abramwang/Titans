@@ -1,21 +1,16 @@
 #include "ia_etf_info_mysql.h"
 
-IaEtfInfoMysql::IaEtfInfoMysql(
-    const std::string& szIp,
-    int nPort,
-    const std::string& szUser,
-    const std::string& szPassword,
-    const std::string& szDb
-)
-    : TiMysqlClient(szIp, nPort, szUser, szPassword, szDb)
+IaEtfInfoMysql::IaEtfInfoMysql(const std::string& szIp, int nPort, const std::string& szUser, const std::string& szPassword)
 {
-
+    m_pcf_db = new TiMysqlClient(szIp, nPort, szUser, szPassword, "pcf");
+    m_ref_db = new TiMysqlClient(szIp, nPort, szUser, szPassword, "refdata");
 };
 
 IaEtfInfoMysql::~IaEtfInfoMysql(){};
 
 
-std::string IaEtfInfoMysql::format_vec(const std::vector<std::string>& vec) {
+std::string IaEtfInfoMysql::format_vec(const std::vector<std::string>& vec)
+{
     std::string str;
     for (size_t i = 0; i < vec.size(); i++) {
         str +=  "'" + vec[i] + "',"; 
@@ -28,7 +23,7 @@ int32_t IaEtfInfoMysql::QueryLatestTradingDate()
 {
     std::vector<std::map<std::string, std::string>> result;
     std::string sql("SELECT MAX(m_tradeDate) AS max_tradeDate FROM constituent_info;");
-    query(sql, result);
+    m_pcf_db->query(sql, result);
     for (auto& row : result) {
         std::cout << "max_tradeDate: " << row["max_tradeDate"] << std::endl;
         return atoi(row["max_tradeDate"].c_str());
@@ -41,7 +36,7 @@ void IaEtfInfoMysql::QueryEtfInfoList(int32_t date_num, std::vector<std::string>
     std::vector<std::map<std::string, std::string>> result;
     char sql[256] = {0};
     sprintf(sql, "SELECT * FROM etf_info WHERE m_tradeDate = %d  AND m_hasRealityList = 1", date_num);
-    query(sql, result);
+    m_pcf_db->query(sql, result);
     for (auto& row : result) {
         IaEtfInfo etfInfo;
         etfInfo.m_tradeDate = row["m_tradeDate"];
@@ -77,7 +72,7 @@ void IaEtfInfoMysql::QueryEtfConstituentInfoList(int32_t date_num, std::vector<s
     }else{
         sql_str += ";";
     }
-    query(sql_str, result);
+    m_pcf_db->query(sql_str, result);
     for (auto& row : result) {
         IaEtfConstituentInfo constituentInfo;
         constituentInfo.m_tradeDate = row["m_tradeDate"];
