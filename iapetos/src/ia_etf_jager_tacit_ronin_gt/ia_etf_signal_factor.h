@@ -11,7 +11,6 @@
 #include <nlohmann/json.hpp>
 using namespace nlohmann;
 
-class IaETFTradingWorker;
 class IaEtfTradeWorkerCenter;
 class IaEtfSignalFactor 
     : public TiQuoteCallback
@@ -111,11 +110,11 @@ public:
 
 public:
     bool GetJsonOut(json& j);
+    std::shared_ptr<IaEtfInfo> GetEtfInfo();
 
 
 public:
     friend class IaEtfTradeWorkerCenter;
-    friend class IaETFTradingWorker;
 };
 
 typedef std::shared_ptr<IaEtfSignalFactor> IaEtfSignalFactorPtr;

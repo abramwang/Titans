@@ -59,18 +59,27 @@ void IaEtfTradeWorkerCenter::OnRspQryPosition(const TiRspQryPosition* pData, boo
 void IaEtfTradeWorkerCenter::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
 {
     auto iter = m_trading_worker_list.begin();
-    for (; iter != m_trading_worker_list.end(); iter++)
+    for (; iter != m_trading_worker_list.end(); )
     {
-        if ((*iter)->getAccount() == pData->szAccount)
-        {
-            (*iter)->OnRtnOrderStatusEvent(pData);
-        }
+        (*iter)->OnRtnOrderStatusEvent(pData);
 
         if ((*iter)->isOver())
         {
             m_over_trading_worker_list.push_back(*iter);
-            m_trading_worker_list.erase(iter);
+            iter = m_trading_worker_list.erase(iter);
+        }else{
+            iter++;
         }
+    }
+};
+
+
+void IaEtfTradeWorkerCenter::OnTimer()
+{
+    auto iter = m_trading_worker_list.begin();
+    for (; iter != m_trading_worker_list.end(); iter++)
+    {
+        (*iter)->OnTimer();
     }
 };
 

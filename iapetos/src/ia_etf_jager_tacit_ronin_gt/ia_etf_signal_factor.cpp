@@ -352,6 +352,10 @@ void IaEtfSignalFactor::format_influx_factor(const TiQuoteSnapshotStockField* pE
     m_out["influx"]["fields"]["creation_iopv_multi"] = info.creation_iopv * m_etf_info_ptr->m_minUnit;
     m_out["influx"]["fields"]["redemption_iopv_multi"] = info.redemption_iopv * m_etf_info_ptr->m_minUnit;
 
+    m_out["influx"]["fields"]["creation_profit"] = info.creation_profit;
+    m_out["influx"]["fields"]["redemption_profit"] = info.redemption_profit;
+
+
     m_out["influx"]["timestamp"] = datetime::get_timestamp_ms(pEtfSnap->date, pEtfSnap->time);
 
     //std::cout <<  m_out["influx"] << std::endl;
@@ -369,4 +373,9 @@ bool IaEtfSignalFactor::GetJsonOut(json& j)
     }
     j = m_out;
     return true;
+};
+
+std::shared_ptr<IaEtfInfo> IaEtfSignalFactor::GetEtfInfo()
+{
+    return m_etf_info_ptr;
 };

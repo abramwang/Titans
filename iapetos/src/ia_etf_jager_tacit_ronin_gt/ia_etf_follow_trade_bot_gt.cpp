@@ -254,7 +254,6 @@ void IaEtfFollowTradeBotGt::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
             key += pData->szAccount;
 
             m_redis->hmset(key.c_str(), pData->szOrderStreamId, j.dump().c_str());
-
         }
     }
 };

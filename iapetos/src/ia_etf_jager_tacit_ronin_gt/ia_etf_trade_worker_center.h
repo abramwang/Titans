@@ -12,7 +12,7 @@
 #include "ia_etf_trading_worker.h"
 
 #include <map>
-#include <vector>
+#include <list>
 
 #include <nlohmann/json.hpp>
 using namespace nlohmann;
@@ -34,6 +34,9 @@ public:
 
     virtual void OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData);
     virtual void OnRtnOrderMatchEvent(const TiRtnOrderMatch* pData){};
+/*   定时器   */
+public:
+    virtual void OnTimer();
 
 private:
     TiGtTraderClient* m_trade_client;
@@ -45,8 +48,8 @@ private:
     std::map<std::string, std::map<std::string, TiRspQryPosition>>  m_account_position_map;
     
 
-    std::vector<IaETFTradingWorkerPtr> m_trading_worker_list;
-    std::vector<IaETFTradingWorkerPtr> m_over_trading_worker_list;
+    std::list<IaETFTradingWorkerPtr> m_trading_worker_list;
+    std::list<IaETFTradingWorkerPtr> m_over_trading_worker_list;
 private:
     bool get_position(const std::string &account, const std::string &symbol, TiRspQryPosition &position);
     void create_trading_worker(const std::string &symbol, const std::string &account, TI_TradeSideType side, std::shared_ptr<IaEtfSignalFactor> etf_factor);

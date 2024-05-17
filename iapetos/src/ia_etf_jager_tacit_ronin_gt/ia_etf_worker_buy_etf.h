@@ -31,7 +31,10 @@ public:
     virtual void OnRspQryPosition(const TiRspQryPosition* pData, bool isLast){};
 
     virtual void OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData);
-    virtual void OnRtnOrderMatchEvent(const TiRtnOrderMatch* pData);
+    virtual void OnRtnOrderMatchEvent(const TiRtnOrderMatch* pData){};
+
+public:
+    virtual void OnTimer(){};
 private:
     int64_t m_req_id;       //当前订单请求id
     Status m_status;
@@ -42,8 +45,8 @@ private:
     void updateStatus(){};
     bool hasQueueOrder(){return true;};
 public:
-    int64_t open(){return 0;};
-    bool isOver(){return true;};
+    int64_t open();
+    bool isOver(){return false;};
 public:
     IaETFWorkerBuyEtf(IaEtfQuoteDataCache* m_quote_cache, TiGtTraderClient* client, IaEtfSignalFactorPtr factor, std::string account);
     virtual ~IaETFWorkerBuyEtf(){};
