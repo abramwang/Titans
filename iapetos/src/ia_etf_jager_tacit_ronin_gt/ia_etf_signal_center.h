@@ -34,7 +34,7 @@ private:
     IaEtfUserSetting* m_etf_user_setting;
     IaEtfQuoteDataCache* m_quote_data_cache;
 
-    std::unordered_map<std::string, std::shared_ptr<IaEtfSignalFactor>> m_etf_signal_factor_map;
+    std::unordered_map<std::string, IaEtfSignalFactorPtr> m_etf_signal_factor_map;
 
     json m_out;     //输出数据
 
@@ -46,7 +46,7 @@ public:
 
 public:
     void GetJsonOut(json& j);
-    bool GetEtfFactor(const std::string etf_symbol, std::shared_ptr<IaEtfSignalFactor> &etf_factor);
+    bool GetEtfFactor(const std::string etf_symbol, IaEtfSignalFactorPtr &etf_factor);
 };
 
 #endif

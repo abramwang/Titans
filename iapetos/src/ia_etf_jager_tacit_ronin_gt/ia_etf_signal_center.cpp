@@ -49,7 +49,7 @@ void IaEtfSignalCenter::init_etf_signal_factor()
         std::vector<std::shared_ptr<IaEtfConstituentInfo>> constituent_info_vec;
         m_etf_user_setting->GetEtfInfo(fund_symbol, etf_info_ptr, constituent_info_vec);
 
-        std::shared_ptr<IaEtfSignalFactor> etf_signal_factor = std::make_shared<IaEtfSignalFactor>(etf_info_ptr, constituent_info_vec, m_quote_data_cache);
+        IaEtfSignalFactorPtr etf_signal_factor = std::make_shared<IaEtfSignalFactor>(etf_info_ptr, constituent_info_vec, m_quote_data_cache);
         m_etf_signal_factor_map[fund_symbol] = etf_signal_factor;
     }
 };
@@ -61,7 +61,7 @@ void IaEtfSignalCenter::GetJsonOut(json& j)
     m_out.clear();
 };
 
-bool IaEtfSignalCenter::GetEtfFactor(const std::string etf_symbol, std::shared_ptr<IaEtfSignalFactor> &etf_factor)
+bool IaEtfSignalCenter::GetEtfFactor(const std::string etf_symbol, IaEtfSignalFactorPtr &etf_factor)
 {
     auto iter = m_etf_signal_factor_map.find(etf_symbol);
     if(iter == m_etf_signal_factor_map.end())

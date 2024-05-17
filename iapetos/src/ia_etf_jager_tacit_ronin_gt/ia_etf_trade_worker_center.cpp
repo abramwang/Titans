@@ -1,6 +1,8 @@
 #include "ia_etf_trade_worker_center.h"
 #include "ia_etf_signal_factor.h"
 
+#include "ia_etf_worker_buy_etf.h"
+
 IaEtfTradeWorkerCenter::IaEtfTradeWorkerCenter(TiGtTraderClient* trade_client, 
     IaEtfQuoteDataCache* quote_cache, 
     IaEtfUserSetting* user_setting,
@@ -18,22 +20,6 @@ IaEtfTradeWorkerCenter::~IaEtfTradeWorkerCenter()
 
 void IaEtfTradeWorkerCenter::OnRspAccountInfo(const TiRspAccountInfo* pData)
 {
-/*
-    std::cout << "IaEtfTradeWorkerCenter::OnRspAccountInfo" << std::endl;
-    std::cout << "szAccount: " << pData->szAccount << std::endl;
-    std::cout << "szName: " << pData->szName << std::endl;
-    std::cout << "nNav: " << pData->nNav << std::endl;
-    std::cout << "nBalance: " << pData->nBalance << std::endl;
-    std::cout << "nAvailable: " << pData->nAvailable << std::endl;
-    std::cout << "nAssureAsset: " << pData->nAssureAsset << std::endl;
-    std::cout << "nCommission: " << pData->nCommission << std::endl;
-    std::cout << "nDaysProfit: " << pData->nDaysProfit << std::endl;
-    std::cout << "nPositionProfit: " << pData->nPositionProfit << std::endl;
-    std::cout << "nCloseProfit: " << pData->nCloseProfit << std::endl;
-    std::cout << "nCredit: " << pData->nCredit << std::endl;
-    std::cout << "nStockValue: " << pData->nStockValue << std::endl;
-    std::cout << "nFundValue: " << pData->nFundValue << std::endl;
-*/
     auto iter = m_account_info_map.find(pData->szAccount);
     if (iter == m_account_info_map.end())
     {
@@ -44,7 +30,6 @@ void IaEtfTradeWorkerCenter::OnRspAccountInfo(const TiRspAccountInfo* pData)
         iter->second = *pData;
     }
 };
-
 
 void IaEtfTradeWorkerCenter::OnRspQryPosition(const TiRspQryPosition* pData, bool isLast)
 {
@@ -67,6 +52,24 @@ void IaEtfTradeWorkerCenter::OnRspQryPosition(const TiRspQryPosition* pData, boo
         else
         {
             iter->second = *pData;
+        }
+    }
+};
+
+void IaEtfTradeWorkerCenter::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
+{
+    auto iter = m_trading_worker_list.begin();
+    for (; iter != m_trading_worker_list.end(); iter++)
+    {
+        if ((*iter)->getAccount() == pData->szAccount)
+        {
+            (*iter)->OnRtnOrderStatusEvent(pData);
+        }
+
+        if ((*iter)->isOver())
+        {
+            m_over_trading_worker_list.push_back(*iter);
+            m_trading_worker_list.erase(iter);
         }
     }
 };
@@ -95,20 +98,20 @@ void IaEtfTradeWorkerCenter::create_trading_worker(const std::string &symbol, co
     std::cout << "IaEtfTradeWorkerCenter::create_trading_worker" << symbol << " " << account << " " << side<< std::endl;
     std::cout << etf_factor->m_info.diff << " creation_profit:" << etf_factor->m_info.creation_profit << " redemption_profit:"  << etf_factor->m_info.redemption_profit << std::endl;
 
+    IaETFWorkerBuyEtfPtr worker = std::make_shared<IaETFWorkerBuyEtf>(m_quote_cache, m_trade_client, etf_factor, account);
+    
+
+
     if ( etf_factor->m_info.creation_profit  >  etf_factor->m_info.redemption_profit)
     {
         //申购方向
 
-
-        return;
     } else {
         //赎回方向
-
-
-
-
-        return;
     }
+
+    m_trading_worker_list.push_back(worker);
+    worker->open();
 };
 
 void IaEtfTradeWorkerCenter::OnTradingSignal(json &msg)
