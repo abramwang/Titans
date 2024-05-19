@@ -52,6 +52,8 @@ public:
 public:
     virtual void OnCommonJsonRespones(const json* rspData, int req_id, bool isLast, int err, const char* err_str);     //非交易逻辑的统一实现接口
 
+    virtual void OnRspAccountInfo(const TiRspAccountInfo* pData){};
+
     virtual void OnRspOrderDelete(const TiRspOrderDelete* pData);
     
     virtual void OnRspQryOrder(const TiRspQryOrder* pData, bool isLast);
