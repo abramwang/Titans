@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <glog/logging.h>
 
+#define __ENABLE_REDIS_COMMANDER_LOG__ 0
 
 RedisCommander::RedisCommander(uv_loop_s* loop){
     this->loop = loop;
@@ -88,15 +89,18 @@ void RedisCommander::onCreatXGroup(redisAsyncUVContext* c, void* r, void* data){
 /// @param type 
 /// @param msg 
 void RedisCommander::onXreadgroup(redisAsyncUVContext* auvc, const char* streamKey, const char* id, const char* type, const char* msg, void* data){
+#if __ENABLE_REDIS_COMMANDER_LOG__
     LOG(INFO) << "streamKey: " << streamKey << "id: " << id << "type: " << type << "msg: " << msg;
+#endif
     RedisCommander* commander = (RedisCommander*)auvc->data;
     commander->onXreadgroupMsg(streamKey, id, type, msg);
 };
 
-
 void RedisCommander::onCommandRsp(redisAsyncUVContext* auvc, void* r, void* data)
 {
-    std::cout << "RedisCommander::onCommandRsp" << std::endl;
+#if __ENABLE_REDIS_COMMANDER_LOG__
+    LOG(INFO)<< "RedisCommander::onCommandRsp" << std::endl;
+#endif
     if(!r){
         return;
     }
@@ -111,14 +115,16 @@ void RedisCommander::onCommandRsp(redisAsyncUVContext* auvc, void* r, void* data
 
 
 void RedisCommander::onCommandAsync(uv_async_t* handle){
-    std::cout << "[" << std::this_thread::get_id() <<  "] RedisCommander::onCommandAsync" << std::endl;
+#if __ENABLE_REDIS_COMMANDER_LOG__
+    LOG(INFO) << "[" << std::this_thread::get_id() <<  "] RedisCommander::onCommandAsync" << std::endl;
+#endif
     RedisCommander* commander = (RedisCommander*)handle->data;
 
     std::string command;
     if (commander->m_command_queue.try_dequeue(command))
     {
         int flag = redisAsyncUVCommand(commander->auvc, RedisCommander::onCommandRsp, commander, command.c_str());
-        LOG(INFO) << "flag: " << flag << " command: " << command;
+        LOG(WARNING) << "flag: " << flag << " command: " << command;
     }
 };
 

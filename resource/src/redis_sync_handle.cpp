@@ -3,6 +3,8 @@
 #include <iostream>
 using namespace std;
 
+#define __ENABLE_REDIS_SYNC_HANDEL_LOG__ 0
+
 RedisSyncHandle::RedisSyncHandle()
     : _context(nullptr)
 {
@@ -23,7 +25,6 @@ void RedisSyncHandle::parseReply(redisReply *reply, vector<string> &array){
         return;
     }
     if(reply->len){
-        //printf("parseReply: %d, %lld, %d, %s\n", reply->type, reply->integer, reply->len, reply->str);
         array.push_back(reply->str);
     }
     for (size_t i = 0; i < reply->elements; i++)
@@ -47,7 +48,7 @@ bool RedisSyncHandle::connect(const char* ip, int port)
     _context = redisConnectWithTimeout(ip, port, time_out);
     if (nullptr == _context)
     {
-        cerr << "connect redis failed!" << endl;
+        LOG(ERROR) << "connect redis failed!" << endl;
         return false;
     }
 
@@ -70,7 +71,7 @@ bool RedisSyncHandle::connect(const char* ip, int port, const char* pass)
     
     if (nullptr == _context)
     {
-        cerr << "connect redis failed!" << endl;
+        LOG(ERROR) << "connect redis failed!" << endl;
         return false;
     }
 
@@ -97,12 +98,14 @@ bool RedisSyncHandle::disconnect()
 // 向redis指定的通道channel发布消息
 bool RedisSyncHandle::publish(const char* channel, const char* message)
 {
+#if __ENABLE_REDIS_SYNC_HANDEL_LOG__
     LOG(INFO) << "channel: " << channel << ", message: " << message;
+#endif
     redisReply *reply = (redisReply *)redisCommand(_context, "PUBLISH %s %s", channel, message);
     if (nullptr == reply)
     {
         //redisReconnect()
-        cerr << "publish command failed!:" << _context->err << " " << _context->errstr << endl;
+        LOG(ERROR) << "publish command failed!:" << _context->err << " " << _context->errstr << endl;
         return false;
     }
     freeReplyObject(reply);
@@ -112,11 +115,13 @@ bool RedisSyncHandle::publish(const char* channel, const char* message)
 
 bool RedisSyncHandle::del(const char* key)
 {
+#if __ENABLE_REDIS_SYNC_HANDEL_LOG__
     LOG(INFO) << "key: " << key ;
+#endif
     redisReply *reply = (redisReply *)redisCommand(_context, "DEL %s", key);
     if (nullptr == reply)
     {
-        cerr << "del command failed!:" << _context->err << " " << _context->errstr << endl;
+        LOG(ERROR) << "del command failed!:" << _context->err << " " << _context->errstr << endl;
         return false;
     }
     freeReplyObject(reply);
@@ -126,11 +131,13 @@ bool RedisSyncHandle::del(const char* key)
 
 bool RedisSyncHandle::rpush(const char* key, const char* message)
 {
+#if __ENABLE_REDIS_SYNC_HANDEL_LOG__
     LOG(INFO) << "key: " << key << ", message: " << message;
+#endif
     redisReply *reply = (redisReply *)redisCommand(_context, "RPUSH %s %s", key, message);
     if (nullptr == reply)
     {
-        cerr << "rpush command failed!:" << _context->err << " " << _context->errstr << endl;
+        LOG(ERROR) << "rpush command failed!:" << _context->err << " " << _context->errstr << endl;
         return false;
     }
     freeReplyObject(reply);
@@ -139,11 +146,13 @@ bool RedisSyncHandle::rpush(const char* key, const char* message)
 
 bool RedisSyncHandle::set(const char* key, const char* message)
 {
+#if __ENABLE_REDIS_SYNC_HANDEL_LOG__
     LOG(INFO) << "key: " << key << ", message: " << message;
+#endif
     redisReply *reply = (redisReply *)redisCommand(_context, "SET %s %s", key, message);
     if (nullptr == reply)
     {
-        cerr << "set command failed!:" << _context->err << " " << _context->errstr << endl;
+        LOG(ERROR) << "set command failed!:" << _context->err << " " << _context->errstr << endl;
         return false;
     }
     freeReplyObject(reply);
@@ -152,11 +161,13 @@ bool RedisSyncHandle::set(const char* key, const char* message)
 
 bool RedisSyncHandle::get(const char* key, string &result)
 {
+#if __ENABLE_REDIS_SYNC_HANDEL_LOG__
     LOG(INFO) << "key: " << key ;
+#endif
     redisReply *reply = (redisReply *)redisCommand(_context, "GET %s", key);
     if (nullptr == reply)
     {
-        cerr << "get command failed!:" << _context->err << " " << _context->errstr << endl;
+        LOG(ERROR) << "get command failed!:" << _context->err << " " << _context->errstr << endl;
         return false;
     }
     if(reply->str){
@@ -169,11 +180,13 @@ bool RedisSyncHandle::get(const char* key, string &result)
 
 bool RedisSyncHandle::sadd(const char* key, const char* message)
 {
+#if __ENABLE_REDIS_SYNC_HANDEL_LOG__
     LOG(INFO) << "key: " << key << ", message: " << message;
+#endif
     redisReply *reply = (redisReply *)redisCommand(_context, "SADD %s %s", key, message);
     if (nullptr == reply)
     {
-        cerr << "sadd command failed!:" << _context->err << " " << _context->errstr << endl;
+        LOG(ERROR) << "sadd command failed!:" << _context->err << " " << _context->errstr << endl;
         return false;
     }
     freeReplyObject(reply);
@@ -182,11 +195,13 @@ bool RedisSyncHandle::sadd(const char* key, const char* message)
 
 bool RedisSyncHandle::smembers(const char* key, vector<string> &result)
 {
+#if __ENABLE_REDIS_SYNC_HANDEL_LOG__
     LOG(INFO) << "key: " << key ;
+#endif
     redisReply *reply = (redisReply *)redisCommand(_context, "SMEMBERS %s", key);
     if (nullptr == reply)
     {
-        cerr << "smembers command failed!:" << _context->err << " " << _context->errstr << endl;
+        LOG(ERROR) << "smembers command failed!:" << _context->err << " " << _context->errstr << endl;
         return false;
     }
     parseReply(reply, result);
@@ -196,11 +211,13 @@ bool RedisSyncHandle::smembers(const char* key, vector<string> &result)
 
 bool RedisSyncHandle::hset(const char* key, const char* field, const char* message)
 {
+#if __ENABLE_REDIS_SYNC_HANDEL_LOG__
     LOG(INFO) << "hset key: " << key << ", message: " << message;
+#endif
     redisReply *reply = (redisReply *)redisCommand(_context, "HSET %s %s %s", key, field, message);
     if (nullptr == reply)
     {
-        cerr << "hset command failed!:" << _context->err << " " << _context->errstr << endl;
+        LOG(ERROR) << "hset command failed!:" << _context->err << " " << _context->errstr << endl;
         return false;
     }
     freeReplyObject(reply);
@@ -209,11 +226,13 @@ bool RedisSyncHandle::hset(const char* key, const char* field, const char* messa
 
 bool RedisSyncHandle::hmset(const char* key, const char* field, const char* message)
 {
+#if __ENABLE_REDIS_SYNC_HANDEL_LOG__
     LOG(INFO) << "hmset key: " << key << ", message: " << message;
+#endif
     redisReply *reply = (redisReply *)redisCommand(_context, "HMSET %s %s %s", key, field, message);
     if (nullptr == reply)
     {
-        cerr << "hmset command failed!:" << _context->err << " " << _context->errstr << endl;
+        LOG(ERROR) << "hmset command failed!:" << _context->err << " " << _context->errstr << endl;
         return false;
     }
     freeReplyObject(reply);
@@ -223,11 +242,13 @@ bool RedisSyncHandle::hmset(const char* key, const char* field, const char* mess
 
 bool RedisSyncHandle::hkeys(const char* key, vector<string> &result)
 {
+#if __ENABLE_REDIS_SYNC_HANDEL_LOG__
     LOG(INFO) << "key: " << key ;
+#endif
     redisReply *reply = (redisReply *)redisCommand(_context, "HKEYS %s", key);
     if (nullptr == reply)
     {
-        cerr << "hkeys command failed!:" << _context->err << " " << _context->errstr << endl;
+        LOG(ERROR) << "hkeys command failed!:" << _context->err << " " << _context->errstr << endl;
         return false;
     }
     parseReply(reply, result);
@@ -238,11 +259,13 @@ bool RedisSyncHandle::hkeys(const char* key, vector<string> &result)
 
 bool RedisSyncHandle::hget(const char* key, const char* field, string &result)
 {
+#if __ENABLE_REDIS_SYNC_HANDEL_LOG__
     LOG(INFO) << "key: " << key << " field: " << field << endl;
+#endif
     redisReply *reply = (redisReply *)redisCommand(_context, "HGET %s %s", key, field);
     if (nullptr == reply)
     {
-        cerr << "hget command failed!:" << _context->err << " " << _context->errstr << endl;
+        LOG(ERROR) << "hget command failed!:" << _context->err << " " << _context->errstr << endl;
         return false;
     }
     if(reply->str){
@@ -254,12 +277,14 @@ bool RedisSyncHandle::hget(const char* key, const char* field, string &result)
 
 bool RedisSyncHandle::hgetall(const char* key, map<string, string> &result)
 {
+#if __ENABLE_REDIS_SYNC_HANDEL_LOG__
     LOG(INFO) << "key: " << key;
+#endif
     vector<string> _tmp_array;
     redisReply *reply = (redisReply *)redisCommand(_context, "HGETALL %s", key);
     if (nullptr == reply)
     {
-        cerr << "HGETALL command failed!:" << _context->err << " " << _context->errstr << endl;
+        LOG(ERROR) << "HGETALL command failed!:" << _context->err << " " << _context->errstr << endl;
         return false;
     }
     parseReply(reply, _tmp_array);
@@ -273,11 +298,13 @@ bool RedisSyncHandle::hgetall(const char* key, map<string, string> &result)
 
 bool RedisSyncHandle::xtrim(const char* key, int count)
 {
+#if __ENABLE_REDIS_SYNC_HANDEL_LOG__
     LOG(INFO) << "key: " << key << ", message: " << count;
+#endif
     redisReply *reply = (redisReply *)redisCommand(_context, "XTRIM %s MAXLEN %d", key, count);
     if (nullptr == reply)
     {
-        cerr << "xtrim command failed!:" << _context->err << " " << _context->errstr << endl;
+        LOG(ERROR) << "xtrim command failed!:" << _context->err << " " << _context->errstr << endl;
         return false;
     }
     freeReplyObject(reply);
@@ -286,11 +313,13 @@ bool RedisSyncHandle::xtrim(const char* key, int count)
 
 bool RedisSyncHandle::xadd(const char* key, const char* message)
 {
-    //LOG(INFO) << "key: " << key << ", message: " << message;
+#if __ENABLE_REDIS_SYNC_HANDEL_LOG__
+    LOG(INFO) << "key: " << key << ", message: " << message;
+#endif
     redisReply *reply = (redisReply *)redisCommand(_context, "XADD %s * msg %s", key, message);
     if (nullptr == reply)
     {
-        cerr << "xadd command failed!:" << _context->err << " " << _context->errstr << endl;
+        LOG(ERROR) << "xadd command failed!:" << _context->err << " " << _context->errstr << endl;
         return false;
     }
     freeReplyObject(reply);
@@ -299,11 +328,13 @@ bool RedisSyncHandle::xadd(const char* key, const char* message)
 
 bool RedisSyncHandle::xadd(const char* key, const char* message, int max_len)
 {
-    //LOG(INFO) << "key: " << key << ", message: " << message;
+#if __ENABLE_REDIS_SYNC_HANDEL_LOG__
+    LOG(INFO) << "key: " << key << ", message: " << message;
+#endif
     redisReply *reply = (redisReply *)redisCommand(_context, "XADD %s MAXLEN %d * msg %s", key, max_len, message);
     if (nullptr == reply)
     {
-        cerr << "xadd command failed!:" << _context->err << " " << _context->errstr << endl;
+        LOG(ERROR) << "xadd command failed!:" << _context->err << " " << _context->errstr << endl;
         return false;
     }
     freeReplyObject(reply);
@@ -312,11 +343,13 @@ bool RedisSyncHandle::xadd(const char* key, const char* message, int max_len)
 
 bool RedisSyncHandle::xadd_binary(const char* key, const char* message, size_t len)
 {
+#if __ENABLE_REDIS_SYNC_HANDEL_LOG__
     LOG(INFO) << "key: " << key << ", message len: " << len;
+#endif
     redisReply *reply = (redisReply *)redisCommand(_context, "XADD %s * msg %b", key, message, len);
     if (nullptr == reply)
     {
-        cerr << "xadd command failed!:" << _context->err << " " << _context->errstr << endl;
+        LOG(ERROR) << "xadd command failed!:" << _context->err << " " << _context->errstr << endl;
         return false;
     }
     freeReplyObject(reply);
