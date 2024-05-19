@@ -98,7 +98,7 @@ public:
         m_mutex.lock();
         if ((pData->time - m_cout_time_snap) > 5000)
         {
-            printf("[OnL2StockSnapshotRtn] %s, %s, %d, %f, %ld, %ld\n", 
+            printf("[OnL2StockSnapshotRtn] %s, %s, %d, %f, %ld, %f\n", 
                 pData->symbol, pData->time_str, pData->time, pData->last, pData->acc_volume, pData->acc_turnover);
             json j;
             TiQuoteFormater::FormatSnapshot(pData, j);
