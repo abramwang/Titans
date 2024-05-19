@@ -1,6 +1,6 @@
 #include "ia_etf_trading_worker.h"
 
-IaETFTradingWorker::IaETFTradingWorker(IaEtfQuoteDataCache* quote_cache, TiGtTraderClient* client, IaEtfSignalFactorPtr factor, std::string account){
+IaETFTradingWorker::IaETFTradingWorker(TiTraderClient* client, IaEtfQuoteDataCache* quote_cache,IaEtfSignalFactorPtr factor, std::string account){
     m_quote_cache = quote_cache;
     m_client = client;
     m_etf_factor = factor;
@@ -11,7 +11,7 @@ IaETFTradingWorker::IaETFTradingWorker(IaEtfQuoteDataCache* quote_cache, TiGtTra
 void IaETFTradingWorker::getSplitOrderVol(int32_t order_vol, std::vector<int32_t>& order_vol_vec)
 {
     int32_t min_vol = 100;
-    int32_t max_vol = 1000000;
+    int32_t max_vol = 300000;
 
     int32_t left_vol = order_vol;
 

@@ -1,9 +1,9 @@
-#include "ia_etf_worker_buy_etf.h"
+#include "ia_etf_worker_sell_etf.h"
 
 #include "ti_quote_formater.h"
 
 
-IaETFWorkerBuyEtf::IaETFWorkerBuyEtf(TiTraderClient* client, IaEtfQuoteDataCache* m_quote_cache, IaEtfSignalFactorPtr factor, std::string account)
+IaETFWorkerSellEtf::IaETFWorkerSellEtf(TiTraderClient* client, IaEtfQuoteDataCache* m_quote_cache, IaEtfSignalFactorPtr factor, std::string account)
     : IaETFTradingWorker(client, m_quote_cache, factor, account)
 {
     m_status.symbol = factor->GetEtfInfo()->m_fundId;
@@ -12,12 +12,12 @@ IaETFWorkerBuyEtf::IaETFWorkerBuyEtf(TiTraderClient* client, IaEtfQuoteDataCache
 
 }
 
-void IaETFWorkerBuyEtf::OnRspOrderDelete(const TiRspOrderDelete* pData)
+void IaETFWorkerSellEtf::OnRspOrderDelete(const TiRspOrderDelete* pData)
 {
     
 };
 
-void IaETFWorkerBuyEtf::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
+void IaETFWorkerSellEtf::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
 {
     auto iter = m_order_map.find(pData->szOrderStreamId);
     if (iter != m_order_map.end())
@@ -31,12 +31,12 @@ void IaETFWorkerBuyEtf::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
     updateStatus();
 };
 
-void IaETFWorkerBuyEtf::OnTimer()
+void IaETFWorkerSellEtf::OnTimer()
 {
 
 };
 
-void IaETFWorkerBuyEtf::updateExpectCost(TiQuoteSnapshotStockField* pData)
+void IaETFWorkerSellEtf::updateExpectCost(TiQuoteSnapshotStockField* pData)
 {
     double price = pData->ask_price[0];
 
@@ -53,7 +53,7 @@ void IaETFWorkerBuyEtf::updateExpectCost(TiQuoteSnapshotStockField* pData)
     m_status.expect_cost = m_status.volume * price;
 };
 
-void IaETFWorkerBuyEtf::updateStatus()
+void IaETFWorkerSellEtf::updateStatus()
 {
     m_status.real_cost = 0;
     m_status.finish_volume = 0;
@@ -66,7 +66,7 @@ void IaETFWorkerBuyEtf::updateStatus()
 };
 
 
-bool IaETFWorkerBuyEtf::hasQueueOrder()
+bool IaETFWorkerSellEtf::hasQueueOrder()
 {
     for (auto iter = m_order_map.begin(); iter != m_order_map.end(); iter++)
     {
@@ -78,7 +78,7 @@ bool IaETFWorkerBuyEtf::hasQueueOrder()
     return false;
 };
 
-double IaETFWorkerBuyEtf::getOrderPrice(TiQuoteSnapshotStockField* pData)
+double IaETFWorkerSellEtf::getOrderPrice(TiQuoteSnapshotStockField* pData)
 {
     double price = pData->ask_price[2];
     
@@ -97,7 +97,7 @@ double IaETFWorkerBuyEtf::getOrderPrice(TiQuoteSnapshotStockField* pData)
 
 
 
-int64_t IaETFWorkerBuyEtf::open()
+int64_t IaETFWorkerSellEtf::open()
 {
     std::shared_ptr<IaEtfInfo> m_etf_info = m_etf_factor->GetEtfInfo();
     TiQuoteSnapshotStockField* etf_snap = m_quote_cache->GetStockSnapshot(m_etf_info->m_fundId.c_str(), m_etf_info->m_exchange.c_str());
@@ -143,7 +143,7 @@ int64_t IaETFWorkerBuyEtf::open()
     strcpy(req.szSymbol, m_etf_info->m_fundId.c_str());
     strcpy(req.szExchange, m_etf_info->m_exchange.c_str());
     strcpy(req.szAccount, m_account.c_str());
-    req.nTradeSideType = TI_TradeSideType_Buy;
+    req.nTradeSideType = TI_TradeSideType_Sell;
     req.nBusinessType = TI_BusinessType_Stock;
     req.nOffsetType = TI_OffsetType_Open;
     req.nOrderPrice = price;
@@ -157,7 +157,7 @@ int64_t IaETFWorkerBuyEtf::open()
     return 0;
 };
 
-bool IaETFWorkerBuyEtf::isOver()
+bool IaETFWorkerSellEtf::isOver()
 {
     if (m_status.finish_volume == m_status.volume && !hasQueueOrder())
     {

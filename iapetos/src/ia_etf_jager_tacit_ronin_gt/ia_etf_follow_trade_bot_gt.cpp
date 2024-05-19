@@ -29,7 +29,7 @@ IaEtfFollowTradeBotGt::IaEtfFollowTradeBotGt(uv_loop_s* loop, std::string config
         connect(m_config->szIp.c_str(), m_config->nPort, m_config->szAuth.c_str());
         
         bool flag = m_redis->connect(m_config->szIp.c_str(), m_config->nPort, m_config->szAuth.c_str());
-        LOG(INFO) << "[IaEtfFollowTradeBotGt] flag: " << flag;
+        LOG(INFO) << "[IaEtfFollowTradeBotGt] m_redis->connect flag: " << flag;
         resetStreamKey();
 
         m_mysql = new IaEtfInfoMysql(m_config->szSqlIp.c_str(), m_config->nSqlPort, m_config->szSqlUser.c_str(), m_config->szSqlPassword.c_str());
@@ -86,15 +86,16 @@ void IaEtfFollowTradeBotGt::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField
 ////////////////////////////////////////////////////////////////////////
 void IaEtfFollowTradeBotGt::OnCommonJsonRespones(const json* rspData, int req_id, bool isLast, int err, const char* err_str)
 {
+    LOG(INFO) << "[IaEtfFollowTradeBotGt::OnCommonJsonRespones]" << rspData;
     Locker locker(&m_mutex);
     if (err != 0)
     {
-        std::cout << "OnCommonJsonRespones: " << err_str << std::endl;
+        LOG(ERROR) << "OnCommonJsonRespones: " << err_str << std::endl;
         return;
     }
     if (rspData == NULL)
     {
-        std::cout << "OnCommonJsonRespones: rspData json is null, " << req_id << std::endl;
+        LOG(WARNING) << "OnCommonJsonRespones: rspData json is null, " << req_id << std::endl;
         return;
     }
 
@@ -118,7 +119,7 @@ void IaEtfFollowTradeBotGt::OnCommonJsonRespones(const json* rspData, int req_id
                 std::shared_ptr<IaAccountDBInfo> account_info_ptr;
                 if (m_user_setting->GetAccountDBInfo(account_id, account_info_ptr))
                 {
-                    std::cout << "GetAccountDBInfo: " << account_info_ptr->funding_account << " " << account_info_ptr->product_name << std::endl;
+                    LOG(ERROR) << "GetAccountDBInfo: " << account_info_ptr->funding_account << " " << account_info_ptr->product_name << std::endl;
                     data["product_name"] = account_info_ptr->product_name;
                 }
 
@@ -143,7 +144,7 @@ void IaEtfFollowTradeBotGt::OnRspAccountInfo(const TiRspAccountInfo* pData)
         strcpy(data.szName, account_info_ptr->product_name.c_str());
     }
 
-    std::cout << "OnRspAccountInfo: " << data.szAccount << " " << data.szName << std::endl;
+    LOG(INFO) << "OnRspAccountInfo: " << data.szAccount << " " << data.szName << std::endl;
 
     m_trade_center->OnRspAccountInfo(&data);
 };
@@ -157,12 +158,8 @@ void IaEtfFollowTradeBotGt::OnRspQryOrder(const TiRspQryOrder* pData, bool isLas
 {
     Locker locker(&m_mutex);
     m_trade_center->OnRspQryOrder(pData, isLast);
-    /*
-    for (auto iter = m_workerList.begin(); iter != m_workerList.end(); iter++)
-    {
-        (*iter)->OnRspQryOrder(pData, isLast);
-    }
-    */
+
+
     if (m_config)
     {
         if(!m_config->szOrderKey.empty())
@@ -174,10 +171,7 @@ void IaEtfFollowTradeBotGt::OnRspQryOrder(const TiRspQryOrder* pData, bool isLas
             json j;
             TiTraderFormater::FormatOrderStatus(pData, j);
 
-            if (isLast)
-            {
-                std::cout << "OnRspQryOrder: " << key.c_str() << " " << pData->szOrderStreamId << " " << j << std::endl;
-            }
+            LOG(INFO) << "OnRspQryOrder: " << isLast << " " << key.c_str() << " " << pData->szOrderStreamId << " " << j << std::endl;
 
             m_redis->hmset(key.c_str(), pData->szOrderStreamId, j.dump().c_str());
         }
@@ -187,12 +181,7 @@ void IaEtfFollowTradeBotGt::OnRspQryMatch(const TiRspQryMatch* pData, bool isLas
 {
     Locker locker(&m_mutex);
     m_trade_center->OnRspQryMatch(pData, isLast);
-    /*
-    for (auto iter = m_workerList.begin(); iter != m_workerList.end(); iter++)
-    {
-        (*iter)->OnRspQryMatch(pData, isLast);
-    }
-    */
+
     if (m_config)
     {
         if(!m_config->szMatchKey.empty())
@@ -204,10 +193,7 @@ void IaEtfFollowTradeBotGt::OnRspQryMatch(const TiRspQryMatch* pData, bool isLas
             json j;
             TiTraderFormater::FormatOrderMatchEvent(pData, j);
 
-            if (isLast)
-            {
-                std::cout << "OnRspQryMatch: " << key.c_str() << " " << pData->szStreamId << " " << j << std::endl;
-            }
+            LOG(INFO) << "OnRspQryMatch: " << isLast << " " << key.c_str() << " " << pData->szStreamId << " " << j << std::endl;
 
             m_redis->hmset(key.c_str(), pData->szStreamId, j.dump().c_str());
         }
@@ -228,10 +214,8 @@ void IaEtfFollowTradeBotGt::OnRspQryPosition(const TiRspQryPosition* pData, bool
 
             json j;
             TiTraderFormater::FormatPosition(pData, j);
-            if (isLast)
-            {
-                std::cout << "OnRspQryPosition: " << j << std::endl;
-            }
+            
+            LOG(INFO) << "OnRspQryPosition: " << isLast << " " << j << std::endl;
 
             m_redis->hmset(key.c_str(), pData->szSymbol, j.dump().c_str());
         }
@@ -246,6 +230,8 @@ void IaEtfFollowTradeBotGt::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
     {
         json j;
         TiTraderFormater::FormatOrderStatus(pData, j);
+
+        LOG(INFO) << "OnRtnOrderStatusEvent: "<< pData->szOrderStreamId << " " << j << std::endl;
 
         if(!m_config->szOrderKey.empty())
         {
@@ -266,6 +252,8 @@ void IaEtfFollowTradeBotGt::OnRtnOrderMatchEvent(const TiRtnOrderMatch* pData)
     {
         json j;
         TiTraderFormater::FormatOrderMatchEvent(pData, j);
+
+        LOG(INFO) << "OnRtnOrderMatchEvent: "<< pData->szStreamId << " " << j << std::endl;
 
         if(!m_config->szMatchKey.empty())
         {
@@ -347,7 +335,7 @@ void IaEtfFollowTradeBotGt::OnTimer()
 
 void IaEtfFollowTradeBotGt::OnCommandRtn(const char* type, const char* command)
 {
-    std::cout << "OnCommandRtn: " << type << " " << command << std::endl;
+    LOG(INFO) << "[IaEtfFollowTradeBotGt::OnCommandRtn]" << type << ";" << command;
 
     if (!strcmp(type, "etfTradingSignal"))
     {
@@ -512,6 +500,10 @@ void IaEtfFollowTradeBotGt::resetStreamKey()
     {
         return;
     }
+    if(!m_config->szSignalMap.empty())
+    {
+        m_redis->del(m_config->szSignalMap.c_str());
+    }
     if(!m_config->szOrderKey.empty())
     {
         m_redis->del(m_config->szOrderKey.c_str());
@@ -541,7 +533,6 @@ void IaEtfFollowTradeBotGt::enterOrder(json &msg)
 
 void IaEtfFollowTradeBotGt::enterOrders(json &msg)
 {
-    std::cout << "enterOrders: " << std::endl;
     if(!msg.is_array())
     {
        return;

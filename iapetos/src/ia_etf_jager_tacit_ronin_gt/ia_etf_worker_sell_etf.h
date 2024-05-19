@@ -1,5 +1,5 @@
-#ifndef __IA_ETF_WORKER_BUY_ETF_H__
-#define __IA_ETF_WORKER_BUY_ETF_H__
+#ifndef __IA_ETF_WORKER_SELL_ETF_H__
+#define __IA_ETF_WORKER_SELL_ETF_H__
 
 #include "ia_etf_trading_worker.h"
 
@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <memory.h>
 
-class IaETFWorkerBuyEtf :
+class IaETFWorkerSellEtf :
     public IaETFTradingWorker
 {
 public:
@@ -51,10 +51,10 @@ public:
     int64_t open();
     bool isOver();
 public:
-    IaETFWorkerBuyEtf(TiTraderClient* client, IaEtfQuoteDataCache* m_quote_cache, IaEtfSignalFactorPtr factor, std::string account);
-    virtual ~IaETFWorkerBuyEtf(){};
+    IaETFWorkerSellEtf(TiTraderClient* client, IaEtfQuoteDataCache* m_quote_cache, IaEtfSignalFactorPtr factor, std::string account);
+    virtual ~IaETFWorkerSellEtf(){};
 };
 
-typedef std::shared_ptr<IaETFWorkerBuyEtf> IaETFWorkerBuyEtfPtr;
+typedef std::shared_ptr<IaETFWorkerSellEtf> IaETFWorkerSellEtfPtr;
 
 #endif

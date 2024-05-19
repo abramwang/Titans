@@ -61,10 +61,14 @@ void IaEtfTradeWorkerCenter::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData
     auto iter = m_trading_worker_list.begin();
     for (; iter != m_trading_worker_list.end(); )
     {
-        (*iter)->OnRtnOrderStatusEvent(pData);
+        if ((*iter)->getAccount() == pData->szAccount)
+        {
+            (*iter)->OnRtnOrderStatusEvent(pData);
+        }
 
         if ((*iter)->isOver())
         {
+            std::cout << "IaEtfTradeWorkerCenter::OnRtnOrderStatusEvent: is over" << std::endl; 
             m_over_trading_worker_list.push_back(*iter);
             iter = m_trading_worker_list.erase(iter);
         }else{
@@ -107,7 +111,7 @@ void IaEtfTradeWorkerCenter::create_trading_worker(const std::string &symbol, co
     std::cout << "IaEtfTradeWorkerCenter::create_trading_worker" << symbol << " " << account << " " << side<< std::endl;
     std::cout << etf_factor->m_info.diff << " creation_profit:" << etf_factor->m_info.creation_profit << " redemption_profit:"  << etf_factor->m_info.redemption_profit << std::endl;
 
-    IaETFWorkerBuyEtfPtr worker = std::make_shared<IaETFWorkerBuyEtf>(m_quote_cache, m_trade_client, etf_factor, account);
+    IaETFWorkerBuyEtfPtr worker = std::make_shared<IaETFWorkerBuyEtf>(m_trade_client, m_quote_cache, etf_factor, account);
     
 
 
