@@ -705,12 +705,7 @@ bool TiGfTraderClient::init_encrypt()
     encrypt_cfg["GM_SM2_PUBLIC_KEY_PATH"]="";       // 采用国密算法时，通过该key配置 GM算法配置加密使用的公钥路径
     encrypt_cfg["RSA_PUBLIC_KEY_PATH"]="./rsa_public_key.pem";          // 如果使用rsa算法加密，通过该key配置 rsa算法配置加密使用的公钥路径
 
-    ATPRetCodeType ec = ATPTradeAPI::Init(station_name, 
-        cfg_path,
-        log_dir_path,
-        record_all_flag,
-        encrypt_cfg,
-        connection_retention_flag);
+    ATPRetCodeType ec = ATPTradeAPI::Init();
     if (ec != ErrorCode::kSuccess)
     {
         std::cout << "Init encrypt failed: " << ec <<std::endl;
