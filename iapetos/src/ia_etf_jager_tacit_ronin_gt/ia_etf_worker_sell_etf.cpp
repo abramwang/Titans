@@ -118,13 +118,17 @@ int64_t IaETFWorkerSellEtf::open()
     std::shared_ptr<IaEtfInfo> m_etf_info = m_etf_factor->GetEtfInfo();
     TiQuoteSnapshotStockField* etf_snap = m_quote_cache->GetStockSnapshot(m_etf_info->m_fundId.c_str(), m_etf_info->m_exchange.c_str());
 
+    json j;
+    TiQuoteFormater::FormatSnapshot(etf_snap, j);
+    std::cout << j.dump() << std::endl;
+
     if (etf_snap == nullptr)
     {
         return -1;
     }
     
     double price = IaEtfPriceTool::get_order_price(
-            m_status.volume, etf_snap->bid_price, etf_snap->bid_order_num, TI_STOCK_ARRAY_LEN);
+            m_status.volume, etf_snap->bid_price, etf_snap->bid_volume, TI_STOCK_ARRAY_LEN);
     double vol = m_status.volume - m_status.finish_volume;
 
 
