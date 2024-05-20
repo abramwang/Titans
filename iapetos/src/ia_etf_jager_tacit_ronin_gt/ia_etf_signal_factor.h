@@ -111,6 +111,7 @@ public:
 public:
     bool GetJsonOut(json& j);
     std::shared_ptr<IaEtfInfo> GetEtfInfo();
+    std::vector<std::shared_ptr<IaEtfConstituentInfo>>* GetConstituentInfo();
 
 
 public:

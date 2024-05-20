@@ -38,6 +38,7 @@ public:
     virtual void OnTimer();
 private:
     Status m_status;
+    int64_t m_check_time;   //检查时间
 
     TiQuoteSnapshotStockField m_open_snap;
     std::set<int64_t> m_req_id_set;                                 // order_req_id
@@ -46,7 +47,6 @@ private:
     void updateExpectCost(TiQuoteSnapshotStockField* pData);
     void updateStatus();
     bool hasQueueOrder();
-    double getOrderPrice(TiQuoteSnapshotStockField* pData);
 public:
     int64_t open();
     bool isOver();

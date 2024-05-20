@@ -1,7 +1,7 @@
 #include "ia_etf_worker_sell_etf.h"
-
+#include "ia_etf_price_tool.h"
 #include "ti_quote_formater.h"
-
+#include "datetime.h"
 
 IaETFWorkerSellEtf::IaETFWorkerSellEtf(TiTraderClient* client, IaEtfQuoteDataCache* m_quote_cache, IaEtfSignalFactorPtr factor, std::string account)
     : IaETFTradingWorker(client, m_quote_cache, factor, account)
@@ -9,7 +9,15 @@ IaETFWorkerSellEtf::IaETFWorkerSellEtf(TiTraderClient* client, IaEtfQuoteDataCac
     m_status.symbol = factor->GetEtfInfo()->m_fundId;
     m_status.exchange = factor->GetEtfInfo()->m_exchange;
     m_status.volume = factor->GetEtfInfo()->m_minUnit;
+    m_status.real_cost = 0;
+    m_status.finish_volume = 0;
+    m_check_time = datetime::get_now_timestamp_ms();
 
+    TiQuoteSnapshotStockField* snap = m_quote_cache->GetStockSnapshot(
+        m_status.symbol.c_str(), 
+        m_status.exchange.c_str());
+    memcpy(&m_open_snap, snap, sizeof(TiQuoteSnapshotStockField));
+    updateExpectCost(snap);
 }
 
 void IaETFWorkerSellEtf::OnRspOrderDelete(const TiRspOrderDelete* pData)
@@ -33,7 +41,30 @@ void IaETFWorkerSellEtf::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
 
 void IaETFWorkerSellEtf::OnTimer()
 {
-
+    if(isOver())
+    {
+        return;
+    }
+    int64_t now = datetime::get_now_timestamp_ms();
+    updateStatus();
+    if((now - m_check_time) >= 1000) //1s 检查一次
+    {
+        m_check_time = now;
+        for (auto iter = m_order_map.begin(); iter != m_order_map.end(); ++iter)
+        {
+            if (iter->second.nStatus > 0)
+            {
+                TiReqOrderDelete req;
+                memset(&req, 0, sizeof(TiReqOrderDelete));
+                req.nOrderId = iter->second.nOrderId;
+                m_client->orderDelete(&req);
+            }
+        }
+    }
+    if (!hasQueueOrder())
+    {
+        open(); 
+    }
 };
 
 void IaETFWorkerSellEtf::updateExpectCost(TiQuoteSnapshotStockField* pData)
@@ -70,29 +101,12 @@ bool IaETFWorkerSellEtf::hasQueueOrder()
 {
     for (auto iter = m_order_map.begin(); iter != m_order_map.end(); iter++)
     {
-        if (iter->second.nStatus > 0)
+        if (iter->second.nStatus >= 0)
         {
             return true;
         }
     }
     return false;
-};
-
-double IaETFWorkerSellEtf::getOrderPrice(TiQuoteSnapshotStockField* pData)
-{
-    double price = pData->ask_price[2];
-    
-    if (price == 0)
-    {
-        price = pData->ask_price[0];
-    }
-    
-    if (price == 0)
-    {
-        price = pData->last;
-    }
-
-    return price;
 };
 
 
@@ -107,9 +121,9 @@ int64_t IaETFWorkerSellEtf::open()
         return -1;
     }
     
-    memcpy(&m_open_snap, etf_snap, sizeof(TiQuoteSnapshotStockField));
-    updateExpectCost(etf_snap);
-    double price = getOrderPrice(etf_snap);
+    double price = IaEtfPriceTool::get_order_price(
+            m_status.volume, etf_snap->ask_price, etf_snap->ask_volume, TI_STOCK_ARRAY_LEN);
+    double vol = m_status.volume - m_status.finish_volume;
 
 
     std::vector<int32_t> order_vol_vec;
@@ -147,7 +161,8 @@ int64_t IaETFWorkerSellEtf::open()
     req.nBusinessType = TI_BusinessType_Stock;
     req.nOffsetType = TI_OffsetType_Open;
     req.nOrderPrice = price;
-    req.nOrderVol = m_etf_info->m_minUnit;
+    req.nOrderVol = vol;
+    req.nReqTimestamp = datetime::get_now_timestamp_ms();
     strcpy(req.szUseStr, "jager");
 
     m_client->orderInsert(&req);

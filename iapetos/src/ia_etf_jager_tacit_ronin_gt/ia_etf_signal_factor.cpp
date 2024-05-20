@@ -379,3 +379,8 @@ std::shared_ptr<IaEtfInfo> IaEtfSignalFactor::GetEtfInfo()
 {
     return m_etf_info_ptr;
 };
+
+std::vector<std::shared_ptr<IaEtfConstituentInfo>>* IaEtfSignalFactor::GetConstituentInfo()
+{
+    return &m_constituent_info_vec;
+};

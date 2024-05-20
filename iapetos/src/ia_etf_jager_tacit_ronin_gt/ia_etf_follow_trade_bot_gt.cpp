@@ -159,7 +159,6 @@ void IaEtfFollowTradeBotGt::OnRspQryOrder(const TiRspQryOrder* pData, bool isLas
     Locker locker(&m_mutex);
     m_trade_center->OnRspQryOrder(pData, isLast);
 
-
     if (m_config)
     {
         if(!m_config->szOrderKey.empty())
