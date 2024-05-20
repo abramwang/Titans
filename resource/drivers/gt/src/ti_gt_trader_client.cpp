@@ -707,7 +707,7 @@ void TiGtTraderClient::connect(){
     m_client = XtTraderApi::createXtTraderApi(m_config->szLocations.c_str());
     if (NULL == m_client)
     {
-        cout << "[init] create api failure" << endl;
+        LOG(INFO) << "[init] create api failure" << endl;
         return;
     }
 
@@ -724,7 +724,7 @@ void TiGtTraderClient::connect(){
 
 int TiGtTraderClient::orderInsertBatch(std::vector<TiReqOrderInsert> &req_vec, std::string account_id)
 {
-    std::cout << "orderInsertBatch: " << account_id << std::endl;
+    LOG(INFO) << "orderInsertBatch: " << account_id << std::endl;
     if(!m_config){
         LOG(INFO) << "[loadConfig] Do not have config info";
         return -1;
@@ -736,7 +736,7 @@ int TiGtTraderClient::orderInsertBatch(std::vector<TiReqOrderInsert> &req_vec, s
         return -1;
     }
 
-    std::cout << "orderInsertBatch: " << req_vec.size() << std::endl;
+    LOG(INFO) << "orderInsertBatch: " << req_vec.size() << std::endl;
 
     ++nReqId;
 
@@ -840,6 +840,8 @@ int TiGtTraderClient::orderInsert(TiReqOrderInsert* req){
     m_order_req_map[order->nReqId] = order;
     order->nReqTimestamp = datetime::get_now_timestamp_ms();
 
+
+    LOG(INFO) << "orderInsert: " << req->szAccount << " " << req->szSymbol << " " << req->nOrderVol << " " << req->nOrderPrice << " " << req->nTradeSideType << " " << req->szUseStr << std::endl;
     m_client->directOrder(&msg, nReqId);
 
     return nReqId;
@@ -850,6 +852,26 @@ int TiGtTraderClient::orderDelete(TiReqOrderDelete* req){
         LOG(INFO) << "[loadConfig] Do not have config info";
         return -1;
     }
+    
+    auto account_iter = m_account_map.find(req->szAccount);
+    if (account_iter == m_account_map.end())
+    {
+        LOG(INFO) << "[orderDelete] Do not have account info" << req->szAccount << std::endl;;
+        return -1;
+    }
+    
+    TiRtnOrderStatus* order = account_iter->second->getOrderStatus(req->szOrderStreamId);
+
+    if (!order)
+    {
+        LOG(INFO) << "[orderDelete] Do not have order info" << req->szOrderStreamId << std::endl;;
+        return -1;
+    }
+    
+    LOG(INFO) << "orderDelete: " << req->szAccount << " " << req->szOrderStreamId << " " << req->nOrderId << std::endl;
+
+    m_client->cancelOrder(req->szAccount, req->szOrderStreamId,
+        order->szExchange, order->szSymbol, nReqId++);
 
     return nReqId;
 };

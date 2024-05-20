@@ -97,8 +97,9 @@ struct TiRtnOrderStatus : TiReqOrderInsert
 /// 撤单
 struct TiReqOrderDelete : TiBase_Msg
 {
-    int64_t        nOrderId;         //  原始订单服务器唯一Id
-    TI_OrderIdType szOrderStreamId;  //  委托编号（broker 或交易所的唯一编号）
+    int64_t        nOrderId;            //  原始订单服务器唯一Id
+    TI_OrderIdType szOrderStreamId;     //  委托编号（broker 或交易所的唯一编号）   
+    TI_AccountType szAccount;           //  资金帐号
 };
 
 /// 撤销订单响应
