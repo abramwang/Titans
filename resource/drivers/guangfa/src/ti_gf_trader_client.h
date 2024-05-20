@@ -130,6 +130,7 @@ private:
     int orderInsertEtf(TiReqOrderInsert* req);     //申赎
 public:
 	void connect();
+    int orderInsertBatch(std::vector<TiReqOrderInsert> &req_vec, std::string account_id){return -1;};
     int orderInsert(TiReqOrderInsert* req);
     int orderDelete(TiReqOrderDelete* req);
     TiRtnOrderStatus* getOrderStatus(int64_t req_id, int64_t order_id);
