@@ -2,6 +2,7 @@
 #include "ia_etf_signal_factor.h"
 
 #include "ia_etf_worker_buy_etf.h"
+#include "ia_etf_worker_sell_etf.h"
 
 IaEtfTradeWorkerCenter::IaEtfTradeWorkerCenter(TiGtTraderClient* trade_client, 
     IaEtfQuoteDataCache* quote_cache, 
@@ -111,9 +112,19 @@ void IaEtfTradeWorkerCenter::create_trading_worker(const std::string &symbol, co
     std::cout << "IaEtfTradeWorkerCenter::create_trading_worker" << symbol << " " << account << " " << side<< std::endl;
     std::cout << etf_factor->m_info.diff << " creation_profit:" << etf_factor->m_info.creation_profit << " redemption_profit:"  << etf_factor->m_info.redemption_profit << std::endl;
 
-    IaETFWorkerBuyEtfPtr worker = std::make_shared<IaETFWorkerBuyEtf>(m_trade_client, m_quote_cache, etf_factor, account);
-    
-
+    IaETFTradingWorkerPtr worker;
+    if (side == TI_TradeSideType_Buy)
+    {
+        worker = std::make_shared<IaETFWorkerBuyEtf>(m_trade_client, m_quote_cache, etf_factor, account);
+    }
+    else if (side == TI_TradeSideType_Sell)
+    {
+        worker = std::make_shared<IaETFWorkerSellEtf>(m_trade_client, m_quote_cache, etf_factor, account);
+    }
+    else
+    {
+        return;
+    }
 
     if ( etf_factor->m_info.creation_profit  >  etf_factor->m_info.redemption_profit)
     {

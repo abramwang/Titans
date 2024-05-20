@@ -57,13 +57,15 @@ void IaETFWorkerBuyEtf::OnTimer()
                 TiReqOrderDelete req;
                 memset(&req, 0, sizeof(TiReqOrderDelete));
                 req.nOrderId = iter->second.nOrderId;
+                strcpy(req.szOrderStreamId, iter->second.szOrderStreamId);
+                strcpy(req.szAccount, iter->second.szAccount);
                 m_client->orderDelete(&req);
             }
         }
-    }
-    if (!hasQueueOrder())
-    {
-        open(); 
+        if (!hasQueueOrder())
+        {
+            open(); 
+        }
     }
 };
 
@@ -91,8 +93,8 @@ void IaETFWorkerBuyEtf::updateStatus()
 
     for (auto iter = m_order_map.begin(); iter != m_order_map.end(); iter++)
     {
-        m_status.real_cost += iter->second.nOrderPrice * iter->second.nOrderVol;
-        m_status.finish_volume += iter->second.nOrderVol;
+        m_status.real_cost += (double)iter->second.nDealtVol * iter->second.nDealtPrice;
+        m_status.finish_volume += iter->second.nDealtVol;
     }
 };
 

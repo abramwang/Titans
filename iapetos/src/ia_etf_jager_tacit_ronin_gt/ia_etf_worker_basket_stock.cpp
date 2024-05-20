@@ -73,20 +73,22 @@ int64_t IaETFWorkerBasketStock::open()
             constituent_info_ptr->m_symbol.c_str(), 
             constituent_info_ptr->m_exchange.c_str());
         
+        //跌停不买
         if (m_side == TI_TradeSideType_Buy)
-        {
-            if (snap->last == snap->high_limit)
-            {
-                LOG(INFO) << "High-Limit:  ETF" << m_status.symbol << " " << m_status.exchange<< " " << constituent_info_ptr->m_symbol << std::endl;
-                continue;
-            }
-        }
-
-        if (m_side == TI_TradeSideType_Sell)
         {
             if (snap->last == snap->low_limit)
             {
                 LOG(INFO) << "Low-Limit:  ETF" << m_status.symbol << " " << m_status.exchange<< " " << constituent_info_ptr->m_symbol << std::endl;
+                continue;
+            }
+        }
+
+        //涨停不卖
+        if (m_side == TI_TradeSideType_Sell)
+        {
+            if (snap->last == snap->high_limit)
+            {
+                LOG(INFO) << "High-Limit:  ETF" << m_status.symbol << " " << m_status.exchange<< " " << constituent_info_ptr->m_symbol << std::endl;
                 continue;
             }
         }

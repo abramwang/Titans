@@ -57,13 +57,15 @@ void IaETFWorkerSellEtf::OnTimer()
                 TiReqOrderDelete req;
                 memset(&req, 0, sizeof(TiReqOrderDelete));
                 req.nOrderId = iter->second.nOrderId;
+                strcpy(req.szOrderStreamId, iter->second.szOrderStreamId);
+                strcpy(req.szAccount, iter->second.szAccount);
                 m_client->orderDelete(&req);
             }
         }
-    }
-    if (!hasQueueOrder())
-    {
-        open(); 
+        if (!hasQueueOrder())
+        {
+            open(); 
+        }
     }
 };
 
@@ -91,8 +93,8 @@ void IaETFWorkerSellEtf::updateStatus()
 
     for (auto iter = m_order_map.begin(); iter != m_order_map.end(); iter++)
     {
-        m_status.real_cost += iter->second.nOrderPrice * iter->second.nOrderVol;
-        m_status.finish_volume += iter->second.nOrderVol;
+        m_status.real_cost += (double)iter->second.nDealtVol * iter->second.nDealtPrice;
+        m_status.finish_volume += iter->second.nDealtVol;
     }
 };
 
@@ -122,7 +124,7 @@ int64_t IaETFWorkerSellEtf::open()
     }
     
     double price = IaEtfPriceTool::get_order_price(
-            m_status.volume, etf_snap->ask_price, etf_snap->ask_volume, TI_STOCK_ARRAY_LEN);
+            m_status.volume, etf_snap->bid_price, etf_snap->bid_order_num, TI_STOCK_ARRAY_LEN);
     double vol = m_status.volume - m_status.finish_volume;
 
 

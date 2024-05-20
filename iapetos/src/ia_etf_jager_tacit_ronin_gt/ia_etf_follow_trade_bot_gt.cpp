@@ -214,7 +214,7 @@ void IaEtfFollowTradeBotGt::OnRspQryPosition(const TiRspQryPosition* pData, bool
             json j;
             TiTraderFormater::FormatPosition(pData, j);
             
-            LOG(INFO) << "OnRspQryPosition: " << isLast << " " << j << std::endl;
+            //LOG(INFO) << "OnRspQryPosition: " << isLast << " " << j << std::endl;
 
             m_redis->hmset(key.c_str(), pData->szSymbol, j.dump().c_str());
         }
@@ -270,6 +270,7 @@ void IaEtfFollowTradeBotGt::OnTimer()
 {
     Locker locker(&m_mutex);
     m_signal_center->OnTimer();
+    m_trade_center->OnTimer();
 
     json signal_out;
     m_signal_center->GetJsonOut(signal_out);
@@ -559,12 +560,13 @@ void IaEtfFollowTradeBotGt::enterOrders(json &msg)
     m_trade_client->orderInsertBatch(req_vec, account_id);
 };
 
-
 void IaEtfFollowTradeBotGt::cancelOrder(json &msg)
 {
     TiReqOrderDelete req;
     memset(&req, 0, sizeof(TiReqOrderDelete));
     req.nOrderId = msg["nOrderId"];
+    strcpy(req.szOrderStreamId, std::string(msg["szOrderStreamId"]).c_str());
+    strcpy(req.szAccount, std::string(msg["szAccount"]).c_str());
 
     m_trade_client->orderDelete(&req);
 

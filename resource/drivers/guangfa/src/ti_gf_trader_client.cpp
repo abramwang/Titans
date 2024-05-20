@@ -700,7 +700,7 @@ bool TiGfTraderClient::init_encrypt()
 
     // encrypt_cfg参数填写：
     encrypt_cfg["ENCRYPT_SCHEMA"]="1";              // 字符 0 表示 不对消息中的所有 password 加密
-    encrypt_cfg["ATP_ENCRYPT_PASSWORD"]="";         // 除登入及密码修改外其他消息的密码字段加密算法
+    encrypt_cfg["ATP_ENCRYPT_PASSWORD"]="./librsa_2048_encrypt.so";         // 除登入及密码修改外其他消息的密码字段加密算法
     encrypt_cfg["ATP_LOGIN_ENCRYPT_PASSWORD"]="";   // 登入及密码修改消息中密码字段的加密算法so路径
     encrypt_cfg["GM_SM2_PUBLIC_KEY_PATH"]="";       // 采用国密算法时，通过该key配置 GM算法配置加密使用的公钥路径
     encrypt_cfg["RSA_PUBLIC_KEY_PATH"]="./rsa_public_key.pem";          // 如果使用rsa算法加密，通过该key配置 rsa算法配置加密使用的公钥路径

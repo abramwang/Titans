@@ -58,13 +58,15 @@ void IaETFWorkerSingleStock::OnTimer()
                 TiReqOrderDelete req;
                 memset(&req, 0, sizeof(TiReqOrderDelete));
                 req.nOrderId = iter->second.nOrderId;
+                strcpy(req.szOrderStreamId, iter->second.szOrderStreamId);
+                strcpy(req.szAccount, iter->second.szAccount);
                 m_client->orderDelete(&req);
             }
         }
-    }
-    if (!hasQueueOrder())
-    {
-        open(); 
+        if (!hasQueueOrder())
+        {
+            open(); 
+        }
     }
 };
 
