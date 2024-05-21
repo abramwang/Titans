@@ -86,7 +86,7 @@ void IaEtfFollowTradeBotGf::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField
 ////////////////////////////////////////////////////////////////////////
 void IaEtfFollowTradeBotGf::OnCommonJsonRespones(const json* rspData, int req_id, bool isLast, int err, const char* err_str)
 {
-    LOG(INFO) << "[IaEtfFollowTradeBotGf::OnCommonJsonRespones]" << rspData;
+    LOG(INFO) << "[IaEtfFollowTradeBotGf::OnCommonJsonRespones] " << *rspData;
     Locker locker(&m_mutex);
     if (err != 0)
     {
@@ -466,32 +466,32 @@ int IaEtfFollowTradeBotGf::loadConfig(std::string iniFileName){
 
     m_config = new ConfigInfo();
 
-    m_config->szIp        = string(_iniFile["ia_etf_follow_trade_bot_gt"]["ip"]);
-    m_config->nPort       = _iniFile["ia_etf_follow_trade_bot_gt"]["port"];
-    m_config->szAuth      = string(_iniFile["ia_etf_follow_trade_bot_gt"]["auth"]);
+    m_config->szIp        = string(_iniFile["ia_etf_follow_trade_bot_gf"]["ip"]);
+    m_config->nPort       = _iniFile["ia_etf_follow_trade_bot_gf"]["port"];
+    m_config->szAuth      = string(_iniFile["ia_etf_follow_trade_bot_gf"]["auth"]);
 
-    m_config->nBlock          = _iniFile["ia_etf_follow_trade_bot_gt"]["block"];
-    m_config->szCommandStreamKey        = string(_iniFile["ia_etf_follow_trade_bot_gt"]["command_stream_key"]);
-    m_config->szCommandStreamGroup      = string(_iniFile["ia_etf_follow_trade_bot_gt"]["command_stream_group"]);
-    m_config->szCommandConsumerId       = string(_iniFile["ia_etf_follow_trade_bot_gt"]["command_consumer_id"]);
+    m_config->nBlock          = _iniFile["ia_etf_follow_trade_bot_gf"]["block"];
+    m_config->szCommandStreamKey        = string(_iniFile["ia_etf_follow_trade_bot_gf"]["command_stream_key"]);
+    m_config->szCommandStreamGroup      = string(_iniFile["ia_etf_follow_trade_bot_gf"]["command_stream_group"]);
+    m_config->szCommandConsumerId       = string(_iniFile["ia_etf_follow_trade_bot_gf"]["command_consumer_id"]);
     
-    m_config->szPositionKey      = string(_iniFile["ia_etf_follow_trade_bot_gt"]["position_key"]);
-    m_config->szOrderKey         = string(_iniFile["ia_etf_follow_trade_bot_gt"]["order_key"]);
-    m_config->szMatchKey         = string(_iniFile["ia_etf_follow_trade_bot_gt"]["match_key"]);
+    m_config->szPositionKey      = string(_iniFile["ia_etf_follow_trade_bot_gf"]["position_key"]);
+    m_config->szOrderKey         = string(_iniFile["ia_etf_follow_trade_bot_gf"]["order_key"]);
+    m_config->szMatchKey         = string(_iniFile["ia_etf_follow_trade_bot_gf"]["match_key"]);
 
-    m_config->szAccountKey       = string(_iniFile["ia_etf_follow_trade_bot_gt"]["account_key"]);
+    m_config->szAccountKey       = string(_iniFile["ia_etf_follow_trade_bot_gf"]["account_key"]);
 
-    m_config->szSignalMap       = string(_iniFile["ia_etf_follow_trade_bot_gt"]["signal_map"]);
+    m_config->szSignalMap       = string(_iniFile["ia_etf_follow_trade_bot_gf"]["signal_map"]);
     
-    m_config->szSqlIp       = string(_iniFile["ia_etf_follow_trade_bot_gt"]["sql_ip"]);
-    m_config->nSqlPort      = _iniFile["ia_etf_follow_trade_bot_gt"]["sql_port"];
-    m_config->szSqlUser     = string(_iniFile["ia_etf_follow_trade_bot_gt"]["sql_user"]);
-    m_config->szSqlPassword = string(_iniFile["ia_etf_follow_trade_bot_gt"]["sql_password"]);
+    m_config->szSqlIp       = string(_iniFile["ia_etf_follow_trade_bot_gf"]["sql_ip"]);
+    m_config->nSqlPort      = _iniFile["ia_etf_follow_trade_bot_gf"]["sql_port"];
+    m_config->szSqlUser     = string(_iniFile["ia_etf_follow_trade_bot_gf"]["sql_user"]);
+    m_config->szSqlPassword = string(_iniFile["ia_etf_follow_trade_bot_gf"]["sql_password"]);
 
-    m_config->szInfluxUrl   = string(_iniFile["ia_etf_follow_trade_bot_gt"]["influx_url"]);
-    m_config->szInfluxToken = string(_iniFile["ia_etf_follow_trade_bot_gt"]["influx_token"]);
-    m_config->szInfluxOrg   = string(_iniFile["ia_etf_follow_trade_bot_gt"]["influx_org"]);
-    m_config->szInfluxBucket= string(_iniFile["ia_etf_follow_trade_bot_gt"]["influx_bucket"]);
+    m_config->szInfluxUrl   = string(_iniFile["ia_etf_follow_trade_bot_gf"]["influx_url"]);
+    m_config->szInfluxToken = string(_iniFile["ia_etf_follow_trade_bot_gf"]["influx_token"]);
+    m_config->szInfluxOrg   = string(_iniFile["ia_etf_follow_trade_bot_gf"]["influx_org"]);
+    m_config->szInfluxBucket= string(_iniFile["ia_etf_follow_trade_bot_gf"]["influx_bucket"]);
 
 
     if( m_config->szIp.empty() |

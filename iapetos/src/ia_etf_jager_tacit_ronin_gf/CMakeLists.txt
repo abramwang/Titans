@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(ia_etf_jager_tacit_ronin_gt)
+project(ia_etf_jager_tacit_ronin_gf)
 
 # This ensures that things like gnu++11 get passed correctly
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
