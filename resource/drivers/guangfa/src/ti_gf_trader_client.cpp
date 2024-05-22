@@ -314,6 +314,7 @@ void TiGfTraderClient::OnRspOrderStatusInternalAck(const ATPRspOrderStatusAckMsg
 {
     std::cout << "TiGfTraderClient::OnRspOrderStatusInternalAck: " << order_status_ack.cl_ord_no << " " << order_status_ack.order_id << " " << order_status_ack.ord_status << std::endl;
     std::cout << "side: " << order_status_ack.side <<  " business_type: " << order_status_ack.business_type <<  std::endl;
+    std::cout << order_status_ack.security_id << " " << order_status_ack.security_symbol << " " << order_status_ack.market_id << std::endl;
 
     std::shared_ptr<TiRtnOrderStatus> order_ptr;
     auto iter = m_order_map.find(order_status_ack.cl_ord_no);
@@ -324,47 +325,47 @@ void TiGfTraderClient::OnRspOrderStatusInternalAck(const ATPRspOrderStatusAckMsg
         {
             order_ptr = std::make_shared<TiRtnOrderStatus>();
             memset(order_ptr.get(), 0, sizeof(TiRtnOrderStatus));
-            strcpy(order_ptr->szSymbol, order_status_ack.security_id);
-            strcpy(order_ptr->szName, order_status_ack.security_symbol);
-            if (order_status_ack.market_id == ATPMarketIDConst::kShangHai) {
-                strcpy(order_ptr->szExchange, "SH");
-            } else if (order_status_ack.market_id == ATPMarketIDConst::kShenZhen) {
-                strcpy(order_ptr->szExchange, "SZ");
-            } else {
-                strcpy(order_ptr->szExchange, "");
-            }
 
-            switch (order_status_ack.side)
-            {
-            case ATPSideConst::kSell:
-                order_ptr->nTradeSideType = TI_TradeSideType_Sell;
-                order_ptr->nBusinessType = TI_BusinessType_Stock;
-                break;
-            case ATPSideConst::kBuy:
-                order_ptr->nTradeSideType = TI_TradeSideType_Buy;
-                order_ptr->nBusinessType = TI_BusinessType_Stock;
-                break;
-            case ATPSideConst::kPurchase:  
-                order_ptr->nTradeSideType = TI_TradeSideType_Purchase;
-                order_ptr->nBusinessType = TI_BusinessType_ETF;
-                break;
-            case ATPSideConst::kRedeem: 
-                order_ptr->nTradeSideType = TI_TradeSideType_Redemption;
-                order_ptr->nBusinessType = TI_BusinessType_ETF;
-                break;
-            default:
-                break;
-            }
-            
-            order_ptr->nOrderPrice = order_status_ack.price;
-            order_ptr->nOrderVol = order_status_ack.order_qty;
-
-            m_order_map[order_status_ack.cl_ord_no] = order_ptr;
         }else{
             order_ptr = iter->second;
             m_order_req_map.erase(iter);
-            m_order_map[order_status_ack.cl_ord_no] = order_ptr;
         }
+        
+        strcpy(order_ptr->szSymbol, order_status_ack.security_id);
+        strcpy(order_ptr->szName, order_status_ack.security_symbol);
+        if (order_status_ack.market_id == ATPMarketIDConst::kShangHai) {
+            strcpy(order_ptr->szExchange, "SH");
+        } else if (order_status_ack.market_id == ATPMarketIDConst::kShenZhen) {
+            strcpy(order_ptr->szExchange, "SZ");
+        } else {
+            strcpy(order_ptr->szExchange, "");
+        }
+
+        switch (order_status_ack.side)
+        {
+        case ATPSideConst::kSell:
+            order_ptr->nTradeSideType = TI_TradeSideType_Sell;
+            order_ptr->nBusinessType = TI_BusinessType_Stock;
+            break;
+        case ATPSideConst::kBuy:
+            order_ptr->nTradeSideType = TI_TradeSideType_Buy;
+            order_ptr->nBusinessType = TI_BusinessType_Stock;
+            break;
+        case ATPSideConst::kPurchase:  
+            order_ptr->nTradeSideType = TI_TradeSideType_Purchase;
+            order_ptr->nBusinessType = TI_BusinessType_ETF;
+            break;
+        case ATPSideConst::kRedeem: 
+            order_ptr->nTradeSideType = TI_TradeSideType_Redemption;
+            order_ptr->nBusinessType = TI_BusinessType_ETF;
+            break;
+        default:
+            break;
+        }
+        
+        order_ptr->nOrderPrice = order_status_ack.price;
+        order_ptr->nOrderVol = order_status_ack.order_qty;
+        m_order_map[order_status_ack.cl_ord_no] = order_ptr;
     }else{
         order_ptr = iter->second;
     }
@@ -393,6 +394,7 @@ void TiGfTraderClient::OnRspOrderStatusAck(const ATPRspOrderStatusAckMsg& order_
 {
     std::cout << "TiGfTraderClient::OnRspOrderStatusAck: " << order_status_ack.cl_ord_no << " " << order_status_ack.order_id << " " << order_status_ack.ord_status << std::endl;
     std::cout << "side: " << order_status_ack.side <<  " business_type: " << order_status_ack.business_type <<  std::endl;
+    std::cout << order_status_ack.security_id << " " << order_status_ack.security_symbol << " " << order_status_ack.market_id << std::endl;
 
     std::shared_ptr<TiRtnOrderStatus> order_ptr;
     auto iter = m_order_map.find(order_status_ack.cl_ord_no);
@@ -403,47 +405,47 @@ void TiGfTraderClient::OnRspOrderStatusAck(const ATPRspOrderStatusAckMsg& order_
         {
             order_ptr = std::make_shared<TiRtnOrderStatus>();
             memset(order_ptr.get(), 0, sizeof(TiRtnOrderStatus));
-            strcpy(order_ptr->szSymbol, order_status_ack.security_id);
-            strcpy(order_ptr->szName, order_status_ack.security_symbol);
-            if (order_status_ack.market_id == ATPMarketIDConst::kShangHai) {
-                strcpy(order_ptr->szExchange, "SH");
-            } else if (order_status_ack.market_id == ATPMarketIDConst::kShenZhen) {
-                strcpy(order_ptr->szExchange, "SZ");
-            } else {
-                strcpy(order_ptr->szExchange, "");
-            }
-
-            switch (order_status_ack.side)
-            {
-            case ATPSideConst::kSell:
-                order_ptr->nTradeSideType = TI_TradeSideType_Sell;
-                order_ptr->nBusinessType = TI_BusinessType_Stock;
-                break;
-            case ATPSideConst::kBuy:
-                order_ptr->nTradeSideType = TI_TradeSideType_Buy;
-                order_ptr->nBusinessType = TI_BusinessType_Stock;
-                break;
-            case ATPSideConst::kPurchase:  
-                order_ptr->nTradeSideType = TI_TradeSideType_Purchase;
-                order_ptr->nBusinessType = TI_BusinessType_ETF;
-                break;
-            case ATPSideConst::kRedeem: 
-                order_ptr->nTradeSideType = TI_TradeSideType_Redemption;
-                order_ptr->nBusinessType = TI_BusinessType_ETF;
-                break;
-            default:
-                break;
-            }
-            
-            order_ptr->nOrderPrice = order_status_ack.price;
-            order_ptr->nOrderVol = order_status_ack.order_qty;
-
             m_order_map[order_status_ack.cl_ord_no] = order_ptr;
         }else{
             order_ptr = iter->second;
-            m_order_req_map.erase(iter);
             m_order_map[order_status_ack.cl_ord_no] = order_ptr;
         }
+
+        strcpy(order_ptr->szSymbol, order_status_ack.security_id);
+        strcpy(order_ptr->szName, order_status_ack.security_symbol);
+        if (order_status_ack.market_id == ATPMarketIDConst::kShangHai) {
+            strcpy(order_ptr->szExchange, "SH");
+        } else if (order_status_ack.market_id == ATPMarketIDConst::kShenZhen) {
+            strcpy(order_ptr->szExchange, "SZ");
+        } else {
+            strcpy(order_ptr->szExchange, "");
+        }
+
+        switch (order_status_ack.side)
+        {
+        case ATPSideConst::kSell:
+            order_ptr->nTradeSideType = TI_TradeSideType_Sell;
+            order_ptr->nBusinessType = TI_BusinessType_Stock;
+            break;
+        case ATPSideConst::kBuy:
+            order_ptr->nTradeSideType = TI_TradeSideType_Buy;
+            order_ptr->nBusinessType = TI_BusinessType_Stock;
+            break;
+        case ATPSideConst::kPurchase:  
+            order_ptr->nTradeSideType = TI_TradeSideType_Purchase;
+            order_ptr->nBusinessType = TI_BusinessType_ETF;
+            break;
+        case ATPSideConst::kRedeem: 
+            order_ptr->nTradeSideType = TI_TradeSideType_Redemption;
+            order_ptr->nBusinessType = TI_BusinessType_ETF;
+            break;
+        default:
+            break;
+        }
+        
+        order_ptr->nOrderPrice = order_status_ack.price;
+        order_ptr->nOrderVol = order_status_ack.order_qty;
+        m_order_map[order_status_ack.cl_ord_no] = order_ptr;
     }else{
         order_ptr = iter->second;
     }
@@ -465,7 +467,6 @@ void TiGfTraderClient::OnRspOrderStatusAck(const ATPRspOrderStatusAckMsg& order_
     }
 
     m_cb->OnRtnOrderStatusEvent(order_ptr.get());
-    
 }
 
 // 成交回报
