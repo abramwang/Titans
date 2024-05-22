@@ -138,7 +138,10 @@ struct TiRspQryPosition : TiBase_Msg
     TI_SymbolNameType   szName;          //  证券名称
     TI_ExchangeType     szExchange;      //  交易所
     TI_AccountType      szAccount;       //  资金帐号
-    int32_t             nPosition;       //  持仓总量
+    int32_t             nInitVol;        //  日初持仓量
+    int32_t             nLeavesVol;      //  剩余股份数量
+    int32_t             nAvailableVol;   //  可用股份数量
+    double              nMarketValue;    //  市值
     double              nPrice;          //  持仓均价
     double              nProfit;         //  浮盈（不含手续费）
     double              nSettledProfit;  //  已结算的盈利（不含手续费）

@@ -3,7 +3,11 @@
 
 void TiTraderFormater::FormatOrderDelete(const TiRspOrderDelete* pData, json& j)
 {
-
+    j = {
+        {"nOrderId" , pData->nOrderId},
+        {"szOrderStreamId" , pData->szOrderStreamId},
+        {"szAccount" , pData->szAccount},
+    };
 };
 
 void TiTraderFormater::FormatPosition(const TiRspQryPosition* pData, json& j)
@@ -13,7 +17,11 @@ void TiTraderFormater::FormatPosition(const TiRspQryPosition* pData, json& j)
         {"szName" , pData->szName},
         {"szExchange" , pData->szExchange},
         {"szAccount" , pData->szAccount},
-        {"nPosition" , pData->nPosition},
+        {"nInitVol" , pData->nInitVol},
+        {"nLeavesVol" , pData->nLeavesVol},
+        {"nAvailableVol" , pData->nAvailableVol},
+        {"nMarketValue" , pData->nMarketValue},
+        {"nPrice" , pData->nPrice},
         {"nProfit" , pData->nProfit},
         {"nSettledProfit" , pData->nSettledProfit},
         {"szShareholderId" , pData->szShareholderId},
@@ -101,5 +109,25 @@ void TiTraderFormater::FormatOrderMatchEvent(const TiRtnOrderMatch* pData, json&
         {"nTradeSideType" , pData->nTradeSideType},
         {"szShareholderId" , pData->szShareholderId},
         {"szErr" , pData->szErr},
+    };
+};
+
+
+void TiTraderFormater::FormatAccountInfo(const TiRspAccountInfo* pData, json& j)
+{
+    j = {
+        {"account_id" , pData->szAccount},
+        {"product_name" , pData->szName},
+        {"nav" , pData->nNav},
+        {"balance" , pData->nBalance},
+        {"available" , pData->nAvailable},
+        {"assure_asset" , pData->nAssureAsset},
+        {"commission" , pData->nCommission},
+        {"days_profit" , pData->nDaysProfit},
+        {"position_profit" , pData->nPositionProfit},
+        {"close_profit" , pData->nCloseProfit},
+        {"credit" , pData->nCredit},
+        {"stock_value" , pData->nStockValue},
+        {"fund_value" , pData->nFundValue},
     };
 };

@@ -10,6 +10,8 @@ namespace TiTraderFormater{
     void FormatPosition(const TiRspQryPosition* pData, json& j);
     void FormatOrderStatus(const TiRtnOrderStatus* pData, json& j);
     void FormatOrderMatchEvent(const TiRtnOrderMatch* pData, json& j);
+
+    void FormatAccountInfo(const TiRspAccountInfo* pData, json& j);
 }
 
 #endif
