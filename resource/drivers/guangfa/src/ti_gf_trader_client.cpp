@@ -206,12 +206,12 @@ void TiGfTraderClient::OnRspShareQueryResult(const ATPRspShareQueryResultMsg& sh
             strcpy(position.szExchange, "");
         }
         strcpy(position.szAccount, it->fund_account_id);
-        position.nInitVol = it->init_qty;
-        position.nLeavesVol = it->leaves_qty;
-        position.nAvailableVol = it->available_qty;
-        position.nMarketValue = it->market_value;
-        position.nPrice = it->cost_price;
-        position.nProfit = it->profit_loss;
+        position.nInitVol = it->init_qty / 100;
+        position.nLeavesVol = it->leaves_qty / 100;
+        position.nAvailableVol = it->available_qty / 100;
+        position.nMarketValue = (double)it->market_value / 10000;
+        position.nPrice = (double)it->cost_price / 10000;
+        position.nProfit = (double)it->profit_loss / 10000;
         position.nSettledProfit = 0;
         strcpy(position.szShareholderId, it->account_id);
 
