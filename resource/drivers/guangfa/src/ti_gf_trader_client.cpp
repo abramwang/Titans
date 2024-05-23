@@ -938,7 +938,7 @@ int TiGfTraderClient::orderInsertStock(TiReqOrderInsert* req){
         break;
     }
     msg.order_type = ATPOrdTypeConst::kFixedNew;             // 订单类型，限价
-    msg.price = req->nOrderPrice * 10000;                    // 委托价格 N13(4)，21.0000元
+    msg.price = (int(req->nOrderPrice * 10000 + 5)/100 * 100);   // 委托价格 N13(4)，21.0000元
     msg.order_qty = req->nOrderVol * 100;                    // (需要 * 100才是股数) 申报数量N15(2)；股票为股、基金为份、上海债券默认为张（使用时请务必与券商确认），其他为张；1000.00股
     msg.client_seq_id = nReqId;                              // 用户系统消息序号
     msg.order_way = '0';                                     // 委托方式，自助委托
