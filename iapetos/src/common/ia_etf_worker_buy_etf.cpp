@@ -27,15 +27,16 @@ void IaETFWorkerBuyEtf::OnRspOrderDelete(const TiRspOrderDelete* pData)
 
 void IaETFWorkerBuyEtf::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
 {
-    auto iter = m_order_map.find(pData->szOrderStreamId);
-    if (iter != m_order_map.end())
+    auto iter = m_req_id_set.find(pData->nReqId);
+    if (iter == m_req_id_set.end())
     {
-        m_order_map[pData->szOrderStreamId] = *pData;
+        return;
     }
-    if (m_req_id_set.find(pData->nReqId) != m_req_id_set.end())
+    if(isOver())
     {
-        m_order_map[pData->szOrderStreamId] = *pData;
+        return;
     }
+    m_order_map[pData->szOrderStreamId] = *pData;
     updateStatus();
 };
 
