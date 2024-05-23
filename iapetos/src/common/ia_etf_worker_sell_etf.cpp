@@ -130,10 +130,9 @@ int64_t IaETFWorkerSellEtf::open()
 
 
     std::vector<int32_t> order_vol_vec;
-    
-    getSplitOrderVol(m_status.volume, order_vol_vec);
+    getSplitOrderVol(vol, order_vol_vec);
 
-    /*
+ //   /*
     for (size_t i = 0; i < order_vol_vec.size(); i++)
     {
         TiReqOrderInsert req;
@@ -141,20 +140,20 @@ int64_t IaETFWorkerSellEtf::open()
         strcpy(req.szSymbol, m_etf_info->m_fundId.c_str());
         strcpy(req.szExchange, m_etf_info->m_exchange.c_str());
         strcpy(req.szAccount, m_account.c_str());
-        req.nTradeSideType = TI_TradeSideType_Buy;
+        req.nTradeSideType = TI_TradeSideType_Sell;
         req.nBusinessType = TI_BusinessType_Stock;
         req.nOffsetType = TI_OffsetType_Open;
         req.nOrderPrice = price;
         req.nOrderVol = order_vol_vec[i];
+        req.nReqTimestamp = datetime::get_now_timestamp_ms();
         strcpy(req.szUseStr, "jager");
 
         m_client->orderInsert(&req);
-
         m_req_id_set.insert(req.nReqId);
     }
-    */
+//    */
 
-//    /*
+    /*
     TiReqOrderInsert req;
     memset(&req, 0, sizeof(TiReqOrderInsert));
     strcpy(req.szSymbol, m_etf_info->m_fundId.c_str());

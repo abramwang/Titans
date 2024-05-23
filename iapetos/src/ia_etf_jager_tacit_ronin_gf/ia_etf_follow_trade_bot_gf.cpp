@@ -219,6 +219,13 @@ void IaEtfFollowTradeBotGf::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
     std::cout << "OnRtnOrderStatusEvent: " << test_j << std::endl;
 
     Locker locker(&m_mutex);
+
+    //没有交易所系统id就不处理
+    if (strcmp(pData->szOrderStreamId, "") == 0)
+    {
+        return;
+    }
+
     m_trade_center->OnRtnOrderStatusEvent(pData);
 
     if (m_config)
