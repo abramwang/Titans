@@ -121,11 +121,15 @@ int64_t IaETFWorkerSingleStock::open()
         return -1;
     }
 
+    
+    double vol = m_status.volume - m_status.finish_volume;
+
     TiReqOrderInsert req;
     req.nTradeSideType = m_side;
     req.nBusinessType = TI_BusinessType_Stock;
     strcpy(req.szExchange, m_status.exchange.c_str());
     strcpy(req.szSymbol, m_status.symbol.c_str());
+    strcpy(req.szAccount, m_account.c_str());
     if (m_side == TI_TradeSideType_Buy)
     {
         req.nOrderPrice = IaEtfPriceTool::get_order_price(
@@ -136,7 +140,7 @@ int64_t IaETFWorkerSingleStock::open()
         req.nOrderPrice = IaEtfPriceTool::get_order_price(
             m_status.volume, snap->bid_price, snap->bid_volume, TI_STOCK_ARRAY_LEN);
     }
-    req.nOrderVol = m_status.volume - m_status.finish_volume;
+    req.nOrderVol = vol;
     strcpy(req.szUseStr, "jager");
     req.nReqTimestamp = datetime::get_now_timestamp_ms();
 

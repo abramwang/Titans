@@ -4,7 +4,6 @@
 #include "ti_trader_client.h"
 #include "ti_trader_callback.h"
 
-#include "ti_gt_trader_client.h"
 #include "ia_etf_user_setting.h"
 #include "ia_etf_quote_data_cache.h"
 #include "ia_etf_signal_center.h"
@@ -39,7 +38,7 @@ public:
     virtual void OnTimer();
 
 private:
-    TiGtTraderClient* m_trade_client;
+    TiTraderClient* m_trade_client;
     IaEtfUserSetting* m_user_setting;
     IaEtfQuoteDataCache* m_quote_cache;
     IaEtfSignalCenter* m_signal_center;
@@ -55,7 +54,7 @@ private:
     void create_trading_worker(const std::string &symbol, const std::string &account, TI_TradeSideType side, std::shared_ptr<IaEtfSignalFactor> etf_factor);
 
 public:
-    IaEtfTradeWorkerCenter(TiGtTraderClient* trade_client, 
+    IaEtfTradeWorkerCenter(TiTraderClient* trade_client, 
         IaEtfQuoteDataCache* quote_cache, 
         IaEtfUserSetting* user_setting,
         IaEtfSignalCenter* signal_center);

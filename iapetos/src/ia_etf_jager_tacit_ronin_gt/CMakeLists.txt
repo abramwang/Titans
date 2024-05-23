@@ -22,12 +22,14 @@ file(COPY ${allCopyFiles} DESTINATION "./")
 
 aux_source_directory("../../../resource/src" SRCS)
 aux_source_directory("../../../resource/drivers/gt/src" SRCS)
+aux_source_directory("../common" SRCS)
 
 include_directories(
     "../../../resource/include"
     "../../../resource/src"
     "../../../resource/drivers/gt/include"
     "../../../resource/drivers/gt/src"
+    "../common"
 )
 
 link_directories( "./" )

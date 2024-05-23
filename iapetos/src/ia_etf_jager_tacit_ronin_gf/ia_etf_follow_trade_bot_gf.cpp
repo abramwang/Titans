@@ -108,25 +108,7 @@ void IaEtfFollowTradeBotGf::OnCommonJsonRespones(const json* rspData, int req_id
 
     if ((*rspData)["type"] == "onReqAccountDetail")
     {
-        if (m_config)
-        {
-            if(!m_config->szAccountKey.empty())
-            {
-                json data = (*rspData)["data"];
-
-                std::string account_id = std::string(data["account_id"]);
-
-                std::shared_ptr<IaAccountDBInfo> account_info_ptr;
-                if (m_user_setting->GetAccountDBInfo(account_id, account_info_ptr))
-                {
-                    LOG(ERROR) << "GetAccountDBInfo: " << account_info_ptr->funding_account << " " << account_info_ptr->product_name << std::endl;
-                    data["product_name"] = account_info_ptr->product_name;
-                }
-
-                std::string key = m_config->szAccountKey;
-                m_redis->hmset(key.c_str(), account_id.c_str(), data.dump().c_str());
-            }
-        }
+        
     }
 };   
 
@@ -136,15 +118,25 @@ void IaEtfFollowTradeBotGf::OnRspAccountInfo(const TiRspAccountInfo* pData)
     TiRspAccountInfo data = {0};
     memcpy(&data, pData, sizeof(TiRspAccountInfo));
 
-    //strcpy(data.szAccount, "280094803");
-
     std::shared_ptr<IaAccountDBInfo> account_info_ptr;
     if (m_user_setting->GetAccountDBInfo(data.szAccount, account_info_ptr))
     {
         strcpy(data.szName, account_info_ptr->product_name.c_str());
     }
 
-    LOG(INFO) << "OnRspAccountInfo: " << data.szAccount << " " << data.szName << std::endl;
+    json j;
+    TiTraderFormater::FormatAccountInfo(&data, j);
+
+    if (m_config)
+    {
+        if(!m_config->szAccountKey.empty())
+        {
+            std::string key = m_config->szAccountKey;
+            m_redis->hmset(key.c_str(), data.szAccount, j.dump().c_str());
+        }
+    }
+
+    LOG(INFO) << "OnRspAccountInfo: " << data.szAccount << " " << j << std::endl;
 
     m_trade_center->OnRspAccountInfo(&data);
 };
@@ -222,6 +214,10 @@ void IaEtfFollowTradeBotGf::OnRspQryPosition(const TiRspQryPosition* pData, bool
 };
 void IaEtfFollowTradeBotGf::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
 {
+    json test_j;
+    TiTraderFormater::FormatOrderStatus(pData, test_j);
+    std::cout << "OnRtnOrderStatusEvent: " << test_j << std::endl;
+
     Locker locker(&m_mutex);
     m_trade_center->OnRtnOrderStatusEvent(pData);
 

@@ -22,17 +22,14 @@ file(COPY ${allCopyFiles} DESTINATION "./")
 
 aux_source_directory("../../../resource/src" SRCS)
 aux_source_directory("../../../resource/drivers/guangfa/src" SRCS)
-aux_source_directory("../ia_etf_jager_tacit_ronin_gt" SRCS)
-
-list(REMOVE_ITEM SRCS "../ia_etf_jager_tacit_ronin_gt/ia_etf_follow_trade_bot_gt.cpp") 
-list(REMOVE_ITEM SRCS "../ia_etf_jager_tacit_ronin_gt/main.cpp") 
+aux_source_directory("../common" SRCS)
 
 include_directories(
     "../../../resource/include"
     "../../../resource/src"
     "../../../resource/drivers/guangfa/include"
     "../../../resource/drivers/guangfa/src"
-    "../ia_etf_jager_tacit_ronin_gt"
+    "../common"
 )
 
 link_directories( "./" )

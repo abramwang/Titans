@@ -1,12 +1,10 @@
-#ifndef __IA_ETF_WORKER_BASKET_STOCK_H__
-#define __IA_ETF_WORKER_BASKET_STOCK_H__
+#ifndef __IA_ETF_WORKER_BATCH_STOCK_H__
+#define __IA_ETF_WORKER_BATCH_STOCK_H__
 
 #include "ia_etf_trading_worker.h"
 #include "ia_etf_info_struct.h"
-#include "ia_etf_worker_signle_stock.h"
 #include <unordered_map>
 #include <memory.h>
-#include <map>
 
 /*
 {
@@ -25,7 +23,7 @@
 }
 */
 
-class IaETFWorkerBasketStock:
+class IaETFWorkerBatchStock:
     public IaETFTradingWorker
 {
 public:
@@ -33,8 +31,10 @@ public:
     {
         std::string symbol;
         std::string exchange;
-        int stock_num;
-        int over_num;
+        double expect_cost;
+        int32_t volume;
+        double real_cost;
+        int32_t finish_volume;
     }; 
 public:
     virtual void OnRspOrderDelete(const TiRspOrderDelete* pData);
@@ -43,18 +43,25 @@ public:
 private:
     TI_TradeSideType m_side;
     Status m_status;
+    int64_t m_check_time;   //检查时间
 
-    std::map<std::string, IaETFWorkerSingleStockPtr> m_trading_worker_map;
+    TiQuoteSnapshotStockField m_open_snap;    
+    std::set<int64_t> m_req_id_set;                                 // order_req_id
+    std::unordered_map<std::string, TiRtnOrderStatus> m_order_map;  // szOrderStreamId -> order_status
+private:
+    void updateExpectCost(TiQuoteSnapshotStockField* pData);
+    void updateStatus();
+    bool hasQueueOrder();
 public:
     int64_t open();
     json getStatusJson();
     bool isOver();
 public:
-    IaETFWorkerBasketStock(TiTraderClient* client, IaEtfQuoteDataCache* quote_cache, IaEtfSignalFactorPtr factor, std::string account, 
-        TI_TradeSideType side);
-    virtual ~IaETFWorkerBasketStock(){};
+    IaETFWorkerBatchStock(TiTraderClient* client, IaEtfQuoteDataCache* quote_cache, IaEtfSignalFactorPtr factor, std::string account, 
+       TI_TradeSideType side);
+    virtual ~IaETFWorkerBatchStock(){};
 };
 
-typedef std::shared_ptr<IaETFWorkerBasketStock> IaETFWorkerBasketStockPtr;
+typedef std::shared_ptr<IaETFWorkerBatchStock> IaETFWorkerBatchStockPtr;
 
 #endif

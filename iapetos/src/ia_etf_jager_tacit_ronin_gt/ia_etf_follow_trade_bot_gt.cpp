@@ -98,36 +98,7 @@ void IaEtfFollowTradeBotGt::OnCommonJsonRespones(const json* rspData, int req_id
         LOG(WARNING) << "OnCommonJsonRespones: rspData json is null, " << req_id << std::endl;
         return;
     }
-
-    /*
-    if (isLast)
-    {
-        std::cout << "OnCommonJsonRespones: " << isLast << " data:" <<  *rspData << std::endl;
-    }
-    */
-
-    if ((*rspData)["type"] == "onReqAccountDetail")
-    {
-        if (m_config)
-        {
-            if(!m_config->szAccountKey.empty())
-            {
-                json data = (*rspData)["data"];
-
-                std::string account_id = std::string(data["account_id"]);
-
-                std::shared_ptr<IaAccountDBInfo> account_info_ptr;
-                if (m_user_setting->GetAccountDBInfo(account_id, account_info_ptr))
-                {
-                    LOG(ERROR) << "GetAccountDBInfo: " << account_info_ptr->funding_account << " " << account_info_ptr->product_name << std::endl;
-                    data["product_name"] = account_info_ptr->product_name;
-                }
-
-                std::string key = m_config->szAccountKey;
-                m_redis->hmset(key.c_str(), account_id.c_str(), data.dump().c_str());
-            }
-        }
-    }
+    
 };   
 
 void IaEtfFollowTradeBotGt::OnRspAccountInfo(const TiRspAccountInfo* pData)
@@ -136,15 +107,25 @@ void IaEtfFollowTradeBotGt::OnRspAccountInfo(const TiRspAccountInfo* pData)
     TiRspAccountInfo data = {0};
     memcpy(&data, pData, sizeof(TiRspAccountInfo));
 
-    //strcpy(data.szAccount, "280094803");
-
     std::shared_ptr<IaAccountDBInfo> account_info_ptr;
     if (m_user_setting->GetAccountDBInfo(data.szAccount, account_info_ptr))
     {
         strcpy(data.szName, account_info_ptr->product_name.c_str());
     }
 
-    LOG(INFO) << "OnRspAccountInfo: " << data.szAccount << " " << data.szName << std::endl;
+    json j;
+    TiTraderFormater::FormatAccountInfo(&data, j);
+
+    if (m_config)
+    {
+        if(!m_config->szAccountKey.empty())
+        {
+            std::string key = m_config->szAccountKey;
+            m_redis->hmset(key.c_str(), data.szAccount, j.dump().c_str());
+        }
+    }
+
+    LOG(INFO) << "OnRspAccountInfo: " << data.szAccount << " " << j << std::endl;
 
     m_trade_center->OnRspAccountInfo(&data);
 };
@@ -227,18 +208,38 @@ void IaEtfFollowTradeBotGt::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
 
     if (m_config)
     {
-        json j;
-        TiTraderFormater::FormatOrderStatus(pData, j);
-
-        LOG(INFO) << "OnRtnOrderStatusEvent: "<< pData->szOrderStreamId << " " << j << std::endl;
-
-        if(!m_config->szOrderKey.empty())
+        try
         {
-            std::string key = m_config->szOrderKey;
-            key += ".";
-            key += pData->szAccount;
+            json j;
+            TiTraderFormater::FormatOrderStatus(pData, j);
 
-            m_redis->hmset(key.c_str(), pData->szOrderStreamId, j.dump().c_str());
+            LOG(INFO) << "OnRtnOrderStatusEvent: "<< pData->szOrderStreamId << " " << j << std::endl;
+
+            if(!m_config->szOrderKey.empty())
+            {
+                std::string key = m_config->szOrderKey;
+                key += ".";
+                key += pData->szAccount;
+
+                m_redis->hmset(key.c_str(), pData->szOrderStreamId, j.dump().c_str());
+            }
+        }
+        catch(const std::exception& e)
+        {
+            std::cout << "Order ID: " << pData->nOrderId << ", "
+                << "Submit Volume: " << pData->nSubmitVol << ", "
+                << "Dealt Price: " << pData->nDealtPrice << ", "
+                << "Dealt Volume: " << pData->nDealtVol << ", "
+                << "Total Withdrawn Volume: " << pData->nTotalWithDrawnVol << ", "
+                << "Invalid: " << pData->nInValid << ", "
+                << "Status: " << pData->nStatus << ", "
+                << "Insert Timestamp: " << pData->nInsertTimestamp << ", "
+                << "Last Update Timestamp: " << pData->nLastUpdateTimestamp << ", "
+                << "Used Time: " << pData->nUsedTime << ", "
+                << "Fee: " << pData->nFee << ", "
+                << "Order Stream ID: " << pData->szOrderStreamId << ", "
+                << "Shareholder ID: " << pData->szShareholderId << std::endl;
+            std::cerr << e.what() << '\n';
         }
     }
 };

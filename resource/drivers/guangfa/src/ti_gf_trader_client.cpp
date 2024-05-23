@@ -363,8 +363,8 @@ void TiGfTraderClient::OnRspOrderStatusInternalAck(const ATPRspOrderStatusAckMsg
             break;
         }
         
-        order_ptr->nOrderPrice = order_status_ack.price;
-        order_ptr->nOrderVol = order_status_ack.order_qty;
+        order_ptr->nOrderPrice = (double)order_status_ack.price / 10000;
+        order_ptr->nOrderVol = order_status_ack.order_qty / 100;
         m_order_map[order_status_ack.cl_ord_no] = order_ptr;
     }else{
         order_ptr = iter->second;
@@ -443,8 +443,8 @@ void TiGfTraderClient::OnRspOrderStatusAck(const ATPRspOrderStatusAckMsg& order_
             break;
         }
         
-        order_ptr->nOrderPrice = order_status_ack.price;
-        order_ptr->nOrderVol = order_status_ack.order_qty;
+        order_ptr->nOrderPrice = (double)order_status_ack.price / 10000;
+        order_ptr->nOrderVol = order_status_ack.order_qty / 100;
         m_order_map[order_status_ack.cl_ord_no] = order_ptr;
     }else{
         order_ptr = iter->second;
@@ -535,8 +535,8 @@ void TiGfTraderClient::OnRspCashAuctionTradeER(const ATPRspCashAuctionTradeERMsg
                 break;
             }
             
-            order_ptr->nOrderPrice = cash_auction_trade_er.price;
-            order_ptr->nOrderVol = cash_auction_trade_er.order_qty;
+            order_ptr->nOrderPrice = (double)cash_auction_trade_er.price / 10000;
+            order_ptr->nOrderVol = cash_auction_trade_er.order_qty /100;
 
             m_order_map[cash_auction_trade_er.cl_ord_no] = order_ptr;
         }else{
@@ -611,8 +611,8 @@ void TiGfTraderClient::OnRspETFRedemptionTradeER(const ATPRspETFRedemptionTradeE
                 break;
             }
             
-            order_ptr->nOrderPrice = etf_redemption_trade_er.price;
-            order_ptr->nOrderVol = etf_redemption_trade_er.order_qty;
+            order_ptr->nOrderPrice = (double)etf_redemption_trade_er.price / 10000;
+            order_ptr->nOrderVol = etf_redemption_trade_er.order_qty / 100;
 
             m_order_map[etf_redemption_trade_er.cl_ord_no] = order_ptr;
         }else{

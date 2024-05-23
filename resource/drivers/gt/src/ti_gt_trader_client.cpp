@@ -247,6 +247,24 @@ void TiGtTraderClient::onReqPositionDetail(const char* accountID, int nRequestId
         return;
     }
 
+/*
+struct TiRspQryPosition : TiBase_Msg
+{
+    TI_SymbolType       szSymbol;        //  证券合约代码
+    TI_SymbolNameType   szName;          //  证券名称
+    TI_ExchangeType     szExchange;      //  交易所
+    TI_AccountType      szAccount;       //  资金帐号
+    int32_t             nInitVol;        //  日初持仓量
+    int32_t             nLeavesVol;      //  剩余股份数量
+    int32_t             nAvailableVol;   //  可用股份数量
+    double              nMarketValue;    //  市值
+    double              nPrice;          //  持仓均价
+    double              nProfit;         //  浮盈（不含手续费）
+    double              nSettledProfit;  //  已结算的盈利（不含手续费）
+    TI_AccountType      szShareholderId; //  股东代码
+};
+*/
+
     std::shared_ptr<TiRspQryPosition> position_ptr = std::make_shared<TiRspQryPosition>();
     account_iter->second->enterPosition(position_ptr);
 
@@ -254,10 +272,13 @@ void TiGtTraderClient::onReqPositionDetail(const char* accountID, int nRequestId
     strcpy(position_ptr->szName, data->m_strInstrumentName);
     strcpy(position_ptr->szExchange, data->m_strExchangeID);
     strcpy(position_ptr->szAccount, data->m_strAccountID);
-    position_ptr->nPosition = data->m_nVolume;
+    position_ptr->nInitVol = data->m_nYesterdayVolume;
+    position_ptr->nLeavesVol = data->m_nVolume;
+    position_ptr->nAvailableVol = data->m_nCanUseVolume;
+    position_ptr->nMarketValue = data->m_dMarketValue;
     position_ptr->nPrice = data->m_dOpenPrice;
-    //position_ptr->nProfit = data->m_dProfitRate;
-    //position_ptr->nSettledProfit = data->m_dProfitRate;
+    position_ptr->nProfit = data->m_dFloatProfit;
+    position_ptr->nSettledProfit = data->m_dCloseProfit;
     strcpy(position_ptr->szShareholderId, data->m_strSecuAccount);
 
     m_cb->OnRspQryPosition(position_ptr.get(), isLast);
@@ -795,7 +816,6 @@ int TiGtTraderClient::orderInsert(TiReqOrderInsert* req){
     {
         return -1;
     }
-
     
     req->nReqId = ++nReqId;
 

@@ -17,7 +17,10 @@ IaETFWorkerBasketStock:: IaETFWorkerBasketStock(TiTraderClient* client, IaEtfQuo
 
 void IaETFWorkerBasketStock::OnRspOrderDelete(const TiRspOrderDelete* pData)
 {
-
+    for (auto iter = m_trading_worker_map.begin(); iter != m_trading_worker_map.end(); ++iter)
+    {
+        iter->second->OnRspOrderDelete(pData);
+    }
 };
 
 void IaETFWorkerBasketStock::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
@@ -52,7 +55,7 @@ int64_t IaETFWorkerBasketStock::open()
         //过滤掉现金替代品
         if (constituent_info_ptr->m_symbol == "159900")
         {
-            LOG(INFO) << "Cash-Must:  ETF" << m_status.symbol << " " << m_status.exchange<< " " << constituent_info_ptr->m_symbol << std::endl;
+            LOG(INFO) << "Cash-Must:  ETF " << m_status.symbol << "," << m_status.exchange<< "," << constituent_info_ptr->m_symbol << std::endl;
             continue;
         }
 
@@ -65,7 +68,7 @@ int64_t IaETFWorkerBasketStock::open()
         //过滤不在同一市场的股票
         if (constituent_info_ptr->m_exchange != m_status.exchange)
         {
-            LOG(INFO) << "Inter-Market:  ETF" << m_status.symbol << " " << m_status.exchange<< " " << constituent_info_ptr->m_symbol << std::endl;
+            LOG(INFO) << "Inter-Market:  ETF " << m_status.symbol << "," << m_status.exchange<< "," << constituent_info_ptr->m_symbol << std::endl;
             continue;
         }
 
@@ -73,12 +76,18 @@ int64_t IaETFWorkerBasketStock::open()
             constituent_info_ptr->m_symbol.c_str(), 
             constituent_info_ptr->m_exchange.c_str());
         
+        if (snap == nullptr)
+        {
+            LOG(INFO) << "No-Snapshot:  ETF " << m_status.symbol << "," << m_status.exchange<< "," << constituent_info_ptr->m_symbol << std::endl;
+            continue;
+        }
+        
         //跌停不买
         if (m_side == TI_TradeSideType_Buy)
         {
             if (snap->last == snap->low_limit)
             {
-                LOG(INFO) << "Low-Limit:  ETF" << m_status.symbol << " " << m_status.exchange<< " " << constituent_info_ptr->m_symbol << std::endl;
+                LOG(INFO) << "Low-Limit:  ETF " << m_status.symbol << "," << m_status.exchange<< "," << constituent_info_ptr->m_symbol << std::endl;
                 continue;
             }
         }
@@ -88,10 +97,12 @@ int64_t IaETFWorkerBasketStock::open()
         {
             if (snap->last == snap->high_limit)
             {
-                LOG(INFO) << "High-Limit:  ETF" << m_status.symbol << " " << m_status.exchange<< " " << constituent_info_ptr->m_symbol << std::endl;
+                LOG(INFO) << "High-Limit:  ETF " << m_status.symbol << "," << m_status.exchange<< "," << constituent_info_ptr->m_symbol << std::endl;
                 continue;
             }
         }
+        
+        LOG(INFO) << "Single Stock:  ETF " << m_status.symbol << "," << m_status.exchange<< "," << constituent_info_ptr->m_symbol << std::endl;
 
         IaETFWorkerSingleStockPtr worker = std::make_shared<IaETFWorkerSingleStock>(m_client, m_quote_cache, m_etf_factor, m_account, constituent_info_ptr, m_side);
         m_trading_worker_map[constituent_info_ptr->m_symbol] = worker;
@@ -103,6 +114,8 @@ int64_t IaETFWorkerBasketStock::open()
     {
         iter->second->open();
     }
+
+    return 0;
     //return req.nReqId;
 };
 
@@ -119,7 +132,7 @@ json IaETFWorkerBasketStock::getStatusJson()
 
 bool IaETFWorkerBasketStock::isOver()
 {
-    if (m_status.stock_num == m_status.over_num)
+    if (m_status.stock_num == m_status.over_num && m_status.stock_num)
     {
         return true;
     }

@@ -118,10 +118,6 @@ int64_t IaETFWorkerSellEtf::open()
     std::shared_ptr<IaEtfInfo> m_etf_info = m_etf_factor->GetEtfInfo();
     TiQuoteSnapshotStockField* etf_snap = m_quote_cache->GetStockSnapshot(m_etf_info->m_fundId.c_str(), m_etf_info->m_exchange.c_str());
 
-    json j;
-    TiQuoteFormater::FormatSnapshot(etf_snap, j);
-    std::cout << j.dump() << std::endl;
-
     if (etf_snap == nullptr)
     {
         return -1;
