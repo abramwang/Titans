@@ -189,8 +189,7 @@ void TiGfTraderClient::OnRspShareQueryResult(const ATPRspShareQueryResultMsg& sh
 	 " total_num : " << share_query_result.total_num << std::endl;
 	//std::vector<APIShareUnit>::iterator it;
 
-    
-	int i = 1;
+	size_t i = 1;
 	for (auto it = share_query_result.order_array.begin();
 		it != share_query_result.order_array.end(); it++)
 	{
@@ -282,10 +281,74 @@ void TiGfTraderClient::OnRspTradeOrderQueryResult(const ATPRspTradeOrderQueryRes
 	 " last_index : " << trade_order_query_result.last_index<<
 	 " total_num : " << trade_order_query_result.total_num << std::endl;
 
-	int i = 1;
+	size_t i = 1;
 	for (auto it = trade_order_query_result.order_array.begin();
 		it != trade_order_query_result.order_array.end(); it++)
-	{
+        {
+
+        std::shared_ptr<TiRtnOrderStatus> order_ptr;
+        auto iter = m_order_map.find(it->cl_ord_no);
+        if (iter == m_order_map.end())
+        {
+            order_ptr = std::make_shared<TiRtnOrderStatus>();
+            memset(order_ptr.get(), 0, sizeof(TiRtnOrderStatus));
+        }else{
+            order_ptr = iter->second;
+        }
+
+        strcpy(order_ptr->szSymbol, it->security_id);
+        strcpy(order_ptr->szName, it->security_symbol);
+        if (it->market_id == ATPMarketIDConst::kShangHai) {
+            strcpy(order_ptr->szExchange, "SH");
+        } else if (it->market_id == ATPMarketIDConst::kShenZhen) {
+            strcpy(order_ptr->szExchange, "SZ");
+        } else {
+            strcpy(order_ptr->szExchange, "");
+        }
+
+        switch (it->side)
+        {
+        case ATPSideConst::kSell:
+            order_ptr->nTradeSideType = TI_TradeSideType_Sell;
+            order_ptr->nBusinessType = TI_BusinessType_Stock;
+            break;
+        case ATPSideConst::kBuy:
+            order_ptr->nTradeSideType = TI_TradeSideType_Buy;
+            order_ptr->nBusinessType = TI_BusinessType_Stock;
+            break;
+        case ATPSideConst::kPurchase:
+            order_ptr->nTradeSideType = TI_TradeSideType_Purchase;
+            order_ptr->nBusinessType = TI_BusinessType_ETF;
+            break;
+        case ATPSideConst::kRedeem:
+            order_ptr->nTradeSideType = TI_TradeSideType_Redemption;
+            order_ptr->nBusinessType = TI_BusinessType_ETF;
+            break;
+        default:
+            break;
+        }
+
+        order_ptr->nOrderPrice = (double)it->last_px / 10000;
+        order_ptr->nOrderVol = it->order_qty / 100;
+        order_ptr->nDealtVol = it->last_qty / 100;
+        order_ptr->nDealtPrice = ((double)it->total_value_traded / 10000) / (it->last_qty / 100);
+        
+        order_ptr->nReqId = it->client_seq_id;
+        order_ptr->nOrderId = it->cl_ord_no;
+        strcpy(order_ptr->szOrderStreamId, it->order_id);
+        strcpy(order_ptr->szAccount, trade_order_query_result.fund_account_id);
+        order_ptr->nSubmitVol = it->order_qty / 100;
+        order_ptr->nFee = ((double)it->fee) / 10000;
+        order_ptr->nStatus = getOrderStatus(it->exec_type);
+        order_ptr->nLastUpdateTimestamp = datetime::get_timestamp_ms(it->transact_time);
+    
+        if (m_cb)
+        {
+            bool is_last = i == trade_order_query_result.order_array.size();
+            m_cb->OnRspQryOrder(order_ptr.get(), is_last);
+        }
+        
+/*
 		std::cout << " order_array_" << i << " : " << std::endl;
 		std::cout << " business_type : " << (int32_t)it->business_type<<
 		 " security_id : " << it->security_id<<
@@ -304,6 +367,8 @@ void TiGfTraderClient::OnRspTradeOrderQueryResult(const ATPRspTradeOrderQueryRes
 		 " last_qty : " << it->last_qty<<
 		 " total_value_traded : " << it->total_value_traded<<
 		 " fee : " << it->fee << std::endl;
+*/
+
 		i++;
 	}
 };
@@ -705,20 +770,6 @@ int TiGfTraderClient::loadConfig(std::string iniFileName){
 
 bool TiGfTraderClient::init_encrypt()
 {
-    const std::string station_name = ""; // 站点信息，该字段已经不使用
-    const std::string cfg_path=".";      // 配置文件路径
-    const std::string log_dir_path = ""; // 日志路径
-    bool record_all_flag = true;         // 是否记录所有委托信息
-    std::unordered_map<std::string,std::string> encrypt_cfg; // 加密库配置
-    bool connection_retention_flag=false;   // 是否启用会话保持
-
-    // encrypt_cfg参数填写：
-    encrypt_cfg["ENCRYPT_SCHEMA"]="1";              // 字符 0 表示 不对消息中的所有 password 加密
-    encrypt_cfg["ATP_ENCRYPT_PASSWORD"]="./librsa_2048_encrypt.so";         // 除登入及密码修改外其他消息的密码字段加密算法
-    encrypt_cfg["ATP_LOGIN_ENCRYPT_PASSWORD"]="";   // 登入及密码修改消息中密码字段的加密算法so路径
-    encrypt_cfg["GM_SM2_PUBLIC_KEY_PATH"]="";       // 采用国密算法时，通过该key配置 GM算法配置加密使用的公钥路径
-    encrypt_cfg["RSA_PUBLIC_KEY_PATH"]="./rsa_public_key.pem";          // 如果使用rsa算法加密，通过该key配置 rsa算法配置加密使用的公钥路径
-
     ATPRetCodeType ec = ATPTradeAPI::Init();
     if (ec != ErrorCode::kSuccess)
     {
@@ -875,12 +926,34 @@ bool TiGfTraderClient::init(ATPTradeAPI* client, ATPTradeHandler* handler)
     return true;
 };
 
+TI_OrderStatusType TiGfTraderClient::getOrderStatus(ATPExecTypeType status)
+{
+    switch (status)
+    {
+    case ATPExecTypeConst::kNew:
+        return TI_OrderStatusType_queued;
+    case ATPExecTypeConst::kInternal:
+        return TI_OrderStatusType_queued;
+    case ATPExecTypeConst::kCancelled:
+        return TI_OrderStatusType_removed;
+    case ATPExecTypeConst::kReject:
+        return TI_OrderStatusType_fail;
+    case ATPExecTypeConst::kTrade:
+        return TI_OrderStatusType_dealt;
+    case ATPExecTypeConst::kGold:
+        return TI_OrderStatusType_dealt;
+    default:
+        return TI_OrderStatusType_unAccept;
+    }
+    return TI_OrderStatusType_unAccept;
+};
+
 TI_OrderStatusType TiGfTraderClient::getOrderStatus(ATPOrdStatusType status)
 {
     switch (status)
     {
     case ATPOrdStatusConst::kNew:
-        return TI_OrderStatusType_unAccept;
+        return TI_OrderStatusType_queued;
     case ATPOrdStatusConst::kPartiallyFilled:
         return TI_OrderStatusType_dealt;
     case ATPOrdStatusConst::kFilled:
@@ -1068,6 +1141,39 @@ int TiGfTraderClient::orderDelete(TiReqOrderDelete* req){
     if(!m_config){
         LOG(INFO) << "[loadConfig] Do not have config info";
         return -1;
+    }
+    
+    TiRtnOrderStatus* order_ptr = getOrderStatus(-1, req->nOrderId);
+    if (order_ptr == NULL)
+    {
+        return -1;
+    }
+
+    ATPReqCancelOrderMsg msg = {};
+
+    msg.client_seq_id = ++nReqId;
+    strncpy(msg.cust_id, m_config->szCustomerId.c_str(), 17);                 // 客户号ID
+    strncpy(msg.fund_account_id, m_config->szFundAccount.c_str(), 17);               // 账户ID
+	msg.orig_cl_ord_no = req->nOrderId;
+
+    if (!strcmp(order_ptr->szExchange, "SH"))
+    {
+        msg.market_id = ATPMarketIDConst::kShangHai;             // 市场ID，上海
+        strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);               // 账户ID
+    }
+    if (!strcmp(order_ptr->szExchange, "SZ"))
+    {
+        msg.market_id = ATPMarketIDConst::kShenZhen;             // 市场ID，上海
+        strncpy(msg.account_id, m_config->szShareholderIdSZ.c_str(), 13);               // 账户ID
+    }
+
+	strncpy(msg.password, m_config->szFundPass.c_str(),129);
+    msg.client_feature_code = g_client_feature_code;         // 终端识别码
+
+    ATPRetCodeType ec = m_client->ReqCancelOrder(&msg);
+    if (ec != ErrorCode::kSuccess)
+    {
+        std::cout << "Invoke Send error:" << ec << std::endl;
     }
 
     return nReqId;

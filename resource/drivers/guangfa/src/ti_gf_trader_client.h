@@ -124,6 +124,7 @@ private:
     ATPRetCodeType login(ATPTradeAPI* client);
     ATPRetCodeType logout(ATPTradeAPI* client);
     bool init(ATPTradeAPI* client, ATPTradeHandler* handler);
+    TI_OrderStatusType getOrderStatus(ATPExecTypeType status);
     TI_OrderStatusType getOrderStatus(ATPOrdStatusType status);
 
     int orderInsertStock(TiReqOrderInsert* req);   //买卖
