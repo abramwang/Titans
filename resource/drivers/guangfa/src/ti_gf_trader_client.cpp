@@ -298,42 +298,57 @@ void TiGfTraderClient::OnRspOrderQueryResult(const ATPRspOrderQueryResultMsg& or
         order_ptr->nSubmitVol = it->order_qty / 100;
         order_ptr->nFee = ((double)it->frozen_fee) / 10000;
         order_ptr->nStatus = getOrderStatus(it->exec_type);
+        order_ptr->nInsertTimestamp = datetime::get_timestamp_ms(it->transact_time);
         order_ptr->nLastUpdateTimestamp = datetime::get_timestamp_ms(it->transact_time);
     
         if (m_cb)
         {
             bool is_last = i == order_query_result.order_array.size();
+            if (is_last)
+            {
+                is_last = order_query_result.last_index >= (order_query_result.total_num - 1);
+            }
             m_cb->OnRspQryOrder(order_ptr.get(), is_last);
         }
 
         /*
-		std::cout << " order_array_" << i << " : " << std::endl;
-		std::cout << " business_type : " << (int32_t)it->business_type<<
-		 " security_id : " << it->security_id<<
-		 " security_symbol : " << it->security_symbol<<
-		 " market_id : " << it->market_id<<
-		 " account_id : " << it->account_id<<
-		 " side : " << it->side<<
-		 " ord_type : " << it->ord_type<<
-		 " ord_status : " << (int32_t)it->ord_status<<
-		 " transact_time : " << it->transact_time<<
-		 " order_price : " << it->order_price<<
-		 " exec_price : " << it->exec_price<<
-		 " order_qty : " << it->order_qty<<
-		 " leaves_qty : " << it->leaves_qty<<
-		 " cum_qty : " << it->cum_qty<<
-		 " cl_ord_no : " << it->cl_ord_no<<
-		 " order_id : " << it->order_id<<
-		 " cl_ord_id : " << it->cl_ord_id<<
-		 " client_seq_id : " << it->client_seq_id<<
-		 " orig_cl_ord_no : " << it->orig_cl_ord_no<<
-		 " frozen_trade_value : " << it->frozen_trade_value<<
-		 " frozen_fee : " << it->frozen_fee<<
-		 " reject_reason_code : " << it->reject_reason_code<<
-		 " ord_rej_reason : " << it->ord_rej_reason << std::endl;
-        */
+        if(std::strcmp(it->security_id,"159150") == 0)
+        {
+            std::cout << " order_array_" << i << " : " << std::endl;
+            std::cout << " business_type : " << (int32_t)it->business_type<<
+            ", security_id : " << it->security_id<<
+            ", security_symbol : " << it->security_symbol<<
+            ", market_id : " << it->market_id<<
+            ", account_id : " << it->account_id<<
+            ", side : " << it->side<<
+            ", ord_type : " << it->ord_type<<
+            ", ord_status : " << (int32_t)it->ord_status<<
+            ", transact_time : " << it->transact_time<<
+            ", order_price : " << it->order_price<<
+            ", exec_price : " << it->exec_price<<
+            ", order_qty : " << it->order_qty<<
+            ", leaves_qty : " << it->leaves_qty<<
+            ", cum_qty : " << it->cum_qty<<
+            ", cl_ord_no : " << it->cl_ord_no<<
+            ", order_id : " << it->order_id<<
+            ", cl_ord_id : " << it->cl_ord_id<<
+            ", client_seq_id : " << it->client_seq_id<<
+            ", orig_cl_ord_no : " << it->orig_cl_ord_no<<
+            ", frozen_trade_value : " << it->frozen_trade_value<<
+            ", frozen_fee : " << it->frozen_fee<<
+            ", reject_reason_code : " << it->reject_reason_code<<
+            ", ord_rej_reason : " << it->ord_rej_reason << std::endl;
+        }
+//*/
 		i++;
 	}
+
+    if (order_query_result.last_index < (order_query_result.total_num - 1))
+    {
+        QueryOrders(order_query_result.last_index);
+    }else{
+        std::cout << "QueryOrders Done!" << std::endl;
+    }
 };
 
 void TiGfTraderClient::OnRspTradeOrderQueryResult(const ATPRspTradeOrderQueryResultMsg& trade_order_query_result)
@@ -395,36 +410,47 @@ void TiGfTraderClient::OnRspTradeOrderQueryResult(const ATPRspTradeOrderQueryRes
         }
         strcpy(match_ptr->szStreamId, it->exec_id);
         strcpy(match_ptr->szAccount, trade_order_query_result.fund_account_id);
+        match_ptr->nMatchTimestamp = datetime::get_timestamp_ms(it->transact_time);
 
         if (m_cb)
         {
             bool is_last = i == trade_order_query_result.order_array.size();
+            if (is_last)
+            {
+                is_last = trade_order_query_result.last_index >= (trade_order_query_result.total_num - 1);
+            }
             m_cb->OnRspQryMatch(match_ptr.get(), is_last);
         }
         
-///*
+/*
 		std::cout << " order_array_" << i << " : " << std::endl;
 		std::cout << " business_type : " << (int32_t)it->business_type<<
-		 " security_id : " << it->security_id<<
-		 " security_symbol : " << it->security_symbol<<
-		 " market_id : " << it->market_id<<
-		 " account_id : " << it->account_id<<
-		 " side : " << it->side<<
-		 " ord_type : " << it->ord_type<<
-		 " exec_type : " << it->exec_type<<
-		 " exec_id : " << it->exec_id<<
-		 " cl_ord_no : " << it->cl_ord_no<<
-		 " order_id : " << it->order_id<<
-		 " cl_ord_id : " << it->cl_ord_id<<
-		 " transact_time : " << it->transact_time<<
-		 " last_px : " << it->last_px<<
-		 " last_qty : " << it->last_qty<<
-		 " total_value_traded : " << it->total_value_traded<<
-		 " fee : " << it->fee << std::endl;
+		 ", security_id : " << it->security_id<<
+		 ", security_symbol : " << it->security_symbol<<
+		 ", market_id : " << it->market_id<<
+		 ", account_id : " << it->account_id<<
+		 ", side : " << it->side<<
+		 ", ord_type : " << it->ord_type<<
+		 ", exec_type : " << it->exec_type<<
+		 ", exec_id : " << it->exec_id<<
+		 ", cl_ord_no : " << it->cl_ord_no<<
+		 ", order_id : " << it->order_id<<
+		 ", cl_ord_id : " << it->cl_ord_id<<
+		 ", transact_time : " << it->transact_time<<
+		 ", last_px : " << it->last_px<<
+		 ", last_qty : " << it->last_qty<<
+		 ", total_value_traded : " << it->total_value_traded<<
+		 ", fee : " << it->fee << std::endl;
 //*/
-
 		i++;
 	}
+    
+    if (trade_order_query_result.last_index < (trade_order_query_result.total_num - 1))
+    {
+        QueryMatches(trade_order_query_result.last_index);
+    }else{
+        std::cout << "QueryMatches Done!" << std::endl;
+    }
 };
 
 
@@ -1167,13 +1193,15 @@ int TiGfTraderClient::orderInsertStock(TiReqOrderInsert* req){
         break;
     }
     msg.order_type = ATPOrdTypeConst::kFixedNew;             // 订单类型，限价
-    msg.price = (int(req->nOrderPrice * 10000 + 5)/100 * 100);   // 委托价格 N13(4)，21.0000元
+    msg.price = (int(req->nOrderPrice * 10000 + 5)/10 * 10);   // 委托价格 N13(4)，21.0000元
     msg.order_qty = req->nOrderVol * 100;                    // (需要 * 100才是股数) 申报数量N15(2)；股票为股、基金为份、上海债券默认为张（使用时请务必与券商确认），其他为张；1000.00股
     msg.client_seq_id = nReqId;                              // 用户系统消息序号
     msg.order_way = '0';                                     // 委托方式，自助委托
     //msg.order_way = 'R';                                     // 委托方式，自助委托
     strncpy(msg.password, "password1", 129);                 // 客户密码
     msg.client_feature_code = g_client_feature_code;         // 终端识别码
+
+    std::cout << "Send Order: " << req->szSymbol << " " << msg.price << " " << msg.order_qty << std::endl;
 
     std::shared_ptr<TiRtnOrderStatus> order_ptr = std::make_shared<TiRtnOrderStatus>();
     memset(order_ptr.get(), 0, sizeof(TiRtnOrderStatus));
@@ -1276,14 +1304,14 @@ int TiGfTraderClient::orderInsert(TiReqOrderInsert* req){
     int64_t             nReqTimestamp;  //  下单本地时间
     */
     std::cout << "TiGfTraderClient::orderInsert: " << req->szSymbol 
-        << " " << req->szName
-        << " " << req->szExchange
-        << " " << req->szAccount
-        << " " << req->nTradeSideType
-        << " " << req->nOffsetType
-        << " " << req->nBusinessType
-        << " " << req->nOrderPrice
-        << " " << req->nOrderVol << std::endl;
+        << "szName " << req->szName
+        << ", szExchange " << req->szExchange
+        << ", szAccount " << req->szAccount
+        << ", nTradeSideType " << req->nTradeSideType
+        << ", nOffsetType " << req->nOffsetType
+        << ", nBusinessType " << req->nBusinessType
+        << ", nOrderPrice " << req->nOrderPrice
+        << ", nOrderVol " << req->nOrderVol << std::endl;
 
     if(req->nBusinessType == TI_BusinessType_Stock){
         return orderInsertStock(req);
@@ -1361,19 +1389,17 @@ int TiGfTraderClient::QueryAsset()
 
     strncpy(msg.cust_id, m_config->szCustomerId.c_str(), 17);                 // 客户号ID
     strncpy(msg.fund_account_id, m_config->szFundAccount.c_str(), 17);        // 资金账户ID
-    strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);               // 账户ID
+    strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);         // 账户ID
 	msg.client_seq_id = seq_id;
 	strncpy(msg.password, m_config->szFundPass.c_str(),129);
-
-    
-    //strncpy(msg.account_id, m_config->szShareholderIdSZ.c_str(), 13);               // 账户ID
+    msg.client_feature_code = g_client_feature_code;                          // 终端识别码
 
     m_client->ReqFundQuery(&msg);
 
     return nReqId;
 };
 
-int TiGfTraderClient::QueryOrders()
+int TiGfTraderClient::QueryOrders(int64_t start_index)
 {
     if(!m_config){
         LOG(INFO) << "[loadConfig] Do not have config info";
@@ -1384,16 +1410,24 @@ int TiGfTraderClient::QueryOrders()
 
     strncpy(msg.cust_id, m_config->szCustomerId.c_str(), 17);                 // 客户号ID
     strncpy(msg.fund_account_id, m_config->szFundAccount.c_str(), 17);        // 资金账户ID
-    strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);               // 账户ID
+    //strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);       // 股东户ID
+    msg.query_index = start_index;                                            // 查询起始位置
 	msg.client_seq_id = seq_id;
+    //msg.return_seq = ATPReturnSeqConst::kTimeOrderRe;                       // 返回的顺序
 	strncpy(msg.password, m_config->szFundPass.c_str(),129);
+    msg.client_feature_code = g_client_feature_code;                          // 终端识别码
 
     m_client->ReqOrderQuery(&msg);
 
     return nReqId;
 };
 
-int TiGfTraderClient::QueryMatches()
+int TiGfTraderClient::QueryOrders()
+{
+    return QueryOrders(0);
+};
+
+int TiGfTraderClient::QueryMatches(int64_t start_index)
 {
     if(!m_config){
         LOG(INFO) << "[loadConfig] Do not have config info";
@@ -1404,13 +1438,19 @@ int TiGfTraderClient::QueryMatches()
 
     strncpy(msg.cust_id, m_config->szCustomerId.c_str(), 17);                 // 客户号ID
     strncpy(msg.fund_account_id, m_config->szFundAccount.c_str(), 17);        // 资金账户ID
-    strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);               // 账户ID
+    //strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);       // 股东户ID
 	msg.client_seq_id = seq_id;
 	strncpy(msg.password, m_config->szFundPass.c_str(),129);
+    //msg.return_seq = ATPReturnSeqConst::kTimeOrderRe;                         // 返回的顺序
+    msg.client_feature_code = g_client_feature_code;                          // 终端识别码
 
     m_client->ReqTradeOrderQuery(&msg);
 
     return nReqId;
+};
+int TiGfTraderClient::QueryMatches()
+{
+    return QueryMatches(0);
 };
 
 int TiGfTraderClient::QueryPositions()
@@ -1425,13 +1465,10 @@ int TiGfTraderClient::QueryPositions()
 	
     strncpy(msg.cust_id, m_config->szCustomerId.c_str(), 17);                 // 客户号ID
     strncpy(msg.fund_account_id, m_config->szFundAccount.c_str(), 17);        // 资金账户ID
-    strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);               // 账户ID
+    //strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);       // 账户ID
 	msg.client_seq_id = seq_id;
 	strncpy(msg.password, m_config->szFundPass.c_str(),129);
-
-	//APIAccountIDUnit api_account_unit;
-	//strncpy(api_account_unit.account_id,account_id.c_str(),13);
-	//msg.account_id_array.push_back(api_account_unit);
+    msg.client_feature_code = g_client_feature_code;                          // 终端识别码
 
     m_client->ReqShareQuery(&msg);
 

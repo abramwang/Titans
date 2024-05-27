@@ -28,15 +28,16 @@ void IaETFWorkerSingleStock::OnRspOrderDelete(const TiRspOrderDelete* pData)
 
 void IaETFWorkerSingleStock::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
 {
-    auto iter = m_order_map.find(pData->szOrderStreamId);
-    if (iter != m_order_map.end())
+    auto iter = m_req_id_set.find(pData->nReqId);
+    if (iter == m_req_id_set.end())
     {
-        m_order_map[pData->szOrderStreamId] = *pData;
+        return;
     }
-    if (m_req_id_set.find(pData->nReqId) != m_req_id_set.end())
+    if(isOver())
     {
-        m_order_map[pData->szOrderStreamId] = *pData;
+        return;
     }
+    m_order_map[pData->szOrderStreamId] = *pData;
     updateStatus();
 };
 
@@ -89,8 +90,9 @@ void IaETFWorkerSingleStock::updateExpectCost(TiQuoteSnapshotStockField* pData)
 
 void IaETFWorkerSingleStock::updateStatus()
 {
-    m_status.finish_volume = 0;
     m_status.real_cost = 0;
+    m_status.finish_volume = 0;
+
     for (auto iter = m_order_map.begin(); iter != m_order_map.end(); ++iter)
     {
         m_status.real_cost += (double)iter->second.nDealtVol * iter->second.nDealtPrice;
@@ -120,16 +122,17 @@ int64_t IaETFWorkerSingleStock::open()
     {
         return -1;
     }
-
     
     double vol = m_status.volume - m_status.finish_volume;
 
     TiReqOrderInsert req;
+    memset(&req, 0, sizeof(TiReqOrderInsert));
+    strcpy(req.szSymbol, m_status.symbol.c_str());
+    strcpy(req.szExchange, m_status.exchange.c_str());
+    strcpy(req.szAccount, m_account.c_str());
     req.nTradeSideType = m_side;
     req.nBusinessType = TI_BusinessType_Stock;
-    strcpy(req.szExchange, m_status.exchange.c_str());
-    strcpy(req.szSymbol, m_status.symbol.c_str());
-    strcpy(req.szAccount, m_account.c_str());
+    req.nOffsetType = TI_OffsetType_Open;
     if (m_side == TI_TradeSideType_Buy)
     {
         req.nOrderPrice = IaEtfPriceTool::get_order_price(
@@ -141,8 +144,8 @@ int64_t IaETFWorkerSingleStock::open()
             m_status.volume, snap->bid_price, snap->bid_volume, TI_STOCK_ARRAY_LEN);
     }
     req.nOrderVol = vol;
-    strcpy(req.szUseStr, "jager");
     req.nReqTimestamp = datetime::get_now_timestamp_ms();
+    strcpy(req.szUseStr, "jager");
 
     m_client->orderInsert(&req);
 

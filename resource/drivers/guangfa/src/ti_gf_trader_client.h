@@ -138,7 +138,9 @@ public:
     
     
     int QueryAsset();
+    int QueryOrders(int64_t start_index);
     int QueryOrders();
+    int QueryMatches(int64_t start_index);
     int QueryMatches();
     int QueryPositions();
     

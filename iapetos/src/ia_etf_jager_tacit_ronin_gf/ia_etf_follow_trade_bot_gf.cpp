@@ -149,6 +149,13 @@ void IaEtfFollowTradeBotGf::OnRspOrderDelete(const TiRspOrderDelete* pData)
 void IaEtfFollowTradeBotGf::OnRspQryOrder(const TiRspQryOrder* pData, bool isLast)
 {
     Locker locker(&m_mutex);
+    
+    //没有交易所系统id就不处理
+    if (strcmp(pData->szOrderStreamId, "") == 0)
+    {
+        return;
+    }
+
     m_trade_center->OnRspQryOrder(pData, isLast);
 
     if (m_config)
@@ -171,6 +178,13 @@ void IaEtfFollowTradeBotGf::OnRspQryOrder(const TiRspQryOrder* pData, bool isLas
 void IaEtfFollowTradeBotGf::OnRspQryMatch(const TiRspQryMatch* pData, bool isLast)
 {
     Locker locker(&m_mutex);
+    
+    //没有交易所系统id就不处理
+    if (strcmp(pData->szStreamId, "") == 0)
+    {
+        return;
+    }
+
     m_trade_center->OnRspQryMatch(pData, isLast);
 
     if (m_config)
@@ -318,7 +332,7 @@ void IaEtfFollowTradeBotGf::OnTimer()
             }
             m_influxdb_client->write(m_config->szInfluxBucket.c_str(), m_config->szInfluxOrg.c_str(), "ms");
             //m_redis->xadd(m_config->szSignalStream.c_str(), signal_array.dump().c_str(), 2000);
-            std::cout << "[IaEtfFollowTradeBotGf::OnTimer] signal_size: " << signal_out.size() << std::endl;
+            //std::cout << "[IaEtfFollowTradeBotGf::OnTimer] signal_size: " << signal_out.size() << std::endl;
         }catch(std::exception& e){
             std::cout << "[IaEtfFollowTradeBotGf::OnTimer] " << e.what() << std::endl;
         }catch(...){
