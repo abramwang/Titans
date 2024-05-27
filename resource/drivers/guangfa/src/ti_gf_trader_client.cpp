@@ -1440,6 +1440,7 @@ int TiGfTraderClient::QueryMatches(int64_t start_index)
     strncpy(msg.fund_account_id, m_config->szFundAccount.c_str(), 17);        // 资金账户ID
     //strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);       // 股东户ID
 	msg.client_seq_id = seq_id;
+    msg.query_index = start_index; 
 	strncpy(msg.password, m_config->szFundPass.c_str(),129);
     //msg.return_seq = ATPReturnSeqConst::kTimeOrderRe;                         // 返回的顺序
     msg.client_feature_code = g_client_feature_code;                          // 终端识别码
