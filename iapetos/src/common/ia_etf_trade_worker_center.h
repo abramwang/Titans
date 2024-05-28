@@ -51,7 +51,9 @@ private:
     std::list<IaETFTradingWorkerPtr> m_over_trading_worker_list;
 private:
     bool get_position(const std::string &account, const std::string &symbol, TiRspQryPosition &position);
-    void create_trading_worker(const std::string &symbol, const std::string &account, TI_TradeSideType side, std::shared_ptr<IaEtfSignalFactor> etf_factor);
+    void create_etf_smart_worker(const std::string &symbol, const std::string &account, TI_TradeSideType side, std::shared_ptr<IaEtfSignalFactor> etf_factor);
+    void create_etf_trading_worker(bool etf, const std::string &symbol, const std::string &account, TI_TradeSideType side, std::shared_ptr<IaEtfSignalFactor> etf_factor);
+
 
 public:
     IaEtfTradeWorkerCenter(TiTraderClient* trade_client, 

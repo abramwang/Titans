@@ -108,9 +108,9 @@ bool IaEtfTradeWorkerCenter::get_position(const std::string &account, const std:
     return true;
 };
 
-void IaEtfTradeWorkerCenter::create_trading_worker(const std::string &symbol, const std::string &account, TI_TradeSideType side, std::shared_ptr<IaEtfSignalFactor> etf_factor)
+void IaEtfTradeWorkerCenter::create_etf_smart_worker(const std::string &symbol, const std::string &account, TI_TradeSideType side, std::shared_ptr<IaEtfSignalFactor> etf_factor)
 {
-    std::cout << "IaEtfTradeWorkerCenter::create_trading_worker" << symbol << " " << account << " " << side<< std::endl;
+    std::cout << "IaEtfTradeWorkerCenter::create_etf_smart_worker" << symbol << " " << account << " " << side<< std::endl;
     std::cout << etf_factor->m_info.diff << " creation_profit:" << etf_factor->m_info.creation_profit << " redemption_profit:"  << etf_factor->m_info.redemption_profit << std::endl;
 
     IaETFTradingWorkerPtr worker;
@@ -142,6 +142,39 @@ void IaEtfTradeWorkerCenter::create_trading_worker(const std::string &symbol, co
     worker->open();
 };
 
+void IaEtfTradeWorkerCenter::create_etf_trading_worker(bool etf, const std::string &symbol, const std::string &account, TI_TradeSideType side, std::shared_ptr<IaEtfSignalFactor> etf_factor)
+{
+    std::cout << "IaEtfTradeWorkerCenter::create_etf_trading_worker" << symbol << " " << account << " " << side<< std::endl;
+    std::cout << etf_factor->m_info.diff << " creation_profit:" << etf_factor->m_info.creation_profit << " redemption_profit:"  << etf_factor->m_info.redemption_profit << std::endl;
+
+
+    IaETFTradingWorkerPtr worker;
+    
+    if (etf)
+    {
+        if (side == TI_TradeSideType_Buy)
+        {
+            worker = std::make_shared<IaETFWorkerBuyEtf>(m_trade_client, m_quote_cache, etf_factor, account);
+        }
+        else if (side == TI_TradeSideType_Sell)
+        {
+            worker = std::make_shared<IaETFWorkerSellEtf>(m_trade_client, m_quote_cache, etf_factor, account);
+        }
+        else
+        {
+            return;
+        }
+    }
+    else
+    {
+        worker = std::make_shared<IaETFWorkerBasketStock>(m_trade_client, m_quote_cache, etf_factor, account, side);
+    }
+    
+    m_trading_worker_list.push_back(worker);
+    worker->open();
+};
+
+
 void IaEtfTradeWorkerCenter::OnTradingSignal(json &msg)
 {
     std::cout << "IaEtfTradeWorkerCenter::OnTradingSignal" << msg << std::endl;
@@ -171,6 +204,21 @@ void IaEtfTradeWorkerCenter::OnTradingSignal(json &msg)
         return;
     }
 
+    bool enable_smart = true;
+    bool etf = false;
+
+    if (msg.contains("security_type"))
+    {
+        enable_smart = false;
+        std::string security_type = msg["security_type"].get<std::string>();
+        if (security_type == "ETF")
+        {
+            etf = true;
+        }else{
+            etf = false;
+        }
+    }
+
 
     TI_TradeSideType side = TI_TradeSideType_Default;
 
@@ -198,8 +246,14 @@ void IaEtfTradeWorkerCenter::OnTradingSignal(json &msg)
         for (auto account_iter = msg["account_list"].begin(); account_iter !=  msg["account_list"].end(); account_iter++)
         {
             std::string account = account_iter.value();
-
-            create_trading_worker(symbol, account, side, etf_factor);
+            if (enable_smart)
+            {
+                create_etf_smart_worker(symbol, account, side, etf_factor);
+            }
+            else
+            {
+                create_etf_trading_worker(etf, symbol, account, side, etf_factor);
+            }
         }
     }
     

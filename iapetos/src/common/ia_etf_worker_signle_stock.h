@@ -35,6 +35,7 @@ public:
         int32_t volume;
         double real_cost;
         int32_t finish_volume;
+        int32_t error_times;
     }; 
 public:
     virtual void OnCommonJsonRespones(const json* rspData, int req_id, bool isLast, int err, const char* err_str){};     //非交易逻辑的统一实现接口
