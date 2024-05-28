@@ -159,6 +159,7 @@ struct TiRtnOrderMatch : TiBase_Msg
     TI_OrderIdType      szStreamId;         //  成交编号（broker 或交易所的唯一编号）
     double              nMatchPrice;        //  成交价
     int32_t             nMatchVol;          //  成交量
+    double              nFee;               //  手续费
     TI_AccountType      szAccount;          //  资金帐号
     int64_t             nMatchTimestamp;    //  成交时间戳
     TI_TradeSideType    nTradeSideType;     //  交易类型 买、卖

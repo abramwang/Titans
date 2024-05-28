@@ -105,6 +105,7 @@ void TiTraderFormater::FormatOrderMatchEvent(const TiRtnOrderMatch* pData, json&
         {"szStreamId" , pData->szStreamId},
         {"nMatchPrice" , pData->nMatchPrice},
         {"nMatchVol" , pData->nMatchVol},
+        {"nFee" , pData->nFee},
         {"szMatchTime" , datetime::get_format_timestamp_ms(pData->nMatchTimestamp)},
         {"nTradeSideType" , pData->nTradeSideType},
         {"szShareholderId" , pData->szShareholderId},

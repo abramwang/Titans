@@ -90,6 +90,12 @@ public:
 	 * @param[in] order_query_result 订单查询结果消息
 	 */
 	virtual void OnRspOrderQueryResult(const ATPRspOrderQueryResultMsg& order_query_result) ;
+    /**
+     * @brief ETF申赎成交查询结果
+     * @param[in] ATPRspETFTradeOrderQueryResultMsg
+     * @type query
+     */
+    virtual void OnRspEtfTradeOrderQueryResult(const ATPRspETFTradeOrderQueryResultMsg &trade_order_query_result);
 	/**
 	 * @brief 成交查询结果
 	 * @param[in] trade_order_query_result 成交查询结果消息
@@ -116,6 +122,9 @@ public:
     // 订单下达内部拒绝
     virtual void OnRspBizRejection(const ATPRspBizRejectionOtherMsg& biz_rejection);
 
+
+    void onOrderRtn(const ATPRspOrderStatusAckMsg& msg);
+    void onCancelOrderRtn(const ATPRspOrderStatusAckMsg& msg);
 private:
     int loadConfig(std::string iniFileName);
     bool init_encrypt();
@@ -127,8 +136,16 @@ private:
     TI_OrderStatusType getOrderStatus(ATPExecTypeType status);
     TI_OrderStatusType getOrderStatus(ATPOrdStatusType status);
 
+    
+    std::shared_ptr<TiRtnOrderStatus> getOrderPtr(int64_t req_id, int64_t order_id);
+    void updateOrderMap(std::shared_ptr<TiRtnOrderStatus> order_ptr);
+    void updateOrderMatch(std::shared_ptr<TiRtnOrderMatch> match_ptr);
+
     int orderInsertStock(TiReqOrderInsert* req);   //买卖
     int orderInsertEtf(TiReqOrderInsert* req);     //申赎
+    int queryOrders(int64_t start_index);
+    int queryEtfOrders(int64_t start_index);
+    int queryMatches(int64_t start_index);
 public:
 	void connect();
     int orderInsertBatch(std::vector<TiReqOrderInsert> &req_vec, std::string account_id){return -1;};
@@ -138,9 +155,7 @@ public:
     
     
     int QueryAsset();
-    int QueryOrders(int64_t start_index);
     int QueryOrders();
-    int QueryMatches(int64_t start_index);
     int QueryMatches();
     int QueryPositions();
     
