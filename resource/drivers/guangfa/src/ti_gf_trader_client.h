@@ -146,6 +146,7 @@ private:
     int queryOrders(int64_t start_index);
     int queryEtfMatches(int64_t start_index);
     int queryMatches(int64_t start_index);
+    int queryPositions(int64_t start_index);
 public:
 	void connect();
     int orderInsertBatch(std::vector<TiReqOrderInsert> &req_vec, std::string account_id){return -1;};

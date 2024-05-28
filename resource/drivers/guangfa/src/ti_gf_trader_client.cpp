@@ -214,15 +214,25 @@ void TiGfTraderClient::OnRspShareQueryResult(const ATPRspShareQueryResultMsg& sh
         position.nSettledProfit = 0;
         strcpy(position.szShareholderId, it->account_id);
 
-        bool is_last = i == share_query_result.order_array.size();
-
         if (m_cb)
         {
+            bool is_last = i == share_query_result.order_array.size();
+            if (is_last)
+            {
+                is_last = share_query_result.last_index >= (share_query_result.total_num - 1);
+            }
             m_cb->OnRspQryPosition(&position, is_last);
         }
 
 		i++;
 	}
+
+    if (share_query_result.last_index < (share_query_result.total_num - 1))
+    {
+        queryPositions(share_query_result.last_index);
+    }else{
+        std::cout << "QueryPositions Done!" << std::endl;
+    }
 };
 
 void TiGfTraderClient::OnRspOrderQueryResult(const ATPRspOrderQueryResultMsg& order_query_result)
@@ -1273,6 +1283,29 @@ int TiGfTraderClient::queryMatches(int64_t start_index)
     return nReqId;
 };
 
+int TiGfTraderClient::queryPositions(int64_t start_index)
+{
+    if(!m_config){
+        LOG(INFO) << "[loadConfig] Do not have config info";
+        return -1;
+    }
+
+    ATPClientSeqIDType seq_id = ++nReqId;
+	ATPReqShareQueryMsg msg;
+	
+    strncpy(msg.cust_id, m_config->szCustomerId.c_str(), 17);                 // 客户号ID
+    strncpy(msg.fund_account_id, m_config->szFundAccount.c_str(), 17);        // 资金账户ID
+    //strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);       // 账户ID
+	msg.client_seq_id = seq_id;
+    msg.query_index = start_index; 
+	strncpy(msg.password, m_config->szFundPass.c_str(),129);
+    msg.client_feature_code = g_client_feature_code;                          // 终端识别码
+
+    m_client->ReqShareQuery(&msg);
+
+    return nReqId;
+};
+
 ////////////////////////////////////////////////////////////////////////
 // 对外接口
 ////////////////////////////////////////////////////////////////////////
@@ -1423,22 +1456,5 @@ int TiGfTraderClient::QueryMatches()
 
 int TiGfTraderClient::QueryPositions()
 {
-    if(!m_config){
-        LOG(INFO) << "[loadConfig] Do not have config info";
-        return -1;
-    }
-
-    ATPClientSeqIDType seq_id = ++nReqId;
-	ATPReqShareQueryMsg msg;
-	
-    strncpy(msg.cust_id, m_config->szCustomerId.c_str(), 17);                 // 客户号ID
-    strncpy(msg.fund_account_id, m_config->szFundAccount.c_str(), 17);        // 资金账户ID
-    //strncpy(msg.account_id, m_config->szShareholderIdSH.c_str(), 13);       // 账户ID
-	msg.client_seq_id = seq_id;
-	strncpy(msg.password, m_config->szFundPass.c_str(),129);
-    msg.client_feature_code = g_client_feature_code;                          // 终端识别码
-
-    m_client->ReqShareQuery(&msg);
-
-    return nReqId;
+    return queryPositions(0);
 };
