@@ -22,6 +22,16 @@ long long datetime::get_time_num()
     return tm_t->tm_hour*10000000 + tm_t->tm_min*100000 + tm_t->tm_sec*1000 + time.tv_usec/1000;
 };
 
+long long datetime::get_time_sec_num(){
+    struct tm *tm_t;
+    struct timeval time;
+    
+    gettimeofday(&time,NULL);
+    tm_t = localtime(&time.tv_sec);
+    
+    return tm_t->tm_hour*10000 + tm_t->tm_min*100 + tm_t->tm_sec;
+};
+
 long long datetime::get_timestamp(){
     time_t t;
     time(&t);

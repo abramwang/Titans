@@ -364,7 +364,6 @@ void TiGfTraderClient::OnRspEtfTradeOrderQueryResult(const ATPRspETFTradeOrderQu
         " last_index : " << trade_order_query_result.last_index<<
         " total_num : " << trade_order_query_result.total_num << std::endl;
 
-
     std::vector<std::shared_ptr<TiRtnOrderMatch>> match_array;
 
 	for (auto it = trade_order_query_result.order_array.begin();
@@ -375,70 +374,69 @@ void TiGfTraderClient::OnRspEtfTradeOrderQueryResult(const ATPRspETFTradeOrderQu
             continue;
         }
 
-        std::shared_ptr<TiRtnOrderMatch> match_ptr = std::make_shared<TiRtnOrderMatch>();
-        memset(match_ptr.get(), 0, sizeof(TiRtnOrderMatch));
-
-        strcpy(match_ptr->szSymbol, it->security_id);
-        strcpy(match_ptr->szName, it->security_symbol);
-        if (it->market_id == ATPMarketIDConst::kShangHai) {
-            strcpy(match_ptr->szExchange, "SH");
-        } else if (it->market_id == ATPMarketIDConst::kShenZhen) {
-            strcpy(match_ptr->szExchange, "SZ");
-        } else {
-            strcpy(match_ptr->szExchange, "");
-        }
-
-        switch (it->side)
-        {
-        case ATPSideConst::kPurchase:
-            match_ptr->nTradeSideType = TI_TradeSideType_Purchase;
-            break;
-        case ATPSideConst::kRedeem:
-            match_ptr->nTradeSideType = TI_TradeSideType_Redemption;
-            break;
-        default:
-            continue;
-            break;
-        }
-
-        match_ptr->nMatchVol = it->last_qty / 100;
-        match_ptr->nMatchPrice = ((double)it->total_value_traded / 10000) / (it->last_qty / 100);
-        match_ptr->nFee = ((double)it->fee) / 10000;
-        match_ptr->nOrderId = it->cl_ord_no;
-        strcpy(match_ptr->szOrderStreamId, it->order_id);
-        strcpy(match_ptr->szStreamId, it->exec_id);
-        strcpy(match_ptr->szAccount, trade_order_query_result.fund_account_id);
-        match_ptr->nMatchTimestamp = datetime::get_timestamp_ms(it->transact_time);
-        
-        match_array.push_back(match_ptr);
-
         for(auto iter = it->order_array.begin(), end = it->order_array.end(); iter != end; iter++)
         {
-            std::shared_ptr<TiRtnOrderMatch> constituent_match_ptr = std::make_shared<TiRtnOrderMatch>();
-            memset(constituent_match_ptr.get(), 0, sizeof(TiRtnOrderMatch));
+            std::shared_ptr<TiRtnOrderMatch> match_ptr = std::make_shared<TiRtnOrderMatch>();
+            memset(match_ptr.get(), 0, sizeof(TiRtnOrderMatch));
 
-            strcpy(constituent_match_ptr->szSymbol, iter->security_id);
-            //strcpy(constituent_match_ptr->szName, iter->security_symbol);
+            strcpy(match_ptr->szSymbol, iter->security_id);
+
             if (iter->market_id == ATPMarketIDConst::kShangHai) {
-                strcpy(constituent_match_ptr->szExchange, "SH");
+                strcpy(match_ptr->szExchange, "SH");
             } else if (iter->market_id == ATPMarketIDConst::kShenZhen) {
-                strcpy(constituent_match_ptr->szExchange, "SZ");
+                strcpy(match_ptr->szExchange, "SZ");
             } else {
-                strcpy(constituent_match_ptr->szExchange, "");
+                strcpy(match_ptr->szExchange, "");
             }
 
-            constituent_match_ptr->nTradeSideType = match_ptr->nTradeSideType;
-            constituent_match_ptr->nMatchVol = iter->qty / 100;
-            constituent_match_ptr->nMatchPrice = (double)iter->price / 10000;
+            switch (it->side)
+            {
+            case ATPSideConst::kPurchase:
+                match_ptr->nTradeSideType = TI_TradeSideType_Purchase;
+                break;
+            case ATPSideConst::kRedeem:
+                match_ptr->nTradeSideType = TI_TradeSideType_Redemption;
+                break;
+            default:
+                continue;
+            }
+           
+            match_ptr->nMatchVol = iter->qty / 100;
+            match_ptr->nMatchPrice = (double)iter->price / 10000;
 
+            match_ptr->nOrderId = it->cl_ord_no;
+            strcpy(match_ptr->szOrderStreamId, it->order_id);
+            sprintf(match_ptr->szStreamId, "%s%s", it->exec_id, iter->security_id);
+            strcpy(match_ptr->szAccount, trade_order_query_result.fund_account_id);
 
-            constituent_match_ptr->nOrderId = it->cl_ord_no;
-            strcpy(constituent_match_ptr->szOrderStreamId, it->order_id);
-            strcpy(constituent_match_ptr->szStreamId, it->exec_id);
-            strcpy(constituent_match_ptr->szAccount, trade_order_query_result.fund_account_id);
-            constituent_match_ptr->nMatchTimestamp = match_ptr->nMatchTimestamp;
+            match_ptr->nMatchTimestamp = datetime::get_timestamp_ms(it->transact_time);
+
+            match_array.push_back(match_ptr);
         }
+    }
 
+    size_t i = 1;
+    for (auto it = match_array.begin(); it != match_array.end(); it++)
+    {
+        updateOrderMatch(*it);
+
+        if (m_cb)
+        {
+            bool is_last = i == match_array.size();
+            if (is_last)
+            {
+                is_last = trade_order_query_result.last_index >= (trade_order_query_result.total_num - 1);
+            }
+            m_cb->OnRspQryMatch(it->get(), is_last);
+        }
+        i++;
+    }
+
+    if (trade_order_query_result.last_index < (trade_order_query_result.total_num - 1))
+    {
+        queryEtfMatches(trade_order_query_result.last_index);
+    }else{
+        std::cout << "queryEtfMatches Done!" << std::endl;
     }
 };
 
@@ -456,7 +454,6 @@ void TiGfTraderClient::OnRspTradeOrderQueryResult(const ATPRspTradeOrderQueryRes
 
     std::vector<std::shared_ptr<TiRtnOrderMatch>> match_array;
 
-	size_t i = 1;
 	for (auto it = trade_order_query_result.order_array.begin();
 		it != trade_order_query_result.order_array.end(); it++)
     {
@@ -486,14 +483,8 @@ void TiGfTraderClient::OnRspTradeOrderQueryResult(const ATPRspTradeOrderQueryRes
         case ATPSideConst::kBuy:
             match_ptr->nTradeSideType = TI_TradeSideType_Buy;
             break;
-        case ATPSideConst::kPurchase:
-            match_ptr->nTradeSideType = TI_TradeSideType_Purchase;
-            break;
-        case ATPSideConst::kRedeem:
-            match_ptr->nTradeSideType = TI_TradeSideType_Redemption;
-            break;
         default:
-            break;
+            continue;
         }
 
         match_ptr->nMatchVol = it->last_qty / 100;
@@ -513,10 +504,9 @@ void TiGfTraderClient::OnRspTradeOrderQueryResult(const ATPRspTradeOrderQueryRes
         match_ptr->nMatchTimestamp = datetime::get_timestamp_ms(it->transact_time);
     
         match_array.push_back(match_ptr);
-		i++;
 	}
 
-    i = 1;
+	size_t i = 1;
     for (auto it = match_array.begin(); it != match_array.end(); it++)
     {
         updateOrderMatch(*it);
@@ -532,16 +522,7 @@ void TiGfTraderClient::OnRspTradeOrderQueryResult(const ATPRspTradeOrderQueryRes
         }
         i++;
     }
-    /*
-    if (m_cb)
-    {
-        bool is_last = i == trade_order_query_result.order_array.size();
-        if (is_last)
-        {
-            is_last = trade_order_query_result.last_index >= (trade_order_query_result.total_num - 1);
-        }
-        m_cb->OnRspQryMatch(match_ptr.get(), is_last);
-    }*/
+
     
     if (trade_order_query_result.last_index < (trade_order_query_result.total_num - 1))
     {
@@ -857,10 +838,10 @@ int TiGfTraderClient::loadConfig(std::string iniFileName){
     m_config->szSoftwareName        = string(_iniFile["ti_gf_trader_client"]["software_name"]);
     m_config->szSoftwareVersion     = string(_iniFile["ti_gf_trader_client"]["software_version"]);
 
-    m_config->szBranchCode     = string(_iniFile["ti_gf_trader_client"]["branch_code"]);
-    m_config->szCustomerId     = string(_iniFile["ti_gf_trader_client"]["customer_id"]);
-    m_config->szFundAccount     = string(_iniFile["ti_gf_trader_client"]["fund_account"]);
-    m_config->szFundPass     = string(_iniFile["ti_gf_trader_client"]["fund_pass"]);
+    m_config->szBranchCode          = string(_iniFile["ti_gf_trader_client"]["branch_code"]);
+    m_config->szCustomerId          = string(_iniFile["ti_gf_trader_client"]["customer_id"]);
+    m_config->szFundAccount         = string(_iniFile["ti_gf_trader_client"]["fund_account"]);
+    m_config->szFundPass            = string(_iniFile["ti_gf_trader_client"]["fund_pass"]);
     m_config->szShareholderIdSH     = string(_iniFile["ti_gf_trader_client"]["shareholder_id_sh"]);
     m_config->szShareholderIdSZ     = string(_iniFile["ti_gf_trader_client"]["shareholder_id_sz"]);
 
@@ -1245,7 +1226,7 @@ int TiGfTraderClient::queryOrders(int64_t start_index)
     return nReqId;
 };
 
-int TiGfTraderClient::queryEtfOrders(int64_t start_index)
+int TiGfTraderClient::queryEtfMatches(int64_t start_index)
 {
     if(!m_config){
         LOG(INFO) << "[loadConfig] Do not have config info";
@@ -1436,7 +1417,8 @@ int TiGfTraderClient::QueryOrders()
 
 int TiGfTraderClient::QueryMatches()
 {
-    return queryMatches(0);
+    queryMatches(0);
+    return queryEtfMatches(0);
 };
 
 int TiGfTraderClient::QueryPositions()

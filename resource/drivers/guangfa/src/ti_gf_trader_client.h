@@ -144,7 +144,7 @@ private:
     int orderInsertStock(TiReqOrderInsert* req);   //买卖
     int orderInsertEtf(TiReqOrderInsert* req);     //申赎
     int queryOrders(int64_t start_index);
-    int queryEtfOrders(int64_t start_index);
+    int queryEtfMatches(int64_t start_index);
     int queryMatches(int64_t start_index);
 public:
 	void connect();

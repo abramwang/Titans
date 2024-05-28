@@ -14,6 +14,8 @@ namespace datetime {
 
     long long get_time_num();
 
+    long long get_time_sec_num();
+
     long long get_timestamp();
 
     long long get_now_timestamp_ms(void);
