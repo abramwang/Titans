@@ -5,6 +5,7 @@
 
 #include <atomic>
 
+
 std::atomic_bool g_connected_flag(false);           // 已连接
 std::atomic_bool g_cust_logined_flag(false);        // 已登录
 
@@ -44,14 +45,14 @@ TiGfTraderClient::~TiGfTraderClient()
 
 void TiGfTraderClient::OnLogin(const std::string& reason)
 {
-    std::cout << "OnLogin Recv:" << reason << std::endl;
+    LOG(INFO) << "OnLogin Recv:" << reason << std::endl;
     g_connected_flag.store(true);
 }
 
 // 登出回调
 void TiGfTraderClient::OnLogout(const std::string& reason)
 {
-    std::cout << "OnLogout Recv:" << reason << std::endl;
+    LOG(INFO) << "OnLogout Recv:" << reason << std::endl;
     g_connected_flag.store(false);
     g_cust_logined_flag.store(false);
 }
@@ -59,7 +60,7 @@ void TiGfTraderClient::OnLogout(const std::string& reason)
 // 连接失败
 void TiGfTraderClient::OnConnectFailure(const std::string &reason)
 {
-    std::cout << "OnConnectFailure Recv:" << reason << std::endl;
+    LOG(INFO) << "OnConnectFailure Recv:" << reason << std::endl;
     g_connected_flag.store(false);
     g_cust_logined_flag.store(false);
 }
@@ -67,7 +68,7 @@ void TiGfTraderClient::OnConnectFailure(const std::string &reason)
 // 连接超时
 void TiGfTraderClient::OnConnectTimeOut(const std::string &reason)
 {
-    std::cout << "OnConnectTimeOut Recv:" << reason << std::endl;
+    LOG(INFO) << "OnConnectTimeOut Recv:" << reason << std::endl;
     g_connected_flag.store(false);
     g_cust_logined_flag.store(false);
 }
@@ -75,7 +76,7 @@ void TiGfTraderClient::OnConnectTimeOut(const std::string &reason)
 // 心跳超时
 void TiGfTraderClient::OnHeartbeatTimeout(const std::string &reason)
 {
-    std::cout << "OnHeartbeatTimeout Recv:" << reason << std::endl;
+    LOG(INFO) << "OnHeartbeatTimeout Recv:" << reason << std::endl;
     g_connected_flag.store(false);
     g_cust_logined_flag.store(false);
 }
@@ -83,7 +84,7 @@ void TiGfTraderClient::OnHeartbeatTimeout(const std::string &reason)
 // 连接关闭
 void TiGfTraderClient::OnClosed(const std::string &reason)
 {
-    std::cout << "OnClosed Recv:" << reason << std::endl;
+    LOG(INFO) << "OnClosed Recv:" << reason << std::endl;
     g_connected_flag.store(false);
     g_cust_logined_flag.store(false);
 }
@@ -91,22 +92,22 @@ void TiGfTraderClient::OnClosed(const std::string &reason)
 // 连接结束回调
 void TiGfTraderClient::OnEndOfConnection(const std::string& reason)
 {
-    std::cout << "OnEndOfConnection Recv:" << reason << std::endl;
+    LOG(INFO) << "OnEndOfConnection Recv:" << reason << std::endl;
     g_waiting_flag.store(false);
 }
 
 // 客户号登入回调
 void TiGfTraderClient::OnRspCustLoginResp(const ATPRspCustLoginRespOtherMsg &cust_login_resp)
 {
-    std::cout << "OnRspCustLoginResp Recv:" << static_cast<uint32_t>(cust_login_resp.permisson_error_code) << std::endl;
+    LOG(INFO) << "OnRspCustLoginResp Recv:" << static_cast<uint32_t>(cust_login_resp.permisson_error_code) << std::endl;
     if (cust_login_resp.permisson_error_code == 0)
     {
         g_cust_logined_flag.store(true);
-        std::cout << "CustLogin Success!" << std::endl;
+        LOG(INFO) << "CustLogin Success!" << std::endl;
     }
     else
     {
-        std::cout << "CustLogin Fail, permisson_error_code :" << static_cast<uint32_t>(cust_login_resp.permisson_error_code) << std::endl;
+        LOG(INFO) << "CustLogin Fail, permisson_error_code :" << static_cast<uint32_t>(cust_login_resp.permisson_error_code) << std::endl;
     }
     
     
@@ -116,15 +117,15 @@ void TiGfTraderClient::OnRspCustLoginResp(const ATPRspCustLoginRespOtherMsg &cus
 // 客户号登出回调
 void TiGfTraderClient::OnRspCustLogoutResp(const ATPRspCustLogoutRespOtherMsg &cust_logout_resp)
 {
-    std::cout << "OnRspCustLogoutResp Recv:" << static_cast<uint32_t>(cust_logout_resp.permisson_error_code) << std::endl;
+    LOG(INFO) << "OnRspCustLogoutResp Recv:" << static_cast<uint32_t>(cust_logout_resp.permisson_error_code) << std::endl;
     if (cust_logout_resp.permisson_error_code == 0)
     {
         g_cust_logined_flag.store(false);
-        std::cout << "CustLogout Success!" << std::endl;
+        LOG(INFO) << "CustLogout Success!" << std::endl;
     }
     else
     {
-        std::cout << "CustLogou Fail permisson_error_code :" << static_cast<uint32_t>(cust_logout_resp.permisson_error_code) << std::endl;
+        LOG(INFO) << "CustLogou Fail permisson_error_code :" << static_cast<uint32_t>(cust_logout_resp.permisson_error_code) << std::endl;
     }
     g_waiting_flag.store(false);
 }
@@ -132,13 +133,13 @@ void TiGfTraderClient::OnRspCustLogoutResp(const ATPRspCustLogoutRespOtherMsg &c
 
 void TiGfTraderClient::OnRspFundQueryResult(const ATPRspFundQueryResultMsg& fund_query_result)
 {
-    std::cout << "fund_query_result : " << std::endl;
+    LOG(INFO) << "fund_query_result : " << std::endl;
     TiRspAccountInfo account_info = {0};
     strcpy(account_info.szAccount, fund_query_result.fund_account_id);
     //strcpy(account_info.szName, "");
     //account_info.nNav = 0;
-    account_info.nBalance = fund_query_result.available_tall;
-    account_info.nAvailable = fund_query_result.leaves_value;
+    account_info.nBalance = fund_query_result.leaves_value;
+    account_info.nAvailable = fund_query_result.available_tall;
     account_info.nAssureAsset = fund_query_result.init_leaves_value;
     //account_info.nCommission = 0;
     //account_info.nDaysProfit = fund_query_result.m_dDaysProfit;
@@ -173,13 +174,14 @@ void TiGfTraderClient::OnRspFundQueryResult(const ATPRspFundQueryResultMsg& fund
             {"init_credit_sell", fund_query_result.init_credit_sell},
         }}
     };
+    //LOG(INFO) << "OnRspFundQueryResult:"<< m_json_rsp.dump() << std::endl;
     m_cb->OnCommonJsonRespones(&m_json_rsp, fund_query_result.client_seq_id, true, fund_query_result.query_result_code, fund_query_result.extra_data.c_str());
 };
 
 void TiGfTraderClient::OnRspShareQueryResult(const ATPRspShareQueryResultMsg& share_query_result)
 {
-    std::cout << "share_query_result : " << std::endl;
-	std::cout << "cust_id : " << share_query_result.cust_id<<
+    LOG(INFO) << "share_query_result : " << std::endl; 
+	LOG(INFO) << "cust_id : " << share_query_result.cust_id<<
 	 " fund_account_id : " << share_query_result.fund_account_id<<
 	 " account_id : " << share_query_result.account_id<<
 	 " client_seq_id : " << share_query_result.client_seq_id<<
@@ -231,21 +233,22 @@ void TiGfTraderClient::OnRspShareQueryResult(const ATPRspShareQueryResultMsg& sh
     {
         queryPositions(share_query_result.last_index);
     }else{
+        LOG(INFO) << "QueryPositions Done!" << std::endl;
         std::cout << "QueryPositions Done!" << std::endl;
     }
 };
 
 void TiGfTraderClient::OnRspOrderQueryResult(const ATPRspOrderQueryResultMsg& order_query_result)
 {
-    std::cout << "order_query_result : " << std::endl;
-	std::cout << "cust_id : " << order_query_result.cust_id<<
-	 " fund_account_id : " << order_query_result.fund_account_id<<
-	 " account_id : " << order_query_result.account_id<<
-	 " client_seq_id : " << order_query_result.client_seq_id<<
-	 " query_result_code : " << order_query_result.query_result_code<<
-	 " user_info : " << order_query_result.user_info<<
-	 " last_index : " << order_query_result.last_index<<
-	 " total_num : " << order_query_result.total_num << std::endl;
+    LOG(INFO) << "[OnRspOrderQueryResult]" << 
+        " cust_id : " << order_query_result.cust_id<<
+        " fund_account_id : " << order_query_result.fund_account_id<<
+        " account_id : " << order_query_result.account_id<<
+        " client_seq_id : " << order_query_result.client_seq_id<<
+        " query_result_code : " << order_query_result.query_result_code<<
+        " user_info : " << order_query_result.user_info<<
+        " last_index : " << order_query_result.last_index<<
+        " total_num : " << order_query_result.total_num << std::endl;
 	//std::vector<APIOrderUnit>::iterator it;
 	size_t i = 1;
 	for (auto it = order_query_result.order_array.begin();
@@ -322,35 +325,6 @@ void TiGfTraderClient::OnRspOrderQueryResult(const ATPRspOrderQueryResultMsg& or
             m_cb->OnRspQryOrder(order_ptr.get(), is_last);
         }
 
-        /*
-        if(std::strcmp(it->security_id,"159150") == 0)
-        {
-            std::cout << " order_array_" << i << " : " << std::endl;
-            std::cout << " business_type : " << (int32_t)it->business_type<<
-            ", security_id : " << it->security_id<<
-            ", security_symbol : " << it->security_symbol<<
-            ", market_id : " << it->market_id<<
-            ", account_id : " << it->account_id<<
-            ", side : " << it->side<<
-            ", ord_type : " << it->ord_type<<
-            ", ord_status : " << (int32_t)it->ord_status<<
-            ", transact_time : " << it->transact_time<<
-            ", order_price : " << it->order_price<<
-            ", exec_price : " << it->exec_price<<
-            ", order_qty : " << it->order_qty<<
-            ", leaves_qty : " << it->leaves_qty<<
-            ", cum_qty : " << it->cum_qty<<
-            ", cl_ord_no : " << it->cl_ord_no<<
-            ", order_id : " << it->order_id<<
-            ", cl_ord_id : " << it->cl_ord_id<<
-            ", client_seq_id : " << it->client_seq_id<<
-            ", orig_cl_ord_no : " << it->orig_cl_ord_no<<
-            ", frozen_trade_value : " << it->frozen_trade_value<<
-            ", frozen_fee : " << it->frozen_fee<<
-            ", reject_reason_code : " << it->reject_reason_code<<
-            ", ord_rej_reason : " << it->ord_rej_reason << std::endl;
-        }
-//*/
 		i++;
 	}
 
@@ -358,14 +332,15 @@ void TiGfTraderClient::OnRspOrderQueryResult(const ATPRspOrderQueryResultMsg& or
     {
         queryOrders(order_query_result.last_index);
     }else{
+        LOG(INFO) << "QueryOrders Done!" << std::endl;
         std::cout << "QueryOrders Done!" << std::endl;
     }
 };
 
 void TiGfTraderClient::OnRspEtfTradeOrderQueryResult(const ATPRspETFTradeOrderQueryResultMsg &trade_order_query_result)
 {
-    std::cout << "OnRspEtfTradeOrderQueryResult : " << std::endl;
-	std::cout << "cust_id : " << trade_order_query_result.cust_id<<
+    LOG(INFO) << "[OnRspEtfTradeOrderQueryResult]" <<
+	    " cust_id : " << trade_order_query_result.cust_id<<
         " fund_account_id : " << trade_order_query_result.fund_account_id<<
         " account_id : " << trade_order_query_result.account_id<<
         " client_seq_id : " << trade_order_query_result.client_seq_id<<
@@ -446,14 +421,15 @@ void TiGfTraderClient::OnRspEtfTradeOrderQueryResult(const ATPRspETFTradeOrderQu
     {
         queryEtfMatches(trade_order_query_result.last_index);
     }else{
+        LOG(INFO) << "queryEtfMatches Done!" << std::endl;
         std::cout << "queryEtfMatches Done!" << std::endl;
     }
 };
 
 void TiGfTraderClient::OnRspTradeOrderQueryResult(const ATPRspTradeOrderQueryResultMsg& trade_order_query_result)
 {
-    std::cout << "trade_order_query_result : " << std::endl;
-	std::cout << "cust_id : " << trade_order_query_result.cust_id<<
+    LOG(INFO) << "[OnRspTradeOrderQueryResult]" <<
+	    " cust_id : " << trade_order_query_result.cust_id<<
         " fund_account_id : " << trade_order_query_result.fund_account_id<<
         " account_id : " << trade_order_query_result.account_id<<
         " client_seq_id : " << trade_order_query_result.client_seq_id<<
@@ -538,6 +514,7 @@ void TiGfTraderClient::OnRspTradeOrderQueryResult(const ATPRspTradeOrderQueryRes
     {
         queryMatches(trade_order_query_result.last_index);
     }else{
+        LOG(INFO) << "QueryMatches Done!" << std::endl;
         std::cout << "QueryMatches Done!" << std::endl;
     }
 };
@@ -546,44 +523,44 @@ void TiGfTraderClient::OnRspTradeOrderQueryResult(const ATPRspTradeOrderQueryRes
 // 订单下达内部响应
 void TiGfTraderClient::OnRspOrderStatusInternalAck(const ATPRspOrderStatusAckMsg& order_status_ack)
 {
-    std::cout << "TiGfTraderClient::OnRspOrderStatusInternalAck \n"; 
-    std::cout << " partition: " << order_status_ack.partition << "\n";
-    std::cout << " index: " << order_status_ack.index << "\n";
-    std::cout << " business_type: " << order_status_ack.business_type << "\n";
-    std::cout << " cl_ord_no: " << order_status_ack.cl_ord_no << "\n";
-    std::cout << " security_id: " << order_status_ack.security_id << "\n";
-    std::cout << " market_id: " << order_status_ack.market_id << "\n";
-    std::cout << " exec_type: " << order_status_ack.exec_type << "\n";
-    std::cout << " ord_status: " << order_status_ack.ord_status << "\n";
-    std::cout << " cust_id: " << order_status_ack.cust_id << "\n";
-    std::cout << " fund_account_id: " << order_status_ack.fund_account_id << "\n";
-    std::cout << " account_id: " << order_status_ack.account_id << "\n";
-    std::cout << " price: " << order_status_ack.price << "\n";
-    std::cout << " order_qty: " << order_status_ack.order_qty << "\n";
-    std::cout << " leaves_qty: " << order_status_ack.leaves_qty << "\n";
-    std::cout << " cum_qty: " << order_status_ack.cum_qty << "\n";
-    std::cout << " side: " << order_status_ack.side << "\n";
-    std::cout << " transact_time: " << order_status_ack.transact_time << "\n";
-    std::cout << " user_info: " << order_status_ack.user_info << "\n";
-    std::cout << " order_id: " << order_status_ack.order_id << "\n";
-    std::cout << " cl_ord_id: " << order_status_ack.cl_ord_id << "\n";
-    std::cout << " client_seq_id: " << order_status_ack.client_seq_id << "\n";
-    std::cout << " orig_cl_ord_no: " << order_status_ack.orig_cl_ord_no << "\n";
-    std::cout << " frozen_trade_value: " << order_status_ack.frozen_trade_value << "\n";
-    std::cout << " frozen_fee: " << order_status_ack.frozen_fee << "\n";
-    std::cout << " reject_reason_code: " << order_status_ack.reject_reason_code << "\n";
-    std::cout << " ord_rej_reason: " << order_status_ack.ord_rej_reason << "\n";
-    std::cout << " order_type: " << order_status_ack.order_type << "\n";
-    std::cout << " time_in_force: " << order_status_ack.time_in_force << "\n";
-    std::cout << " position_effect: " << order_status_ack.position_effect << "\n";
-    std::cout << " covered_or_uncovered: " << order_status_ack.covered_or_uncovered << "\n";
-    std::cout << " account_sub_code: " << order_status_ack.account_sub_code << "\n";
-    std::cout << " quote_flag: " << order_status_ack.quote_flag << "\n";
-    std::cout << " security_symbol: " << order_status_ack.security_symbol << "\n";
-    std::cout << " secondary_order_id: " << order_status_ack.secondary_order_id << "\n";
-    std::cout << " parent_cl_ord_no: " << order_status_ack.parent_cl_ord_no << "\n";
-    std::cout << " particular_flags: " << order_status_ack.particular_flags << "\n";
-    std::cout << " batch_cl_ord_no: " << order_status_ack.batch_cl_ord_no << "\n";
+    LOG(INFO) << "[OnRspOrderStatusInternalAck]: "
+        << " partition: " << order_status_ack.partition 
+        << " index: " << order_status_ack.index 
+        << " business_type: " << order_status_ack.business_type 
+        << " cl_ord_no: " << order_status_ack.cl_ord_no 
+        << " security_id: " << order_status_ack.security_id 
+        << " market_id: " << order_status_ack.market_id 
+        << " exec_type: " << order_status_ack.exec_type 
+        << " ord_status: " << order_status_ack.ord_status 
+        << " cust_id: " << order_status_ack.cust_id 
+        << " fund_account_id: " << order_status_ack.fund_account_id 
+        << " account_id: " << order_status_ack.account_id 
+        << " price: " << order_status_ack.price 
+        << " order_qty: " << order_status_ack.order_qty 
+        << " leaves_qty: " << order_status_ack.leaves_qty 
+        << " cum_qty: " << order_status_ack.cum_qty 
+        << " side: " << order_status_ack.side 
+        << " transact_time: " << order_status_ack.transact_time 
+        << " user_info: " << order_status_ack.user_info 
+        << " order_id: " << order_status_ack.order_id 
+        << " cl_ord_id: " << order_status_ack.cl_ord_id 
+        << " client_seq_id: " << order_status_ack.client_seq_id 
+        << " orig_cl_ord_no: " << order_status_ack.orig_cl_ord_no 
+        << " frozen_trade_value: " << order_status_ack.frozen_trade_value 
+        << " frozen_fee: " << order_status_ack.frozen_fee 
+        << " reject_reason_code: " << order_status_ack.reject_reason_code 
+        << " ord_rej_reason: " << order_status_ack.ord_rej_reason 
+        << " order_type: " << order_status_ack.order_type 
+        << " time_in_force: " << order_status_ack.time_in_force 
+        << " position_effect: " << order_status_ack.position_effect 
+        << " covered_or_uncovered: " << order_status_ack.covered_or_uncovered 
+        << " account_sub_code: " << order_status_ack.account_sub_code 
+        << " quote_flag: " << order_status_ack.quote_flag 
+        << " security_symbol: " << order_status_ack.security_symbol 
+        << " secondary_order_id: " << order_status_ack.secondary_order_id 
+        << " parent_cl_ord_no: " << order_status_ack.parent_cl_ord_no 
+        << " particular_flags: " << order_status_ack.particular_flags 
+        << " batch_cl_ord_no: " << order_status_ack.batch_cl_ord_no << std::endl;
 
     if (order_status_ack.orig_cl_ord_no)    // 有原始订单号 撤单确认
     {
@@ -597,44 +574,44 @@ void TiGfTraderClient::OnRspOrderStatusInternalAck(const ATPRspOrderStatusAckMsg
 // 订单下达交易所确认
 void TiGfTraderClient::OnRspOrderStatusAck(const ATPRspOrderStatusAckMsg& order_status_ack)
 {
-    std::cout << "TiGfTraderClient::OnRspOrderStatusAck \n"; 
-    std::cout << " partition: " << order_status_ack.partition << "\n";
-    std::cout << " index: " << order_status_ack.index << "\n";
-    std::cout << " business_type: " << order_status_ack.business_type << "\n";
-    std::cout << " cl_ord_no: " << order_status_ack.cl_ord_no << "\n";
-    std::cout << " security_id: " << order_status_ack.security_id << "\n";
-    std::cout << " market_id: " << order_status_ack.market_id << "\n";
-    std::cout << " exec_type: " << order_status_ack.exec_type << "\n";
-    std::cout << " ord_status: " << order_status_ack.ord_status << "\n";
-    std::cout << " cust_id: " << order_status_ack.cust_id << "\n";
-    std::cout << " fund_account_id: " << order_status_ack.fund_account_id << "\n";
-    std::cout << " account_id: " << order_status_ack.account_id << "\n";
-    std::cout << " price: " << order_status_ack.price << "\n";
-    std::cout << " order_qty: " << order_status_ack.order_qty << "\n";
-    std::cout << " leaves_qty: " << order_status_ack.leaves_qty << "\n";
-    std::cout << " cum_qty: " << order_status_ack.cum_qty << "\n";
-    std::cout << " side: " << order_status_ack.side << "\n";
-    std::cout << " transact_time: " << order_status_ack.transact_time << "\n";
-    std::cout << " user_info: " << order_status_ack.user_info << "\n";
-    std::cout << " order_id: " << order_status_ack.order_id << "\n";
-    std::cout << " cl_ord_id: " << order_status_ack.cl_ord_id << "\n";
-    std::cout << " client_seq_id: " << order_status_ack.client_seq_id << "\n";
-    std::cout << " orig_cl_ord_no: " << order_status_ack.orig_cl_ord_no << "\n";
-    std::cout << " frozen_trade_value: " << order_status_ack.frozen_trade_value << "\n";
-    std::cout << " frozen_fee: " << order_status_ack.frozen_fee << "\n";
-    std::cout << " reject_reason_code: " << order_status_ack.reject_reason_code << "\n";
-    std::cout << " ord_rej_reason: " << order_status_ack.ord_rej_reason << "\n";
-    std::cout << " order_type: " << order_status_ack.order_type << "\n";
-    std::cout << " time_in_force: " << order_status_ack.time_in_force << "\n";
-    std::cout << " position_effect: " << order_status_ack.position_effect << "\n";
-    std::cout << " covered_or_uncovered: " << order_status_ack.covered_or_uncovered << "\n";
-    std::cout << " account_sub_code: " << order_status_ack.account_sub_code << "\n";
-    std::cout << " quote_flag: " << order_status_ack.quote_flag << "\n";
-    std::cout << " security_symbol: " << order_status_ack.security_symbol << "\n";
-    std::cout << " secondary_order_id: " << order_status_ack.secondary_order_id << "\n";
-    std::cout << " parent_cl_ord_no: " << order_status_ack.parent_cl_ord_no << "\n";
-    std::cout << " particular_flags: " << order_status_ack.particular_flags << "\n";
-    std::cout << " batch_cl_ord_no: " << order_status_ack.batch_cl_ord_no << "\n";
+    LOG(INFO) << "[OnRspOrderStatusAck]:"
+        << " partition: " << order_status_ack.partition 
+        << " index: " << order_status_ack.index 
+        << " business_type: " << order_status_ack.business_type 
+        << " cl_ord_no: " << order_status_ack.cl_ord_no 
+        << " security_id: " << order_status_ack.security_id 
+        << " market_id: " << order_status_ack.market_id 
+        << " exec_type: " << order_status_ack.exec_type 
+        << " ord_status: " << order_status_ack.ord_status 
+        << " cust_id: " << order_status_ack.cust_id 
+        << " fund_account_id: " << order_status_ack.fund_account_id 
+        << " account_id: " << order_status_ack.account_id 
+        << " price: " << order_status_ack.price 
+        << " order_qty: " << order_status_ack.order_qty 
+        << " leaves_qty: " << order_status_ack.leaves_qty 
+        << " cum_qty: " << order_status_ack.cum_qty 
+        << " side: " << order_status_ack.side 
+        << " transact_time: " << order_status_ack.transact_time 
+        << " user_info: " << order_status_ack.user_info 
+        << " order_id: " << order_status_ack.order_id 
+        << " cl_ord_id: " << order_status_ack.cl_ord_id 
+        << " client_seq_id: " << order_status_ack.client_seq_id 
+        << " orig_cl_ord_no: " << order_status_ack.orig_cl_ord_no 
+        << " frozen_trade_value: " << order_status_ack.frozen_trade_value 
+        << " frozen_fee: " << order_status_ack.frozen_fee 
+        << " reject_reason_code: " << order_status_ack.reject_reason_code 
+        << " ord_rej_reason: " << order_status_ack.ord_rej_reason 
+        << " order_type: " << order_status_ack.order_type 
+        << " time_in_force: " << order_status_ack.time_in_force 
+        << " position_effect: " << order_status_ack.position_effect 
+        << " covered_or_uncovered: " << order_status_ack.covered_or_uncovered 
+        << " account_sub_code: " << order_status_ack.account_sub_code 
+        << " quote_flag: " << order_status_ack.quote_flag 
+        << " security_symbol: " << order_status_ack.security_symbol 
+        << " secondary_order_id: " << order_status_ack.secondary_order_id 
+        << " parent_cl_ord_no: " << order_status_ack.parent_cl_ord_no 
+        << " particular_flags: " << order_status_ack.particular_flags 
+        << " batch_cl_ord_no: " << order_status_ack.batch_cl_ord_no << std::endl;
 
     if (order_status_ack.orig_cl_ord_no)    // 有原始订单号 撤单确认
     {
@@ -648,7 +625,6 @@ void TiGfTraderClient::OnRspOrderStatusAck(const ATPRspOrderStatusAckMsg& order_
 // 成交回报
 void TiGfTraderClient::OnRspCashAuctionTradeER(const ATPRspCashAuctionTradeERMsg& cash_auction_trade_er) 
 {
-    //return;
     int64_t order_id = cash_auction_trade_er.cl_ord_no;
     /*
     if (cash_auction_trade_er.orig_cl_ord_no)
@@ -692,7 +668,6 @@ void TiGfTraderClient::OnRspCashAuctionTradeER(const ATPRspCashAuctionTradeERMsg
     updateOrderMatch(match_ptr);
 
     std::shared_ptr<TiRtnOrderStatus> order_ptr = getOrderPtr(0, order_id);
-    std::cout << "order_ptr : " << order_ptr << std::endl;
     if (order_ptr != nullptr)
     {
         strcpy(match_ptr->szOrderStreamId, order_ptr->szOrderStreamId);
@@ -768,8 +743,8 @@ void TiGfTraderClient::OnRspETFRedemptionTradeER(const ATPRspETFRedemptionTradeE
 // 订单下达内部拒绝
 void TiGfTraderClient::OnRspBizRejection(const ATPRspBizRejectionOtherMsg& biz_rejection)
 {
-    std::cout << "biz_rejection : " << std::endl;
-    std::cout << "transact_time : " << biz_rejection.transact_time <<
+    LOG(INFO) << "[OnRspBizRejection]" <<
+        " transact_time : " << biz_rejection.transact_time <<
         " client_seq_id : " << biz_rejection.client_seq_id <<
         " msg_type : " << biz_rejection.api_msg_type <<
         " reject_reason_code : " << biz_rejection.reject_reason_code <<
@@ -780,11 +755,11 @@ void TiGfTraderClient::OnRspBizRejection(const ATPRspBizRejectionOtherMsg& biz_r
 
 void TiGfTraderClient::onOrderRtn(const ATPRspOrderStatusAckMsg& msg)
 {
-    std::cout << "onOrderRtn" << std::endl;
+    LOG(INFO) << "onOrderRtn" << std::endl;
     int64_t req_id = msg.client_seq_id;
     int64_t order_id = msg.cl_ord_no;
-    std::cout << "req_id: " << req_id << std::endl;
-    std::cout << "order_id: " << order_id << std::endl;
+    LOG(INFO) << "req_id: " << req_id << std::endl;
+    LOG(INFO) << "order_id: " << order_id << std::endl;
 
     std::shared_ptr<TiRtnOrderStatus> order_ptr = getOrderPtr(req_id, order_id);
     if (!order_ptr)
@@ -807,11 +782,11 @@ void TiGfTraderClient::onOrderRtn(const ATPRspOrderStatusAckMsg& msg)
 };
 void TiGfTraderClient::onCancelOrderRtn(const ATPRspOrderStatusAckMsg& msg)
 {
-    std::cout << "onCancelOrderRtn" << std::endl;
+    LOG(INFO) << "onCancelOrderRtn" << std::endl;
     int64_t req_id = msg.client_seq_id;
     int64_t order_id = msg.orig_cl_ord_no;
-    std::cout << "req_id: " << req_id << std::endl;
-    std::cout << "order_id: " << order_id << std::endl;
+    LOG(INFO) << "req_id: " << req_id << std::endl;
+    LOG(INFO) << "order_id: " << order_id << std::endl;
 
     std::shared_ptr<TiRtnOrderStatus> order_ptr = getOrderPtr(req_id, order_id);
     if (!order_ptr)
@@ -879,7 +854,7 @@ bool TiGfTraderClient::init_encrypt()
     ATPRetCodeType ec = ATPTradeAPI::Init();
     if (ec != ErrorCode::kSuccess)
     {
-        std::cout << "Init encrypt failed: " << ec <<std::endl;
+        LOG(INFO) << "Init encrypt failed: " << ec <<std::endl;
         return false;
     }
     return true;
@@ -923,7 +898,7 @@ ATPRetCodeType TiGfTraderClient::connect(ATPTradeAPI* client, ATPTradeHandler* h
             ATPRetCodeType ec = client->Connect(prop, handler);
             if (ec != ErrorCode::kSuccess)
             {
-                std::cout << "Invoke Connect error:" << ec << std::endl;
+                LOG(INFO) << "Invoke Connect error:" << ec << std::endl;
                 return ec;
             }
             sleep(0);
@@ -939,7 +914,7 @@ ATPRetCodeType TiGfTraderClient::close(ATPTradeAPI* client)
     ATPRetCodeType ec = client->Close();
     if (ec != ErrorCode::kSuccess)
     {
-        std::cout << "Invoke Close error:" << ec << std::endl;
+        LOG(INFO) << "Invoke Close error:" << ec << std::endl;
         return ec;
     }
 
@@ -969,7 +944,7 @@ ATPRetCodeType TiGfTraderClient::login(ATPTradeAPI* client)
     ATPRetCodeType ec = client->ReqCustLoginOther(&login_msg);
     if (ec != ErrorCode::kSuccess)
     {
-        std::cout << "Invoke CustLogin error:" << ec << std::endl;
+        LOG(INFO) << "Invoke CustLogin error:" << ec << std::endl;
         return ec;
     }
 
@@ -997,7 +972,7 @@ ATPRetCodeType TiGfTraderClient::logout(ATPTradeAPI* client)
     ATPRetCodeType ec = client->ReqCustLogoutOther(&logout_msg);
     if (ec != ErrorCode::kSuccess)
     {
-        std::cout << "Invoke CustLogout error:" << ec << std::endl;
+        LOG(INFO) << "Invoke CustLogout error:" << ec << std::endl;
         return ec;
     }
 
@@ -1161,7 +1136,7 @@ int TiGfTraderClient::orderInsertStock(TiReqOrderInsert* req){
     ATPRetCodeType ec = m_client->ReqCashAuctionOrder(&msg);
     if (ec != ErrorCode::kSuccess)
     {
-        std::cout << "Invoke Send error:" << ec << std::endl;
+        LOG(INFO) << "Invoke Send error:" << ec << std::endl;
     }
 
     return nReqId;
@@ -1207,7 +1182,7 @@ int TiGfTraderClient::orderInsertEtf(TiReqOrderInsert* req){
     ATPRetCodeType ec = m_client->ReqETFRedemptionOrder(&msg);
     if (ec != ErrorCode::kSuccess)
     {
-        std::cout << "Invoke Send error:" << ec << std::endl;
+        LOG(INFO) << "Invoke Send error:" << ec << std::endl;
     }
 
     return nReqId;
@@ -1328,7 +1303,7 @@ void TiGfTraderClient::connect(){
     // 建立连接
     if (init(m_client, this))
     {
-        std::cout << "Wait for ack. press enter for exit." << std::endl;
+        LOG(INFO) << "Wait for ack. press enter for exit." << std::endl;
     }
 };
 
@@ -1337,7 +1312,7 @@ int TiGfTraderClient::orderInsert(TiReqOrderInsert* req){
         LOG(INFO) << "[loadConfig] Do not have config info";
         return -1;
     }
-    std::cout << "TiGfTraderClient::orderInsert: " << req->szSymbol 
+    LOG(INFO) << "TiGfTraderClient::orderInsert: " << req->szSymbol 
         << "szName " << req->szName
         << ", szExchange " << req->szExchange
         << ", szAccount " << req->szAccount
@@ -1373,7 +1348,7 @@ int TiGfTraderClient::orderDelete(TiReqOrderDelete* req){
     }
     
     std::shared_ptr<TiRtnOrderStatus> order_ptr = getOrderPtr(0, req->nOrderId);
-    std::cout << "orderDelete: " << req->nOrderId << " " << order_ptr << std::endl;
+    LOG(INFO) << "orderDelete: " << req->nOrderId << " " << order_ptr << std::endl;
     if (order_ptr == NULL)
     {
         return -1;
@@ -1403,7 +1378,7 @@ int TiGfTraderClient::orderDelete(TiReqOrderDelete* req){
     ATPRetCodeType ec = m_client->ReqCancelOrder(&msg);
     if (ec != ErrorCode::kSuccess)
     {
-        std::cout << "Invoke Send error:" << ec << std::endl;
+        LOG(INFO) << "Invoke Send error:" << ec << std::endl;
     }
 
     return nReqId;
