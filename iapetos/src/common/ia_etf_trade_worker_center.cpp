@@ -5,6 +5,7 @@
 #include "ia_etf_worker_sell_etf.h"
 #include "ia_etf_worker_basket_stock.h"
 #include "ia_etf_worker_purchase_etf.h"
+#include "ia_etf_worker_redemption_etf.h"
 
 IaEtfTradeWorkerCenter::IaEtfTradeWorkerCenter(TiTraderClient* trade_client, 
     IaEtfQuoteDataCache* quote_cache, 
@@ -79,7 +80,6 @@ void IaEtfTradeWorkerCenter::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData
         }
     }
 };
-
 
 void IaEtfTradeWorkerCenter::OnTimer()
 {
@@ -169,6 +169,9 @@ void IaEtfTradeWorkerCenter::create_etf_trading_worker(bool etf, const std::stri
         if (side == TI_TradeSideType_Buy)
         {
             worker = std::make_shared<IaETFWorkerBuyEtf>(m_trade_client, m_quote_cache, etf_factor, account);
+            IaETFWorkerRedemptionEtfPtr next_worker = std::make_shared<IaETFWorkerRedemptionEtf>(m_trade_client, m_quote_cache, etf_factor, account);
+            next_worker->setPreWorker(worker);
+            m_trading_waiting_worker_list.push_back(next_worker);
         }
         else if (side == TI_TradeSideType_Sell)
         {
@@ -196,7 +199,6 @@ void IaEtfTradeWorkerCenter::create_etf_trading_worker(bool etf, const std::stri
         {
             return;
         }
-
 
     }
     
