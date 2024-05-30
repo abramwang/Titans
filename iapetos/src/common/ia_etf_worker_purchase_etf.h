@@ -1,29 +1,13 @@
-#ifndef __IA_ETF_WORKER_SINGLE_STOCK_H__
-#define __IA_ETF_WORKER_SINGLE_STOCK_H__
+#ifndef __IA_ETF_WORKER_PURCHASE_ETF_H__
+#define __IA_ETF_WORKER_PURCHASE_ETF_H__
 
 #include "ia_etf_trading_worker.h"
-#include "ia_etf_info_struct.h"
+
+#include <set>
 #include <unordered_map>
 #include <memory.h>
 
-/*
-{
-    symbol: "000001",               //股票代码
-    exchange: "SH",                 //股票市场
-    expect_cost: 1000000,           //期望交易成本 包含成交额和手续费
-    volume: 1000000,                //交易数量
-    real_cost: 1000000,             //实际交易成本 包含成交额和手续费
-    finish_volume: 1000000,         //实际成交数量
-    orders: [
-        {
-            req_id,
-            order_id,
-        }
-    ],                    //股票交易信息
-}
-*/
-
-class IaETFWorkerSingleStock:
+class IaETFWorkerPurchaseEtf :
     public IaETFTradingWorker
 {
 public:
@@ -35,7 +19,7 @@ public:
         int32_t volume;
         double real_cost;
         int32_t finish_volume;
-    };
+    }; 
 public:
     virtual void OnCommonJsonRespones(const json* rspData, int req_id, bool isLast, int err, const char* err_str){};     //非交易逻辑的统一实现接口
     
@@ -50,31 +34,27 @@ public:
     virtual void OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData);
     virtual void OnRtnOrderMatchEvent(const TiRtnOrderMatch* pData){};
 
+public:
     virtual void OnTimer();
 private:
-    TI_TradeSideType m_side;
     Status m_status;
     int64_t m_check_time;   //检查时间
 
-    TiQuoteSnapshotStockField m_open_snap;    
-    DeleteOrderReqInfo m_canceling_order_info;                      // canceling order
+    TiQuoteSnapshotStockField m_open_snap;
     std::set<int64_t> m_req_id_set;                                 // order_req_id
     std::unordered_map<std::string, TiRtnOrderStatus> m_order_map;  // szOrderStreamId -> order_status
 private:
     void updateExpectCost(TiQuoteSnapshotStockField* pData);
     void updateStatus();
     bool hasQueueOrder();
-    void cancelOrder(TiRtnOrderStatus* order);
 public:
     int64_t open();
-    json getStatusJson();
     bool isOver();
 public:
-    IaETFWorkerSingleStock(TiTraderClient* client, IaEtfQuoteDataCache* quote_cache, IaEtfSignalFactorPtr factor, std::string account, 
-        std::shared_ptr<IaEtfConstituentInfo> constituentInfoPtr, TI_TradeSideType side);
-    virtual ~IaETFWorkerSingleStock(){};
+    IaETFWorkerPurchaseEtf(TiTraderClient* client, IaEtfQuoteDataCache* m_quote_cache, IaEtfSignalFactorPtr factor, std::string account);
+    virtual ~IaETFWorkerPurchaseEtf(){};
 };
 
-typedef std::shared_ptr<IaETFWorkerSingleStock> IaETFWorkerSingleStockPtr;
+typedef std::shared_ptr<IaETFWorkerPurchaseEtf> IaETFWorkerPurchaseEtfPtr;
 
 #endif

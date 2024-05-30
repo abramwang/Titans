@@ -421,8 +421,8 @@ void TiGfTraderClient::OnRspEtfTradeOrderQueryResult(const ATPRspETFTradeOrderQu
     {
         queryEtfMatches(trade_order_query_result.last_index);
     }else{
-        LOG(INFO) << "queryEtfMatches Done!" << std::endl;
-        std::cout << "queryEtfMatches Done!" << std::endl;
+        LOG(INFO) << "QueryEtfMatches Done!" << std::endl;
+        std::cout << "QueryEtfMatches Done!" << std::endl;
     }
 };
 
@@ -743,7 +743,7 @@ void TiGfTraderClient::OnRspETFRedemptionTradeER(const ATPRspETFRedemptionTradeE
 // 订单下达内部拒绝
 void TiGfTraderClient::OnRspBizRejection(const ATPRspBizRejectionOtherMsg& biz_rejection)
 {
-    LOG(INFO) << "[OnRspBizRejection]" <<
+    std::cout << "[OnRspBizRejection]" <<
         " transact_time : " << biz_rejection.transact_time <<
         " client_seq_id : " << biz_rejection.client_seq_id <<
         " msg_type : " << biz_rejection.api_msg_type <<
@@ -770,7 +770,8 @@ void TiGfTraderClient::onOrderRtn(const ATPRspOrderStatusAckMsg& msg)
     strcpy(order_ptr->szName, msg.security_symbol);
     order_ptr->nOrderId = order_id;
     strcpy(order_ptr->szOrderStreamId, msg.order_id);
-    order_ptr->nStatus = getOrderStatus(msg.exec_type);
+    //order_ptr->nStatus = getOrderStatus(msg.exec_type);
+    order_ptr->nStatus = getOrderStatus(msg.ord_status);
     order_ptr->nLastUpdateTimestamp = datetime::get_timestamp_ms(msg.transact_time);
     order_ptr->nUsedTime = order_ptr->nLastUpdateTimestamp - order_ptr->nInsertTimestamp;
     

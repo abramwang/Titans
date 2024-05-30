@@ -1,9 +1,9 @@
-#include "ia_etf_worker_sell_etf.h"
+#include "ia_etf_worker_purchase_etf.h"
 #include "ia_etf_price_tool.h"
 #include "ti_quote_formater.h"
 #include "datetime.h"
 
-IaETFWorkerSellEtf::IaETFWorkerSellEtf(TiTraderClient* client, IaEtfQuoteDataCache* m_quote_cache, IaEtfSignalFactorPtr factor, std::string account)
+IaETFWorkerPurchaseEtf::IaETFWorkerPurchaseEtf(TiTraderClient* client, IaEtfQuoteDataCache* m_quote_cache, IaEtfSignalFactorPtr factor, std::string account)
     : IaETFTradingWorker(client, m_quote_cache, factor, account)
 {
     m_status.symbol = factor->GetEtfInfo()->m_fundId;
@@ -20,12 +20,12 @@ IaETFWorkerSellEtf::IaETFWorkerSellEtf(TiTraderClient* client, IaEtfQuoteDataCac
     updateExpectCost(snap);
 }
 
-void IaETFWorkerSellEtf::OnRspOrderDelete(const TiRspOrderDelete* pData)
+void IaETFWorkerPurchaseEtf::OnRspOrderDelete(const TiRspOrderDelete* pData)
 {
     
 };
 
-void IaETFWorkerSellEtf::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
+void IaETFWorkerPurchaseEtf::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
 {
     if(isOver())
     {
@@ -40,7 +40,7 @@ void IaETFWorkerSellEtf::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
     updateStatus();
 };
 
-void IaETFWorkerSellEtf::OnTimer()
+void IaETFWorkerPurchaseEtf::OnTimer()
 {
     if(isOver())
     {
@@ -69,7 +69,7 @@ void IaETFWorkerSellEtf::OnTimer()
     }
 };
 
-void IaETFWorkerSellEtf::updateExpectCost(TiQuoteSnapshotStockField* pData)
+void IaETFWorkerPurchaseEtf::updateExpectCost(TiQuoteSnapshotStockField* pData)
 {
     double price = pData->ask_price[0];
 
@@ -86,7 +86,7 @@ void IaETFWorkerSellEtf::updateExpectCost(TiQuoteSnapshotStockField* pData)
     m_status.expect_cost = m_status.volume * price;
 };
 
-void IaETFWorkerSellEtf::updateStatus()
+void IaETFWorkerPurchaseEtf::updateStatus()
 {
     m_status.real_cost = 0;
     m_status.finish_volume = 0;
@@ -99,7 +99,7 @@ void IaETFWorkerSellEtf::updateStatus()
 };
 
 
-bool IaETFWorkerSellEtf::hasQueueOrder()
+bool IaETFWorkerPurchaseEtf::hasQueueOrder()
 {
     for (auto iter = m_order_map.begin(); iter != m_order_map.end(); iter++)
     {
@@ -111,46 +111,31 @@ bool IaETFWorkerSellEtf::hasQueueOrder()
     return false;
 };
 
-int64_t IaETFWorkerSellEtf::open()
+
+int64_t IaETFWorkerPurchaseEtf::open()
 {
     std::shared_ptr<IaEtfInfo> m_etf_info = m_etf_factor->GetEtfInfo();
-    TiQuoteSnapshotStockField* etf_snap = m_quote_cache->GetStockSnapshot(m_etf_info->m_fundId.c_str(), m_etf_info->m_exchange.c_str());
-
-    if (etf_snap == nullptr)
-    {
-        return -1;
-    }
     
-    double price = IaEtfPriceTool::get_order_price(
-            m_status.volume, etf_snap->bid_price, etf_snap->bid_volume, TI_STOCK_ARRAY_LEN);
-    double vol = m_status.volume - m_status.finish_volume;
+    TiReqOrderInsert req;
+    memset(&req, 0, sizeof(TiReqOrderInsert));
+    strcpy(req.szSymbol, m_etf_info->m_fundId.c_str());
+    strcpy(req.szExchange, m_etf_info->m_exchange.c_str());
+    strcpy(req.szAccount, m_account.c_str());
+    req.nTradeSideType = TI_TradeSideType_Purchase;
+    req.nBusinessType = TI_BusinessType_ETF;
+    req.nOffsetType = TI_OffsetType_Open;
+    req.nOrderPrice = 0;
+    req.nOrderVol = m_status.volume;
+    req.nReqTimestamp = datetime::get_now_timestamp_ms();
+    strcpy(req.szUseStr, "jager");
 
+    m_client->orderInsert(&req);
 
-    std::vector<int32_t> order_vol_vec;
-    getSplitOrderVol(vol, order_vol_vec);
-
-    for (size_t i = 0; i < order_vol_vec.size(); i++)
-    {
-        TiReqOrderInsert req;
-        memset(&req, 0, sizeof(TiReqOrderInsert));
-        strcpy(req.szSymbol, m_etf_info->m_fundId.c_str());
-        strcpy(req.szExchange, m_etf_info->m_exchange.c_str());
-        strcpy(req.szAccount, m_account.c_str());
-        req.nTradeSideType = TI_TradeSideType_Sell;
-        req.nBusinessType = TI_BusinessType_Stock;
-        req.nOffsetType = TI_OffsetType_Open;
-        req.nOrderPrice = price;
-        req.nOrderVol = order_vol_vec[i];
-        req.nReqTimestamp = datetime::get_now_timestamp_ms();
-        strcpy(req.szUseStr, "jager");
-
-        m_client->orderInsert(&req);
-        m_req_id_set.insert(req.nReqId);
-    }
+    m_req_id_set.insert(req.nReqId);
     return 0;
 };
 
-bool IaETFWorkerSellEtf::isOver()
+bool IaETFWorkerPurchaseEtf::isOver()
 {
     if (m_status.finish_volume == m_status.volume)
     {

@@ -151,10 +151,12 @@ void IaEtfFollowTradeBotGf::OnRspQryOrder(const TiRspQryOrder* pData, bool isLas
     Locker locker(&m_mutex);
     
     //没有交易所系统id就不处理
+    /*
     if (strcmp(pData->szOrderStreamId, "") == 0)
     {
         return;
     }
+    */
 
     m_trade_center->OnRspQryOrder(pData, isLast);
 
@@ -170,8 +172,7 @@ void IaEtfFollowTradeBotGf::OnRspQryOrder(const TiRspQryOrder* pData, bool isLas
             TiTraderFormater::FormatOrderStatus(pData, j);
 
             LOG(INFO) << "OnRspQryOrder: " << isLast << " " << key.c_str() << " " << pData->szOrderStreamId << " " << j << std::endl;
-
-            m_redis->hmset(key.c_str(), pData->szOrderStreamId, j.dump().c_str());
+            m_redis->hmset(key.c_str(), j["szOrderId"].get<std::string>().c_str(), j.dump().c_str());
         }
     }
 };
@@ -180,10 +181,12 @@ void IaEtfFollowTradeBotGf::OnRspQryMatch(const TiRspQryMatch* pData, bool isLas
     Locker locker(&m_mutex);
     
     //没有交易所系统id就不处理
+    /*
     if (strcmp(pData->szStreamId, "") == 0)
     {
         return;
     }
+    */
 
     m_trade_center->OnRspQryMatch(pData, isLast);
 
@@ -228,17 +231,15 @@ void IaEtfFollowTradeBotGf::OnRspQryPosition(const TiRspQryPosition* pData, bool
 };
 void IaEtfFollowTradeBotGf::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
 {
-    json test_j;
-    TiTraderFormater::FormatOrderStatus(pData, test_j);
-    std::cout << "OnRtnOrderStatusEvent: " << test_j << std::endl;
-
     Locker locker(&m_mutex);
 
+    /*
     //没有交易所系统id就不处理
     if (strcmp(pData->szOrderStreamId, "") == 0)
     {
         return;
     }
+    */
 
     m_trade_center->OnRtnOrderStatusEvent(pData);
 
@@ -249,7 +250,7 @@ void IaEtfFollowTradeBotGf::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
             json j;
             TiTraderFormater::FormatOrderStatus(pData, j);
 
-            LOG(INFO) << "OnRtnOrderStatusEvent: "<< pData->szOrderStreamId << " " << j << std::endl;
+            LOG(INFO) << "OnRtnOrderStatusEvent: "<< pData->nOrderId << " " << j << std::endl;
 
             if(!m_config->szOrderKey.empty())
             {
@@ -257,7 +258,7 @@ void IaEtfFollowTradeBotGf::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
                 key += ".";
                 key += pData->szAccount;
 
-                m_redis->hmset(key.c_str(), pData->szOrderStreamId, j.dump().c_str());
+                m_redis->hmset(key.c_str(), j["szOrderId"].get<std::string>().c_str(), j.dump().c_str());
             }
         }
         catch(const std::exception& e)

@@ -27,12 +27,12 @@ void IaETFWorkerBuyEtf::OnRspOrderDelete(const TiRspOrderDelete* pData)
 
 void IaETFWorkerBuyEtf::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
 {
-    auto iter = m_req_id_set.find(pData->nReqId);
-    if (iter == m_req_id_set.end())
+    if(isOver())
     {
         return;
     }
-    if(isOver())
+    auto iter = m_req_id_set.find(pData->nReqId);
+    if (iter == m_req_id_set.end())
     {
         return;
     }
@@ -47,13 +47,12 @@ void IaETFWorkerBuyEtf::OnTimer()
         return;
     }
     int64_t now = datetime::get_now_timestamp_ms();
-    updateStatus();
-    if((now - m_check_time) >= 1000) //1s 检查一次
+    if((now - m_check_time) >= 3000) //1s 检查一次
     {
         m_check_time = now;
         for (auto iter = m_order_map.begin(); iter != m_order_map.end(); ++iter)
         {
-            if (iter->second.nStatus > 0)
+            if (iter->second.nStatus > 0 && iter->second.nDealtVol == 0)
             {
                 TiReqOrderDelete req;
                 memset(&req, 0, sizeof(TiReqOrderDelete));
@@ -153,32 +152,12 @@ int64_t IaETFWorkerBuyEtf::open()
 
         m_req_id_set.insert(req.nReqId);
     }
-//    */
-
-    /*
-    TiReqOrderInsert req;
-    memset(&req, 0, sizeof(TiReqOrderInsert));
-    strcpy(req.szSymbol, m_etf_info->m_fundId.c_str());
-    strcpy(req.szExchange, m_etf_info->m_exchange.c_str());
-    strcpy(req.szAccount, m_account.c_str());
-    req.nTradeSideType = TI_TradeSideType_Buy;
-    req.nBusinessType = TI_BusinessType_Stock;
-    req.nOffsetType = TI_OffsetType_Open;
-    req.nOrderPrice = price;
-    req.nOrderVol = vol;
-    req.nReqTimestamp = datetime::get_now_timestamp_ms();
-    strcpy(req.szUseStr, "jager");
-
-    m_client->orderInsert(&req);
-    m_req_id_set.insert(req.nReqId);
-    return req.nReqId;
-//    */
     return 0;
 };
 
 bool IaETFWorkerBuyEtf::isOver()
 {
-    if (m_status.finish_volume == m_status.volume && !hasQueueOrder())
+    if (m_status.finish_volume == m_status.volume)
     {
         return true;
     }

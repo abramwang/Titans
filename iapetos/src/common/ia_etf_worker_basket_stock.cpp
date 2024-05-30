@@ -13,6 +13,8 @@ IaETFWorkerBasketStock:: IaETFWorkerBasketStock(TiTraderClient* client, IaEtfQuo
     m_status.exchange = factor->GetEtfInfo()->m_exchange;
     m_status.stock_num = 0;
     m_status.over_num = 0;
+
+    m_check_time = datetime::get_now_timestamp_ms();
 }
 
 void IaETFWorkerBasketStock::OnRspOrderDelete(const TiRspOrderDelete* pData)
@@ -25,6 +27,10 @@ void IaETFWorkerBasketStock::OnRspOrderDelete(const TiRspOrderDelete* pData)
 
 void IaETFWorkerBasketStock::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
 {
+    if (isOver())
+    {
+        return;
+    }
     for (auto iter = m_trading_worker_map.begin(); iter != m_trading_worker_map.end(); ++iter)
     {
         iter->second->OnRtnOrderStatusEvent(pData);
@@ -33,6 +39,11 @@ void IaETFWorkerBasketStock::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData
 
 void IaETFWorkerBasketStock::OnTimer()
 {
+    if (isOver())
+    {
+        return;
+    }
+    std::vector<std::string> working_symbol;
     m_status.over_num = 0;
     for (auto iter = m_trading_worker_map.begin(); iter != m_trading_worker_map.end(); ++iter)
     {
@@ -40,6 +51,24 @@ void IaETFWorkerBasketStock::OnTimer()
         if (iter->second->isOver())
         {
             m_status.over_num += 1;
+        }else{
+            working_symbol.push_back(iter->first);
+        }
+    }
+    
+    int64_t now = datetime::get_now_timestamp_ms();
+    if((now - m_check_time) >= 5000) //5s 检查一次
+    {
+        m_check_time = now;
+        std::cout << "[OnTimer]: ETF " << m_status.symbol 
+            << " Basket Stock Over Num: " << m_status.over_num 
+            << "/ " << m_status.stock_num
+            << std::endl;
+        for(auto iter = working_symbol.begin(); iter != working_symbol.end(); ++iter)
+        {
+            std::cout << "[OnTimer]: ETF " << m_status.symbol 
+                << " Working Stock: " << *iter
+                << std::endl;
         }
     }
 };
@@ -69,6 +98,16 @@ int64_t IaETFWorkerBasketStock::open()
         if (constituent_info_ptr->m_exchange != m_status.exchange)
         {
             LOG(INFO) << "Inter-Market:  ETF " << m_status.symbol << "," << m_status.exchange<< "," << constituent_info_ptr->m_symbol << std::endl;
+            continue;
+        }
+
+        //过滤必须现金替代的股票
+        if ((constituent_info_ptr->m_replace_flag == IA_ERT_CASH_MUST) ||
+            (constituent_info_ptr->m_replace_flag == IA_ERT_CASH_MUST_INTER_SZ) ||
+            (constituent_info_ptr->m_replace_flag == IA_ERT_CASH_MUST_INTER_OTHER) ||
+            (constituent_info_ptr->m_replace_flag == IA_ERT_CASH_MUST_INTER_HK))
+        {
+            LOG(INFO) << "Must_Replace:  ETF " << m_status.symbol << "," << m_status.exchange<< "," << constituent_info_ptr->m_symbol << std::endl;
             continue;
         }
 

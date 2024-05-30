@@ -54,6 +54,7 @@ public:
 private:
     TI_TradeSideType m_side;
     Status m_status;
+    int64_t m_check_time;   //检查时间
 
     std::map<std::string, IaETFWorkerSingleStockPtr> m_trading_worker_map;
 public:

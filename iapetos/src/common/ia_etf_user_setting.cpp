@@ -25,7 +25,7 @@ void IaEtfUserSetting::init_etf_info()
     int date_num = datetime::get_today();
     date_num = last_trading_date_num ? last_trading_date_num : date_num;
 
-    //date_num = 20240514;
+    date_num = 20240524;
 
     std::set<std::string> symbol_set;
 

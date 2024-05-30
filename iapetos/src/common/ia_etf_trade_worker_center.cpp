@@ -4,6 +4,7 @@
 #include "ia_etf_worker_buy_etf.h"
 #include "ia_etf_worker_sell_etf.h"
 #include "ia_etf_worker_basket_stock.h"
+#include "ia_etf_worker_purchase_etf.h"
 
 IaEtfTradeWorkerCenter::IaEtfTradeWorkerCenter(TiTraderClient* trade_client, 
     IaEtfQuoteDataCache* quote_cache, 
@@ -87,6 +88,19 @@ void IaEtfTradeWorkerCenter::OnTimer()
     {
         (*iter)->OnTimer();
     }
+
+    iter = m_trading_waiting_worker_list.begin();
+    for (; iter != m_trading_waiting_worker_list.end(); )
+    {
+        if ((*iter)->isReady())
+        {
+            m_trading_worker_list.push_back(*iter);
+            (*iter)->open();
+            iter = m_trading_waiting_worker_list.erase(iter);
+        }else{
+            iter++;
+        }
+    }
 };
 
 
@@ -167,7 +181,23 @@ void IaEtfTradeWorkerCenter::create_etf_trading_worker(bool etf, const std::stri
     }
     else
     {
-        worker = std::make_shared<IaETFWorkerBasketStock>(m_trade_client, m_quote_cache, etf_factor, account, side);
+        if (side == TI_TradeSideType_Buy)
+        {
+            worker = std::make_shared<IaETFWorkerBasketStock>(m_trade_client, m_quote_cache, etf_factor, account, side);
+            IaETFTradingWorkerPtr next_worker = std::make_shared<IaETFWorkerPurchaseEtf>(m_trade_client, m_quote_cache, etf_factor, account);
+            next_worker->setPreWorker(worker);
+            m_trading_waiting_worker_list.push_back(next_worker);
+        }
+        else if (side == TI_TradeSideType_Sell)
+        {
+            worker = std::make_shared<IaETFWorkerBasketStock>(m_trade_client, m_quote_cache, etf_factor, account, side);
+        }
+        else
+        {
+            return;
+        }
+
+
     }
     
     m_trading_worker_list.push_back(worker);

@@ -54,7 +54,7 @@ protected:
 
 public:
     Callback(){
-        sprintf(m_topic, "quote_data");
+        sprintf(m_topic, "quote_test_data");
         memset(m_buffer, 0, TI_QUOTE_CACHE_MAX_LEN);
         m_cache = new TiQuoteCache(m_buffer, TI_QUOTE_CACHE_MAX_LEN);
         m_last_pub_time = 0;

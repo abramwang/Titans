@@ -46,7 +46,7 @@ private:
     std::map<std::string, TiRspAccountInfo> m_account_info_map;
     std::map<std::string, std::map<std::string, TiRspQryPosition>>  m_account_position_map;
     
-
+    std::list<IaETFTradingWorkerPtr> m_trading_waiting_worker_list;
     std::list<IaETFTradingWorkerPtr> m_trading_worker_list;
     std::list<IaETFTradingWorkerPtr> m_over_trading_worker_list;
 private:

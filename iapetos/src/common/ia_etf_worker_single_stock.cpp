@@ -19,6 +19,7 @@ IaETFWorkerSingleStock:: IaETFWorkerSingleStock(TiTraderClient* client, IaEtfQuo
         m_status.symbol.c_str(), 
         m_status.exchange.c_str());
     memcpy(&m_open_snap, snap, sizeof(TiQuoteSnapshotStockField));
+    memset(&m_canceling_order_info, 0, sizeof(DeleteOrderReqInfo));
 }
 
 void IaETFWorkerSingleStock::OnRspOrderDelete(const TiRspOrderDelete* pData)
@@ -28,14 +29,25 @@ void IaETFWorkerSingleStock::OnRspOrderDelete(const TiRspOrderDelete* pData)
 
 void IaETFWorkerSingleStock::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
 {
+    if(isOver())
+    {
+        return;
+    }
     auto iter = m_req_id_set.find(pData->nReqId);
     if (iter == m_req_id_set.end())
     {
         return;
     }
-    if(isOver())
+    if (m_canceling_order_info.nOrderId)
     {
-        return;
+        if (m_canceling_order_info.nOrderId == pData->nOrderId)
+        {
+            memset(&m_canceling_order_info, 0, sizeof(DeleteOrderReqInfo));
+        }
+        if (strcmp(m_canceling_order_info.szOrderStreamId, pData->szOrderStreamId) == 0)
+        {
+            memset(&m_canceling_order_info, 0, sizeof(DeleteOrderReqInfo));
+        }
     }
     m_order_map[pData->szOrderStreamId] = *pData;
     updateStatus();
@@ -47,26 +59,27 @@ void IaETFWorkerSingleStock::OnTimer()
     {
         return;
     }
+    if (m_canceling_order_info.nOrderId)
+    {
+        return;
+    }
     int64_t now = datetime::get_now_timestamp_ms();
-    updateStatus();
-    if((now - m_check_time) >= 1000) //1s 检查一次
+    if((now - m_check_time) >= 3000) //5s 检查一次
     {
         m_check_time = now;
-        for (auto iter = m_order_map.begin(); iter != m_order_map.end(); ++iter)
-        {
-            if (iter->second.nStatus > 0)
-            {
-                TiReqOrderDelete req;
-                memset(&req, 0, sizeof(TiReqOrderDelete));
-                req.nOrderId = iter->second.nOrderId;
-                strcpy(req.szOrderStreamId, iter->second.szOrderStreamId);
-                strcpy(req.szAccount, iter->second.szAccount);
-                m_client->orderDelete(&req);
-            }
-        }
+        
         if (!hasQueueOrder())
         {
             open(); 
+        }else{
+            for (auto iter = m_order_map.begin(); iter != m_order_map.end(); ++iter)
+            {
+                if (iter->second.nStatus > 0 && iter->second.nDealtVol == 0)
+                {
+                    cancelOrder(&iter->second);
+                    break;
+                }
+            }
         }
     }
 };
@@ -110,6 +123,23 @@ bool IaETFWorkerSingleStock::hasQueueOrder()
         }
     }
     return false;
+};
+
+void IaETFWorkerSingleStock::cancelOrder(TiRtnOrderStatus* order)
+{
+    TiReqOrderDelete req;
+    memset(&req, 0, sizeof(TiReqOrderDelete));
+    req.nOrderId = order->nOrderId;
+    strcpy(req.szOrderStreamId, order->szOrderStreamId);
+    strcpy(req.szAccount,order->szAccount);
+
+
+    memset(&m_canceling_order_info, 0, sizeof(DeleteOrderReqInfo));
+    m_canceling_order_info.nOrderId = order->nOrderId;
+    strcpy(m_canceling_order_info.szOrderStreamId, order->szOrderStreamId);
+    strcpy(m_canceling_order_info.szAccount,order->szAccount);
+
+    m_client->orderDelete(&req);
 };
 
 int64_t IaETFWorkerSingleStock::open()
@@ -172,10 +202,17 @@ json IaETFWorkerSingleStock::getStatusJson()
 };
 
 bool IaETFWorkerSingleStock::isOver()
-{
-    if (m_status.finish_volume == m_status.volume && !hasQueueOrder())
+{   
+    if (m_status.finish_volume == m_status.volume)
     {
         return true;
     }
+    ///*
+    std::cout << "[IaETFWorkerSingleStock::isOver]: " << m_status.symbol 
+        << " finish_volume " << m_status.finish_volume
+        << " volume " << m_status.volume
+        << " hasQueueOrder " << hasQueueOrder()
+        << std::endl;
+    //*/
     return false;
 };

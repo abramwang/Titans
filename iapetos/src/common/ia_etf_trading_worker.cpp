@@ -5,6 +5,7 @@ IaETFTradingWorker::IaETFTradingWorker(TiTraderClient* client, IaEtfQuoteDataCac
     m_client = client;
     m_etf_factor = factor;
     m_account = account;
+    m_pre_worker = nullptr;
 };
 
 
