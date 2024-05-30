@@ -13,6 +13,7 @@ IaETFWorkerSingleStock:: IaETFWorkerSingleStock(TiTraderClient* client, IaEtfQuo
     m_status.volume = constituentInfoPtr->m_disclosure_vol;
     m_status.real_cost = 0;
     m_status.finish_volume = 0;
+    m_status.wrong_number = 0;
     m_check_time = datetime::get_now_timestamp_ms();
 
     TiQuoteSnapshotStockField* snap = m_quote_cache->GetStockSnapshot(
@@ -48,6 +49,10 @@ void IaETFWorkerSingleStock::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData
         {
             memset(&m_canceling_order_info, 0, sizeof(DeleteOrderReqInfo));
         }
+    }
+    if (pData->nStatus == TI_OrderStatusType_fail)
+    {
+        m_status.wrong_number++;
     }
     m_order_map[pData->szOrderStreamId] = *pData;
     updateStatus();
@@ -207,11 +212,16 @@ bool IaETFWorkerSingleStock::isOver()
     {
         return true;
     }
+    if (m_status.wrong_number > 3)
+    {
+        return true;
+    }
     ///*
     std::cout << "[IaETFWorkerSingleStock::isOver]: " << m_status.symbol 
-        << " finish_volume " << m_status.finish_volume
-        << " volume " << m_status.volume
-        << " hasQueueOrder " << hasQueueOrder()
+        << ", finish_volume " << m_status.finish_volume
+        << ", volume " << m_status.volume
+        << ", hasQueueOrder " << hasQueueOrder()
+        << ", wrong_number " << m_status.wrong_number
         << std::endl;
     //*/
     return false;
