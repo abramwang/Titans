@@ -576,13 +576,31 @@ void TiGtTraderClient::onRtnOrderError(const COrderError* data)
         return;
     }
     std::thread::id threadId = std::this_thread::get_id();
-    std::cout << "TiGtTraderClient::onRtnOrderError" << "Current thread ID: " << threadId << std::endl;
-    cout << "[onRtnOrderError] orderId: " << data->m_nOrderID 
+    int32_t reqId = getReqIdFromRemark(data->m_strRemark);
+
+    //std::cout << "TiGtTraderClient::onRtnOrderError" << "Current thread ID: " << threadId << std::endl;
+    std::cout << "[onRtnOrderError] orderId: " << data->m_nOrderID 
+        << "\n    m_strRemark: " << data->m_strRemark
         << "\n    error id: " << data->m_nErrorID
         << "\n    errormsg: " << data->m_strErrorMsg
         << "\n    m_nRequestID: " << data->m_nRequestID
         << "\n    m_nOrderID: " << data->m_nOrderID
+        << "\n    req id: " << reqId
         << endl;
+
+    auto order_iter = m_order_req_map.find(reqId);
+    if (order_iter == m_order_req_map.end())
+    {
+        return;
+    }
+    
+    nOrderId++;
+    order_iter->second->nOrderId = nOrderId;
+    order_iter->second->nStatus = TI_OrderStatusType_fail;
+    
+    std::cout << "TiGtTraderClient::OnRtnOrderStatusEvent fail " << "nOrderId: " << nOrderId << std::endl;
+
+    m_cb->OnRtnOrderStatusEvent(order_iter->second.get());
 }
     
 ////////////////////////////////////////////////////////////////////////
@@ -615,6 +633,31 @@ int TiGtTraderClient::loadConfig(std::string iniFileName)
         return -1;
     }
     return 0;
+};
+
+int32_t TiGtTraderClient::getReqIdFromRemark(const char* remark)
+{
+    if (!remark)
+    {
+        return 0;
+    }
+
+    int32_t reqId = 0;
+    
+    std::string original = remark;
+    // 找到'.'的位置
+    size_t dotPos = original.find('.');
+    
+    // 检查是否找到了'.'
+    if (dotPos != std::string::npos) {
+        // 提取'.'后面的部分
+        std::string numberPart = original.substr(dotPos + 1);
+        reqId = std::stoi(numberPart);
+    } else {
+        std::cout << "No dot found in the string." << std::endl;
+    }
+
+    return reqId;
 };
 
 TI_OrderStatusType TiGtTraderClient::convertOrderStatus(EEntrustStatus status)
@@ -854,6 +897,9 @@ int TiGtTraderClient::orderInsert(TiReqOrderInsert* req){
 
     // 投资备注
     strcpy(msg.m_strRemark, req->szUseStr);
+    sprintf(msg.m_strRemark, "%s.%d",
+        req->szUseStr,
+        req->nReqId);
     
     std::shared_ptr<TiRtnOrderStatus> order = std::make_shared<TiRtnOrderStatus>();
     memcpy(order.get(), req, sizeof(TiReqOrderInsert));
@@ -861,7 +907,7 @@ int TiGtTraderClient::orderInsert(TiReqOrderInsert* req){
     order->nReqTimestamp = datetime::get_now_timestamp_ms();
 
 
-    LOG(INFO) << "orderInsert: " << req->szAccount << " " << req->szSymbol << " " << req->nOrderVol << " " << req->nOrderPrice << " " << req->nTradeSideType << " " << req->szUseStr << std::endl;
+    std::cout << "orderInsert: nReqId " << req->nReqId << " szAccount " << req->szAccount << " " << req->szSymbol << " " << req->nOrderVol << " " << req->nOrderPrice << " " << req->nTradeSideType << " " << req->szUseStr << std::endl;
     m_client->directOrder(&msg, nReqId);
 
     return nReqId;

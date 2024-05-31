@@ -113,6 +113,7 @@ public:
 
 private:
     int loadConfig(std::string iniFileName);
+    int32_t getReqIdFromRemark(const char* remark);
 
     TI_OrderStatusType convertOrderStatus(EEntrustStatus status);
     TI_TradeSideType convertTradeSide(EOperationType operation);
