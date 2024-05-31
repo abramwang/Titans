@@ -36,6 +36,7 @@ public:
         double real_cost;
         int32_t finish_volume;
         int32_t wrong_number;
+        bool is_limit;  //是否是涨跌停价格
     };
 public:
     virtual void OnCommonJsonRespones(const json* rspData, int req_id, bool isLast, int err, const char* err_str){};     //非交易逻辑的统一实现接口
@@ -60,7 +61,7 @@ private:
     TiQuoteSnapshotStockField m_open_snap;    
     DeleteOrderReqInfo m_canceling_order_info;                      // canceling order
     std::set<int64_t> m_req_id_set;                                 // order_req_id
-    std::unordered_map<std::string, TiRtnOrderStatus> m_order_map;  // szOrderStreamId -> order_status
+    std::unordered_map<int64_t, TiRtnOrderStatus> m_order_map;      // nOrderId -> order_status
 private:
     void updateExpectCost(TiQuoteSnapshotStockField* pData);
     void updateStatus();

@@ -14,6 +14,7 @@ IaETFWorkerSingleStock:: IaETFWorkerSingleStock(TiTraderClient* client, IaEtfQuo
     m_status.real_cost = 0;
     m_status.finish_volume = 0;
     m_status.wrong_number = 0;
+    m_status.is_limit = false;
     m_check_time = datetime::get_now_timestamp_ms();
 
     TiQuoteSnapshotStockField* snap = m_quote_cache->GetStockSnapshot(
@@ -39,6 +40,12 @@ void IaETFWorkerSingleStock::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData
     {
         return;
     }
+    /*
+    if (m_status.symbol != pData->szSymbol || m_status.exchange != pData->szExchange)
+    {
+        return;
+    }
+    */
     if (m_canceling_order_info.nOrderId)
     {
         if (m_canceling_order_info.nOrderId == pData->nOrderId)
@@ -54,7 +61,7 @@ void IaETFWorkerSingleStock::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData
     {
         m_status.wrong_number++;
     }
-    m_order_map[pData->szOrderStreamId] = *pData;
+    m_order_map[pData->nOrderId] = *pData;
     updateStatus();
 };
 
@@ -69,7 +76,7 @@ void IaETFWorkerSingleStock::OnTimer()
         return;
     }
     int64_t now = datetime::get_now_timestamp_ms();
-    if((now - m_check_time) >= 3000) //5s 检查一次
+    if((now - m_check_time) >= 5000) //5s 检查一次
     {
         m_check_time = now;
         
@@ -124,6 +131,12 @@ bool IaETFWorkerSingleStock::hasQueueOrder()
     {
         if(iter->second.nStatus >= 0)
         {
+            /*
+            std::cout << "[IaETFWorkerSingleStock::hasQueueOrder]: " << m_status.symbol 
+                << ", order_id " << iter->second.nOrderId
+                << ", status " << iter->second.nStatus
+                << std::endl;
+            */
             return true;
         }
     }
@@ -171,12 +184,14 @@ int64_t IaETFWorkerSingleStock::open()
     if (m_side == TI_TradeSideType_Buy)
     {
         req.nOrderPrice = IaEtfPriceTool::get_order_price(
-            m_status.volume, snap->ask_price, snap->ask_volume, TI_STOCK_ARRAY_LEN);
+            m_status.volume, snap->ask_price, snap->ask_volume, TI_STOCK_ARRAY_LEN, snap->high_limit);
+        m_status.is_limit = (req.nOrderPrice == snap->high_limit);
     }
     if (m_side == TI_TradeSideType_Sell)
     {
         req.nOrderPrice = IaEtfPriceTool::get_order_price(
-            m_status.volume, snap->bid_price, snap->bid_volume, TI_STOCK_ARRAY_LEN);
+            m_status.volume, snap->bid_price, snap->bid_volume, TI_STOCK_ARRAY_LEN, snap->low_limit);
+        m_status.is_limit = (req.nOrderPrice == snap->low_limit);
     }
     req.nOrderVol = vol;
     req.nReqTimestamp = datetime::get_now_timestamp_ms();
@@ -208,6 +223,10 @@ json IaETFWorkerSingleStock::getStatusJson()
 
 bool IaETFWorkerSingleStock::isOver()
 {   
+    if (m_status.is_limit)
+    {
+        return true;
+    }
     if (m_status.finish_volume == m_status.volume)
     {
         return true;
@@ -216,7 +235,7 @@ bool IaETFWorkerSingleStock::isOver()
     {
         return true;
     }
-    ///*
+    /*
     std::cout << "[IaETFWorkerSingleStock::isOver]: " << m_status.symbol 
         << ", finish_volume " << m_status.finish_volume
         << ", volume " << m_status.volume

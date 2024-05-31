@@ -296,7 +296,7 @@ void IaEtfFollowTradeBotGt::OnTimer()
             }
             m_influxdb_client->write(m_config->szInfluxBucket.c_str(), m_config->szInfluxOrg.c_str(), "ms");
             //m_redis->xadd(m_config->szSignalStream.c_str(), signal_array.dump().c_str(), 2000);
-            std::cout << "[IaEtfFollowTradeBotGt::OnTimer] signal_size: " << signal_out.size() << std::endl;
+            //std::cout << "[IaEtfFollowTradeBotGt::OnTimer] signal_size: " << signal_out.size() << std::endl;
         }catch(std::exception& e){
             std::cout << "[IaEtfFollowTradeBotGt::OnTimer] " << e.what() << std::endl;
         }catch(...){

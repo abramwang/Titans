@@ -11,6 +11,7 @@ IaETFWorkerRedemptionEtf::IaETFWorkerRedemptionEtf(TiTraderClient* client, IaEtf
     m_status.volume = factor->GetEtfInfo()->m_minUnit;
     m_status.real_cost = 0;
     m_status.finish_volume = 0;
+    m_status.wrong_number = 0;
     m_check_time = datetime::get_now_timestamp_ms();
 
     TiQuoteSnapshotStockField* snap = m_quote_cache->GetStockSnapshot(
@@ -36,7 +37,11 @@ void IaETFWorkerRedemptionEtf::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pDa
     {
         return;
     }
-    m_order_map[pData->szOrderStreamId] = *pData;
+    if (pData->nStatus == TI_OrderStatusType_fail)
+    {
+        m_status.wrong_number++;
+    }
+    m_order_map[pData->nOrderId] = *pData;
     updateStatus();
 };
 
@@ -138,6 +143,10 @@ int64_t IaETFWorkerRedemptionEtf::open()
 bool IaETFWorkerRedemptionEtf::isOver()
 {
     if (m_status.finish_volume == m_status.volume)
+    {
+        return true;
+    }
+    if (m_status.wrong_number > 3)
     {
         return true;
     }

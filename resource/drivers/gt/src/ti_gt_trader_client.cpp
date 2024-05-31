@@ -18,8 +18,8 @@ TiGtTraderClient::TiGtTraderClient(std::string configPath, TiTraderCallback* use
     m_cb = userCb;
 
     loadConfig(configPath);
-    nReqId = 100;   //跳过xtp client设置成交模式的区段
-    nOrderId = 5186;
+    nReqId = datetime::get_time_sec_num()*10;   //跳过xtp client设置成交模式的区段
+    nOrderId = datetime::get_time_sec_num()*100;
 };
 
 
