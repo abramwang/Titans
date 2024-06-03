@@ -1313,6 +1313,11 @@ int TiGfTraderClient::orderInsert(TiReqOrderInsert* req){
         LOG(INFO) << "[loadConfig] Do not have config info";
         return -1;
     }
+    if (strcmp(req->szAccount, m_config->szFundAccount.c_str()) != 0)
+    {
+        LOG(INFO) << "[orderInsert] Wrong account id";
+        return -1;
+    }
     LOG(INFO) << "TiGfTraderClient::orderInsert: " << req->szSymbol 
         << "szName " << req->szName
         << ", szExchange " << req->szExchange
@@ -1347,7 +1352,11 @@ int TiGfTraderClient::orderDelete(TiReqOrderDelete* req){
         LOG(INFO) << "[loadConfig] Do not have config info";
         return -1;
     }
-    
+    if (strcmp(req->szAccount, m_config->szFundAccount.c_str()) != 0)
+    {
+        LOG(INFO) << "[orderInsert] Wrong account id";
+        return -1;
+    }
     std::shared_ptr<TiRtnOrderStatus> order_ptr = getOrderPtr(0, req->nOrderId);
     LOG(INFO) << "orderDelete: " << req->nOrderId << " " << order_ptr << std::endl;
     if (order_ptr == NULL)
