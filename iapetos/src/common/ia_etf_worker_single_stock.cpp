@@ -40,12 +40,12 @@ void IaETFWorkerSingleStock::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData
     {
         return;
     }
-    /*
-    if (m_status.symbol != pData->szSymbol || m_status.exchange != pData->szExchange)
+    ///*
+    if (strcmp(m_status.symbol.c_str(), pData->szSymbol) != 0)
     {
         return;
     }
-    */
+    //*/
     if (m_canceling_order_info.nOrderId)
     {
         if (m_canceling_order_info.nOrderId == pData->nOrderId)
