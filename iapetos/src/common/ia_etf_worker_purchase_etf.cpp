@@ -129,7 +129,7 @@ int64_t IaETFWorkerPurchaseEtf::open()
     req.nTradeSideType = TI_TradeSideType_Purchase;
     req.nBusinessType = TI_BusinessType_ETF;
     req.nOffsetType = TI_OffsetType_Open;
-    req.nOrderPrice = 0;
+    req.nOrderPrice = 1;
     req.nOrderVol = m_status.volume;
     req.nReqTimestamp = datetime::get_now_timestamp_ms();
     strcpy(req.szUseStr, "jager");
