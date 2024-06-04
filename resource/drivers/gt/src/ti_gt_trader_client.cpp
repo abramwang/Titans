@@ -39,7 +39,7 @@ TiGtTraderClient::~TiGtTraderClient()
 void TiGtTraderClient::work_cb(uv_work_t* req)
 {
     std::thread::id threadId = std::this_thread::get_id();
-    std::cout << "TiGtTraderClient::work_cb" << "Current thread ID: " << threadId << std::endl;
+    LOG(INFO) << "TiGtTraderClient::work_cb" << "Current thread ID: " << threadId << std::endl;
     TiGtTraderClient* client = (TiGtTraderClient*)req->data;
     client->m_client->join_async();
 };
@@ -55,18 +55,18 @@ void TiGtTraderClient::after_work_cb(uv_work_t* req, int status)
 
 void TiGtTraderClient::onConnected(bool success, const char* errorMsg) 
 {
-    cout << "[onConnected] server connect " << (success ? string("success") : string("failure, err: ") + errorMsg) << endl;
+    LOG(INFO) << "[onConnected] server connect " << (success ? string("success") : string("failure, err: ") + errorMsg) << endl;
     if (!success)
     {
         return;
     }
-    std::cout << m_config->szUser.c_str() << " " << m_config->szPass.c_str() << std::endl;
+    LOG(INFO) << m_config->szUser.c_str() << " " << m_config->szPass.c_str() << std::endl;
     m_client->userLogin(m_config->szUser.c_str(), m_config->szPass.c_str(), nReqId++);
 }
 
 void TiGtTraderClient::onUserLogin(const char* userName, const char* password, int nRequestId, const XtError& error)
 {
-    cout << "[onUserLogin] login " << (error.isSuccess() ? "success" : string("failure, err: ") + error.errorMsg()) << endl;
+    LOG(INFO) << "[onUserLogin] login " << (error.isSuccess() ? "success" : string("failure, err: ") + error.errorMsg()) << endl;
 }
 
 void TiGtTraderClient::onRtnLoginStatus(const char* accountId, EBrokerLoginStatus status, int brokerType, const char* errorMsg)
@@ -75,7 +75,7 @@ void TiGtTraderClient::onRtnLoginStatus(const char* accountId, EBrokerLoginStatu
     {
         return;
     }
-    cout << "[onRtnLoginStatus] account id: " << accountId << ", type: " << brokerType << ", status: " << status << endl;
+    LOG(INFO) << "[onRtnLoginStatus] account id: " << accountId << ", type: " << brokerType << ", status: " << status << endl;
     //return;
     TI_BrokerType ti_broker_type;
     switch (brokerType)
@@ -195,7 +195,7 @@ void TiGtTraderClient::onReqAccountDetail(const char* accountId, int nRequestId,
         m_cb->OnRspAccountInfo(&account_info);
 
     }catch(...){
-        std::cout << "[TiGtTraderClient::onReqAccountDetail] " << "unknown exception" << std::endl;
+        LOG(ERROR) << "[TiGtTraderClient::onReqAccountDetail] " << "unknown exception" << std::endl;
     }
     /* 
     cout << "[onReqAccountDetail]  资金账号 :" << data->m_strAccountID
@@ -211,7 +211,7 @@ void TiGtTraderClient::onReqAccountDetail(const char* accountId, int nRequestId,
 
 void TiGtTraderClient::onReqSecuAccount(const char* accountID, int nRequestId, const char* accountKey, const CSecuAccount* data, bool isLast, const XtError& error)
 {
-    std::cout << "[onReqSecuAccount]:" << isLast << " " << accountID << " " << nRequestId << " " << accountKey << " " << data  << " " << data->m_strExchangeID << std::endl;
+    LOG(INFO) << "[onReqSecuAccount]:" << isLast << " " << accountID << " " << nRequestId << " " << accountKey << " " << data  << " " << data->m_strExchangeID << std::endl;
     if(!data){
         return;
     }
@@ -286,7 +286,7 @@ struct TiRspQryPosition : TiBase_Msg
 
 void TiGtTraderClient::onReqOrderDetail(const char* accountID, int nRequestId, const COrderDetail* data, bool isLast, const XtError& error)
 {
-    std::cout << "[onReqOrderDetail]:" << isLast << " " << accountID << " " << nRequestId << " " << data << std::endl;
+    LOG(INFO) << "[onReqOrderDetail]:" << isLast << " " << accountID << " " << nRequestId << " " << data << std::endl;
 
     if (data == NULL)
     {
@@ -353,7 +353,7 @@ void TiGtTraderClient::onReqOrderDetail(const char* accountID, int nRequestId, c
 
 void TiGtTraderClient::onReqDealDetail(const char* accountID, int nRequestId, const CDealDetail* data, bool isLast, const XtError& error)
 {
-    std::cout << "[onReqDealDetail]:" << isLast << " " << accountID << " " << nRequestId << " " << data << std::endl;
+    LOG(INFO) << "[onReqDealDetail]:" << isLast << " " << accountID << " " << nRequestId << " " << data << std::endl;
 
     if (data == NULL)
     {
@@ -392,41 +392,55 @@ void TiGtTraderClient::onReqDealDetail(const char* accountID, int nRequestId, co
 
     account_iter->second->enterMatch(match_ptr);
 
-    /*
-    sprintf(match_ptr->szErr, "%d-%d-%d-%d-%d-%d", 
-        data->m_nDirection,
-        data->m_nOffsetFlag,
-        data->m_nHedgeFlag,
-        data->m_nOrderPriceType,
-        data->m_eEntrustType,
-        data->m_eCoveredFlag);
-    */
-
     m_cb->OnRspQryMatch(match_ptr.get(), isLast);
+};
+
+void TiGtTraderClient::onCancelOrder(int nRequestId,  const XtError& error)
+{
+    LOG(INFO) << "[onCancelOrder] isSuccess: " << (error.isSuccess()?"true":"false")
+        << "\n    RequestId: " << nRequestId  
+        << "\n    errorMsg: " << error.errorMsg()
+        << endl;
 };
 
 void TiGtTraderClient::onOrder(int nRequestId, int orderID, const char* strRemark, const XtError& error)
 {
-    cout << "[onOrder] isSuccess: " << (error.isSuccess()?"true":"false")
+    LOG(INFO) << "[onOrder] isSuccess: " << (error.isSuccess()?"true":"false")
         << "\n    orderId:  " << orderID
         << "\n    RequestId: " << nRequestId  
         << "\n    errorMsg: " << error.errorMsg()
         << endl;
+
+    auto order_iter = m_order_req_map.find(nRequestId);
+
+    if (order_iter != m_order_req_map.end())
+    {
+        order_iter->second->nInsertTimestamp = datetime::get_now_timestamp_ms();
+        order_iter->second->nOrderId = orderID;
+        order_iter->second->nStatus = error.isSuccess()?TI_OrderStatusType_accepted:TI_OrderStatusType_fail;
+        auto account_iter = m_account_map.find(order_iter->second->szAccount);
+        if (account_iter != m_account_map.end())
+        {
+            account_iter->second->enterOrder(order_iter->second);
+            m_cb->OnRtnOrderStatusEvent(order_iter->second.get());
+        }
+        return;
+    }
     
     auto range = m_order_batch_req_map.equal_range(nRequestId);
 
     for (auto it = range.first; it != range.second; ++it) {
         it->second->nInsertTimestamp = datetime::get_now_timestamp_ms();
         it->second->nOrderId = orderID;
+        it->second->nStatus = error.isSuccess()?TI_OrderStatusType_accepted:TI_OrderStatusType_fail;
 
         auto account_iter = m_account_map.find(it->second->szAccount);
-        if (account_iter == m_account_map.end())
+        if (account_iter != m_account_map.end())
         {
-            return;
+            account_iter->second->enterBatchOrder(it->second);
+            m_cb->OnRtnOrderStatusEvent(it->second.get());
         }
-        account_iter->second->enterBatchOrder(it->second);
     }
-
 };
 
 void TiGtTraderClient::onRtnOrder(const COrderInfo* data)
@@ -443,7 +457,7 @@ void TiGtTraderClient::onRtnOrder(const COrderInfo* data)
     case OCS_STOPPED:    orderStatus = "已撤销";  break;
     }
 
-    cout << "[onRtnOrder]"
+    LOG(INFO) << "[onRtnOrder]"
         << "\n    下单ID: " << data->m_nOrderID
         << "\n    m_startTime：" << data->m_startTime
         << "\n    m_endTime: " << data->m_endTime
@@ -453,6 +467,28 @@ void TiGtTraderClient::onRtnOrder(const COrderInfo* data)
         << "\n    指令执行信息：" << data->m_strMsg
         << "\n    指令执行信息：" << data->m_strRemark
         << endl;
+    
+    auto account_iter = m_account_map.find(data->m_strAccountID);
+    if (account_iter == m_account_map.end())
+    {
+        return;
+    }
+
+    TiRtnOrderStatus* order_ptr = account_iter->second->getOrderStatus(data->m_nOrderID);
+    if(!order_ptr){
+        return;
+    }
+
+    order_ptr->nOrderPrice = data->m_dPrice;
+    order_ptr->nOrderVol = data->m_nVolume;
+
+    order_ptr->nDealtPrice = data->m_dTradedPrice;
+    order_ptr->nDealtVol = data->m_dTradedVolume;
+    order_ptr->nTotalWithDrawnVol = data->m_nVolume - data->m_dTradedVolume;
+
+    order_ptr->nStatus = order_ptr->nStatus >= 0 ? convertOrderStatus(data->m_eStatus):order_ptr->nStatus;
+
+    m_cb->OnRtnOrderStatusEvent(order_ptr);
 };
 
 void TiGtTraderClient::onDirectOrder(int nRequestId, const char* strOrderSysID, const char* strRemark, const XtError& error)
@@ -578,8 +614,7 @@ void TiGtTraderClient::onRtnOrderError(const COrderError* data)
     std::thread::id threadId = std::this_thread::get_id();
     int32_t reqId = getReqIdFromRemark(data->m_strRemark);
 
-    //std::cout << "TiGtTraderClient::onRtnOrderError" << "Current thread ID: " << threadId << std::endl;
-    std::cout << "[onRtnOrderError] orderId: " << data->m_nOrderID 
+    LOG(ERROR) << "[onRtnOrderError] orderId: " << data->m_nOrderID 
         << "\n    m_strRemark: " << data->m_strRemark
         << "\n    error id: " << data->m_nErrorID
         << "\n    errormsg: " << data->m_strErrorMsg
@@ -598,7 +633,7 @@ void TiGtTraderClient::onRtnOrderError(const COrderError* data)
     order_iter->second->nOrderId = nOrderId;
     order_iter->second->nStatus = TI_OrderStatusType_fail;
     
-    std::cout << "TiGtTraderClient::OnRtnOrderStatusEvent fail " << "nOrderId: " << nOrderId << std::endl;
+    LOG(ERROR) << "TiGtTraderClient::OnRtnOrderStatusEvent fail " << "nOrderId: " << nOrderId << std::endl;
 
     m_cb->OnRtnOrderStatusEvent(order_iter->second.get());
 }
@@ -654,10 +689,33 @@ int32_t TiGtTraderClient::getReqIdFromRemark(const char* remark)
         std::string numberPart = original.substr(dotPos + 1);
         reqId = std::stoi(numberPart);
     } else {
-        std::cout << "No dot found in the string." << std::endl;
+        LOG(ERROR) << "No dot found in the string." << std::endl;
     }
 
     return reqId;
+};
+
+TI_OrderStatusType TiGtTraderClient::convertOrderStatus(EOrderCommandStatus status)
+{
+    switch(status)
+    {
+    case OCS_CHECKING:
+        return TI_OrderStatusType_accepted;
+    case OCS_APPROVING:
+        return TI_OrderStatusType_accepted;
+    case OCS_REJECTED:
+        return TI_OrderStatusType_fail;
+    case OCS_RUNNING:
+        return TI_OrderStatusType_queued;
+    case OCS_CANCELING:
+        return TI_OrderStatusType_toRemove;
+    case OCS_FINISHED:
+        return TI_OrderStatusType_dealt;
+    case OCS_STOPPED:
+        return TI_OrderStatusType_removed;
+    default:
+        return TI_OrderStatusType_unAccept;
+    }
 };
 
 TI_OrderStatusType TiGtTraderClient::convertOrderStatus(EEntrustStatus status)
@@ -699,7 +757,6 @@ TI_OrderStatusType TiGtTraderClient::convertOrderStatus(EEntrustStatus status)
     default:
         return TI_OrderStatusType_unAccept;
     }
-    return TI_OrderStatusType_unAccept;
 };
 
 TI_TradeSideType TiGtTraderClient::convertTradeSide(EOperationType operation)
@@ -757,6 +814,107 @@ TI_BusinessType TiGtTraderClient::convertBusinessType(EBrokerPriceType price_typ
         return TI_BusinessType_Stock;
     }
 };
+
+
+int TiGtTraderClient::orderInsertStock(TiReqOrderInsert* req)
+{   
+    req->nReqId = ++nReqId;
+
+    COrdinaryOrder msg;
+
+    // 资金账号，必填参数。不填会被api打回，并且通过onOrder反馈失败
+    strcpy(msg.m_strAccountID, req->szAccount);
+    // 报单市场。必填字段。股票市场有"SH"/"SZ"，如果填空或填错都会被api直接打回
+    strcpy(msg.m_strMarket, req->szExchange);
+    // 报单合约代码，必填字段。
+    strcpy(msg.m_strInstrument, req->szSymbol);
+    // 报单委托量，必填字段。默认int最大值，填0或不填会被api打回
+    msg.m_nVolume = req->nOrderVol;
+    // 报单委托类型。必填字段。根据相应的业务选择，具体请参考XtDataType.h，默认为无效值(OPT_INVALID)。不填会被api打回
+    switch (req->nTradeSideType)
+    {
+    case TI_TradeSideType_Sell:
+        msg.m_eOperationType = OPT_SELL; 
+        break;
+    case TI_TradeSideType_Buy:
+        msg.m_eOperationType = OPT_BUY; 
+        break;
+    }
+    // 报单价格类型，必填字段。默认为无效(PTRP_INVALID)，具体可参考XtDataType.h
+    msg.m_ePriceType = PRTP_FIX;
+    // 报单价格，默认为double最大值。当价格类型m_ePriceType为指定价PRTP_FIX时，必填字段。当价格类型为其他时填了也没用
+    msg.m_dPrice = req->nOrderPrice;
+    // 投机套保标志，选填字段。有"投机"/"套利"/"套保"方式。除期货三个方式都可选之外都是填“投机”。默认为“投机”
+    msg.m_eHedgeFlag = HEDGE_FLAG_SPECULATION;
+
+    // 投资备注
+    strcpy(msg.m_strRemark, req->szUseStr);
+    sprintf(msg.m_strRemark, "%s.%d",
+        req->szUseStr,
+        req->nReqId);
+    
+    std::shared_ptr<TiRtnOrderStatus> order = std::make_shared<TiRtnOrderStatus>();
+    memcpy(order.get(), req, sizeof(TiReqOrderInsert));
+    m_order_req_map[order->nReqId] = order;
+    order->nReqTimestamp = datetime::get_now_timestamp_ms();
+
+
+    LOG(INFO) << "orderInsertStock: nReqId " << req->nReqId << " szAccount " << req->szAccount << " " << req->szSymbol << " " << req->nOrderVol << " " << req->nOrderPrice << " " << req->nTradeSideType << " " << req->szUseStr << std::endl;
+    m_client->directOrder(&msg, nReqId);
+
+    return nReqId;
+};
+
+
+int TiGtTraderClient::orderInsertEtf(TiReqOrderInsert* req)
+{
+    req->nReqId = ++nReqId;
+
+    COrdinaryOrder msg;
+
+    // 资金账号，必填参数。不填会被api打回，并且通过onOrder反馈失败
+    strcpy(msg.m_strAccountID, req->szAccount);
+    // 报单市场。必填字段。股票市场有"SH"/"SZ"，如果填空或填错都会被api直接打回
+    strcpy(msg.m_strMarket, req->szExchange);
+    // 报单合约代码，必填字段。
+    strcpy(msg.m_strInstrument, req->szSymbol);
+    // 报单委托量，必填字段。默认int最大值，填0或不填会被api打回
+    msg.m_nVolume = req->nOrderVol;
+    // 报单委托类型。必填字段。根据相应的业务选择，具体请参考XtDataType.h，默认为无效值(OPT_INVALID)。不填会被api打回
+    switch (req->nTradeSideType)
+    {
+    case TI_TradeSideType_Purchase:
+        msg.m_eOperationType = OPT_ETF_PURCHASE; 
+        break;
+    case TI_TradeSideType_Redemption:
+        msg.m_eOperationType = OPT_ETF_REDEMPTION; 
+        break;
+    }
+    // 报单价格类型，必填字段。默认为无效(PTRP_INVALID)，具体可参考XtDataType.h
+    msg.m_ePriceType = PRTP_FIX;
+    // 报单价格，默认为double最大值。当价格类型m_ePriceType为指定价PRTP_FIX时，必填字段。当价格类型为其他时填了也没用
+    msg.m_dPrice = req->nOrderPrice;
+    // 投机套保标志，选填字段。有"投机"/"套利"/"套保"方式。除期货三个方式都可选之外都是填“投机”。默认为“投机”
+    msg.m_eHedgeFlag = HEDGE_FLAG_SPECULATION;
+
+    // 投资备注
+    strcpy(msg.m_strRemark, req->szUseStr);
+    sprintf(msg.m_strRemark, "%s.%d",
+        req->szUseStr,
+        req->nReqId);
+    
+    std::shared_ptr<TiRtnOrderStatus> order = std::make_shared<TiRtnOrderStatus>();
+    memcpy(order.get(), req, sizeof(TiReqOrderInsert));
+    m_order_req_map[order->nReqId] = order;
+    order->nReqTimestamp = datetime::get_now_timestamp_ms();
+
+
+    LOG(INFO) << "orderInsertEtf: nReqId " << req->nReqId << " szAccount " << req->szAccount << " " << req->szSymbol << " " << req->nOrderVol << " " << req->nOrderPrice << " " << req->nTradeSideType << " " << req->szUseStr << std::endl;
+    m_client->order(&msg, nReqId);
+
+    return nReqId;
+};
+
 
 void TiGtTraderClient::connect(){
     if(!m_config){
@@ -859,58 +1017,16 @@ int TiGtTraderClient::orderInsert(TiReqOrderInsert* req){
     {
         return -1;
     }
-    
-    req->nReqId = ++nReqId;
 
-    COrdinaryOrder msg;
+    int req_id = -1;
 
-    // 资金账号，必填参数。不填会被api打回，并且通过onOrder反馈失败
-    strcpy(msg.m_strAccountID, req->szAccount);
-    // 报单市场。必填字段。股票市场有"SH"/"SZ"，如果填空或填错都会被api直接打回
-    strcpy(msg.m_strMarket, req->szExchange);
-    // 报单合约代码，必填字段。
-    strcpy(msg.m_strInstrument, req->szSymbol);
-    // 报单委托量，必填字段。默认int最大值，填0或不填会被api打回
-    msg.m_nVolume = req->nOrderVol;
-    // 报单委托类型。必填字段。根据相应的业务选择，具体请参考XtDataType.h，默认为无效值(OPT_INVALID)。不填会被api打回
-    switch (req->nTradeSideType)
-    {
-    case TI_TradeSideType_Sell:
-        msg.m_eOperationType = OPT_SELL; 
-        break;
-    case TI_TradeSideType_Buy:
-        msg.m_eOperationType = OPT_BUY; 
-        break;
-    case TI_TradeSideType_Purchase:
-        msg.m_eOperationType = OPT_ETF_PURCHASE; 
-        break;
-    case TI_TradeSideType_Redemption:
-        msg.m_eOperationType = OPT_ETF_REDEMPTION; 
-        break;
+    if(req->nBusinessType == TI_BusinessType_Stock){
+        req_id = orderInsertStock(req);
+    }else if(req->nBusinessType == TI_BusinessType_ETF){
+        req_id = orderInsertEtf(req);
     }
-    // 报单价格类型，必填字段。默认为无效(PTRP_INVALID)，具体可参考XtDataType.h
-    msg.m_ePriceType = PRTP_FIX;
-    // 报单价格，默认为double最大值。当价格类型m_ePriceType为指定价PRTP_FIX时，必填字段。当价格类型为其他时填了也没用
-    msg.m_dPrice = req->nOrderPrice;
-    // 投机套保标志，选填字段。有"投机"/"套利"/"套保"方式。除期货三个方式都可选之外都是填“投机”。默认为“投机”
-    msg.m_eHedgeFlag = HEDGE_FLAG_SPECULATION;
-
-    // 投资备注
-    strcpy(msg.m_strRemark, req->szUseStr);
-    sprintf(msg.m_strRemark, "%s.%d",
-        req->szUseStr,
-        req->nReqId);
     
-    std::shared_ptr<TiRtnOrderStatus> order = std::make_shared<TiRtnOrderStatus>();
-    memcpy(order.get(), req, sizeof(TiReqOrderInsert));
-    m_order_req_map[order->nReqId] = order;
-    order->nReqTimestamp = datetime::get_now_timestamp_ms();
-
-
-    std::cout << "orderInsert: nReqId " << req->nReqId << " szAccount " << req->szAccount << " " << req->szSymbol << " " << req->nOrderVol << " " << req->nOrderPrice << " " << req->nTradeSideType << " " << req->szUseStr << std::endl;
-    m_client->directOrder(&msg, nReqId);
-
-    return nReqId;
+    return req_id;
 };
 
 int TiGtTraderClient::orderDelete(TiReqOrderDelete* req){

@@ -91,6 +91,7 @@ public:
     virtual void onReqOrderDetail(const char* accountID, int nRequestId, const COrderDetail* data, bool isLast, const XtError& error);
     virtual void onReqDealDetail(const char* accountID, int nRequestId, const CDealDetail* data, bool isLast, const XtError& error);
 
+    virtual void onCancelOrder(int nRequestId,  const XtError& error);
 
     virtual void onOrder(int nRequestId, int orderID, const char* strRemark, const XtError& error);
     virtual void onRtnOrder(const COrderInfo* data);
@@ -115,11 +116,14 @@ private:
     int loadConfig(std::string iniFileName);
     int32_t getReqIdFromRemark(const char* remark);
 
+    TI_OrderStatusType convertOrderStatus(EOrderCommandStatus status);
     TI_OrderStatusType convertOrderStatus(EEntrustStatus status);
     TI_TradeSideType convertTradeSide(EOperationType operation);
     TI_TradeSideType convertTradeSide(EBrokerPriceType price_type, EOffsetFlagType offset);
     TI_BusinessType convertBusinessType(EBrokerPriceType price_type);
     
+    int orderInsertStock(TiReqOrderInsert* req);   //买卖
+    int orderInsertEtf(TiReqOrderInsert* req);     //申赎
 public:
 	void connect();
     int orderInsertBatch(std::vector<TiReqOrderInsert> &req_vec, std::string account_id);
