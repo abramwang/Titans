@@ -26,7 +26,7 @@ private:
 public:
     UserCallback(uv_loop_s* loop){
         m_influxdb_client = new TiInfluxdbClient(
-            "http://192.168.124.6:8086", 
+            "http://192.168.71.26:8086", 
             "mFdhDhbwTEAmaXHyYDDEyIJHhM8vjZt0w2ZQePhoAv5cMOZriLiMLpXLKH8_c5tooZ5LPYN9-eB5CC2Owd4u8A==");
 
         m_cout_future_time = 0;
