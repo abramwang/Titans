@@ -47,13 +47,13 @@ void OcQuoteIpcServerCtpRedisXt::OnTimer()
 
 void OcQuoteIpcServerCtpRedisXt::OnCommandRtn(const char* type, const char* command)
 {
-    std::cout << "OnCommandRtn: " << type << " " << command << std::endl;
-    if (!strcmp(type, "enterOrder"))
-    {
-        json j = json::parse(command);
-        return;
-    }
+    json j = json::parse(command);
 
+    for(auto iter = j.begin(); iter != j.end(); iter++){
+
+        std::cout << iter.key() << ":" << iter.value() << std::endl;
+        break;
+    }
 };
 
 
@@ -111,25 +111,20 @@ int OcQuoteIpcServerCtpRedisXt::loadConfig(std::string iniFileName){
     m_config->nPort       = _iniFile["oc_quote_ipc_server_ctp_redis_xt"]["port"];
     m_config->szAuth      = string(_iniFile["oc_quote_ipc_server_ctp_redis_xt"]["auth"]);
 
-    m_config->nBlock          = _iniFile["oc_quote_ipc_server_ctp_redis_xt"]["block"];
-    m_config->szQuoteStreamKey     = string(_iniFile["oc_quote_ipc_server_ctp_redis_xt"]["quote_stream_key"]);
-    m_config->szQuoteStreamGroup   = string(_iniFile["oc_quote_ipc_server_ctp_redis_xt"]["quote_stream_group"]);
-    m_config->szQuoteConsumerId   = string(_iniFile["oc_quote_ipc_server_ctp_redis_xt"]["quote_consumer_id"]);
+    m_config->nBlock                = _iniFile["oc_quote_ipc_server_ctp_redis_xt"]["block"];
+    m_config->szQuoteStreamKey      = string(_iniFile["oc_quote_ipc_server_ctp_redis_xt"]["quote_stream_key"]);
+    m_config->szQuoteStreamGroup    = string(_iniFile["oc_quote_ipc_server_ctp_redis_xt"]["quote_stream_group"]);
+    m_config->szQuoteConsumerId     = string(_iniFile["oc_quote_ipc_server_ctp_redis_xt"]["quote_consumer_id"]);
     
+    m_config->szQuoteIpcTopic       = string(_iniFile["oc_quote_ipc_server_ctp_redis_xt"]["quote_ipc_topic"]);
     
     if( m_config->szIp.empty() |
         !m_config->nPort |
         m_config->szQuoteStreamGroup.empty() |
         m_config->szQuoteStreamKey.empty() |
-        m_config->szQuoteConsumerId.empty() )
+        m_config->szQuoteConsumerId.empty()|
+        m_config->szQuoteIpcTopic.empty() )
     {
-        std::cout << "szIp: " << m_config->szIp << std::endl;
-        std::cout << "nPort: " << m_config->nPort << std::endl;
-        std::cout << "szAuth: " << m_config->szAuth << std::endl;
-        std::cout << "nBlock: " << m_config->nBlock << std::endl;
-        std::cout << "szQuoteStreamKey: " << m_config->szQuoteStreamKey << std::endl;
-        std::cout << "szQuoteStreamGroup: " << m_config->szQuoteStreamGroup << std::endl;
-        std::cout << "szQuoteConsumerId: " << m_config->szQuoteConsumerId << std::endl;
         delete m_config;
         m_config = NULL;
         return -1;

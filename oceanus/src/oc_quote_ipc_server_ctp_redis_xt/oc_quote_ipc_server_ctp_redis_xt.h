@@ -25,6 +25,8 @@ public:
         std::string szQuoteStreamKey;
         std::string szQuoteStreamGroup;
         std::string szQuoteConsumerId;
+
+        std::string szQuoteIpcTopic;
     } ConfigInfo;
 
     class Locker
