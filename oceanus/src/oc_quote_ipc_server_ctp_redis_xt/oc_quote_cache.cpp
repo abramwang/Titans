@@ -16,7 +16,7 @@ void OcQuoteCache::init_instrument(std::vector<OCInstrumentInfo> m_instrument_in
 {
     for(auto in : m_instrument_info_list)
     {
-        if(in.type == OC_INSTRUMENT_TYPE_STOCK)
+        if(in.type == OC_INSTRUMENT_TYPE_STOCK || in.type == OC_INSTRUMENT_TYPE_ETF)
         {
             StockPtr stock = std::make_shared<TiQuoteSnapshotStockField>();
             memset(stock.get(), 0, sizeof(TiQuoteSnapshotStockField));
@@ -58,6 +58,7 @@ bool OcQuoteCache::update_xt_snapshot_cache(std::string code, const json &pData,
         stock->open = pData["open"].get<double>();
         stock->high = pData["high"].get<double>();
         stock->low = pData["low"].get<double>();
+        stock->iopv = pData["pe"].get<double>();
         
         for(int i = 0; i< 5; i++){
             stock->bid_price[i] = pData["bidPrice"][i].get<double>();

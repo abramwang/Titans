@@ -2,7 +2,6 @@
 #define __OC_QUOTE_IPC_SERVER_CTP_REDIS_XT_H__
 #include <string>
 #include <list>
-#include <mutex>
 #include "redis_commander.h"
 #include "redis_sync_handle.h"
 #include <nlohmann/json.hpp>
@@ -10,16 +9,13 @@
 #include "oc_quote_cache.h"
 
 #include "ti_ctp_quote_client.h"
-#include "ti_quote_cache.h"
-#include "ti_quote_callback.h"
-#include "ti_ipc_api.h"
-#include "datetime.h"
+#include "oc_quote_ipc_server.h"
 
 using namespace nlohmann;
 using namespace std;
 
 class OcQuoteIpcServerCtpRedisXt
-    : public RedisCommander, public TiQuoteCallback
+    : public RedisCommander
 {
 public:
     typedef struct ConfigInfo
@@ -40,22 +36,6 @@ public:
         std::string szSqlUser;
         std::string szSqlPassword;
     } ConfigInfo;
-
-    class Locker
-    {
-    private:
-        std::mutex* m_mutex;
-    public:
-        Locker(std::mutex* mutex)
-        {
-            m_mutex = mutex;
-            m_mutex->lock();
-        };
-        ~Locker()
-        {
-            m_mutex->unlock();
-        };
-    };
 
 public:
     virtual void OnTimer();
@@ -78,11 +58,6 @@ public:
 
     virtual void OnTradingDayRtn(const unsigned int day, const char* exchangeName){};
    
-    virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){};
-    virtual void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData){};
-    virtual void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){};
-    virtual void OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){};
-    virtual void OnL2StockOrderRtn(const TiQuoteOrderField* pData){};
 private:
     RedisSyncHandle m_redis;
     OcQuoteInfoMysql* m_quote_info_mysql_client;
@@ -92,13 +67,15 @@ private:
     
     std::vector<OCInstrumentInfo> m_instrument_info_list;
     OcQuoteCache m_quote_cache;
+    
 
+    TiCtpQuoteClient* m_ctp_client;
+    OcQuoteIpcServer m_ipc_server;
 private:
     int loadConfig(std::string iniFileName);
     void resetStreamKey();
 
     
-    std::mutex m_mutex;
 
 };
 

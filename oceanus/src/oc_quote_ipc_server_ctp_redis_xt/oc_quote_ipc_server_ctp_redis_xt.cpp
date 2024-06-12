@@ -10,9 +10,10 @@ OcQuoteIpcServerCtpRedisXt::OcQuoteIpcServerCtpRedisXt(uv_loop_s* loop, std::str
     : RedisCommander(loop)
 {
     m_config = NULL;
+    m_ctp_client = NULL;
+
     loadConfig(configPath);
 
-    ///*
     if(m_config){
         connect(m_config->szIp.c_str(), m_config->nPort, m_config->szAuth.c_str());
         
@@ -24,6 +25,9 @@ OcQuoteIpcServerCtpRedisXt::OcQuoteIpcServerCtpRedisXt(uv_loop_s* loop, std::str
         m_quote_info_mysql_client->QueryInstrumentInfoList(m_instrument_info_list);
 
         std::cout << "QueryInstrumentInfoList size: " << m_instrument_info_list.size() << std::endl;
+
+        
+        m_ctp_client = new TiCtpQuoteClient("./config.ini", &m_ipc_server);
 
         m_quote_cache.init_instrument(m_instrument_info_list);
     }
@@ -48,13 +52,11 @@ OcQuoteIpcServerCtpRedisXt::~OcQuoteIpcServerCtpRedisXt(){
 
 void OcQuoteIpcServerCtpRedisXt::OnTimer()
 {
-    Locker locker(&m_mutex);
 };
 
 
 void OcQuoteIpcServerCtpRedisXt::OnCommandRtn(const char* type, const char* command)
 {
-    //return;
     json j = json::parse(command);
 
     for(auto iter = j.begin(); iter != j.end(); iter++)
@@ -63,25 +65,16 @@ void OcQuoteIpcServerCtpRedisXt::OnCommandRtn(const char* type, const char* comm
         TiQuoteSnapshotIndexField* index_ptr = nullptr;
 
         bool flag = m_quote_cache.update_xt_snapshot_cache(iter.key(), iter.value(), stock_ptr, index_ptr);
-        std::cout << "flag " << flag << " code" << iter.key() << ":" << iter.value() << std::endl;
 
         if (stock_ptr)
         {
-            json snapshot;
-            TiQuoteFormater::FormatSnapshot(stock_ptr, snapshot);
-            std::cout << "stock: " << snapshot << std::endl;
-            /* code */
+            m_ipc_server.OnL2StockSnapshotRtn(stock_ptr);
         }
         
         if (index_ptr)
         {
-            json snapshot;
-            TiQuoteFormater::FormatSnapshot(index_ptr, snapshot);
-            std::cout << "index: " << snapshot << std::endl;
-            /* code */
+            m_ipc_server.OnL2IndexSnapshotRtn(index_ptr);
         }
-        
-        break;
     }
 };
 

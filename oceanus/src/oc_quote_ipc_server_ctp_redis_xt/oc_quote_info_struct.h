@@ -4,7 +4,6 @@
 #include <string>
 
 
-
 const char OC_INSTRUMENT_TYPE_DEFAULT     = 0;
 const char OC_INSTRUMENT_TYPE_STOCK       = 1;
 const char OC_INSTRUMENT_TYPE_FUTURE      = 2;

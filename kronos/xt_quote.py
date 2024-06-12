@@ -23,10 +23,7 @@ from xtquant import xtdata
 def connect():
     ip = '172.17.0.1'
     port = 58610
-    # ip = '127.0.0.1'
-    # port = 58609
     xtdata.connect(ip=ip, port=port)
-
 
 connect()
 
