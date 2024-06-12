@@ -19,6 +19,23 @@ OcQuoteIpcServerCtpRedisXt::OcQuoteIpcServerCtpRedisXt(uv_loop_s* loop, std::str
         bool flag = m_redis.connect(m_config->szIp.c_str(), m_config->nPort, m_config->szAuth.c_str());
         LOG(INFO) << "[OcQuoteIpcServerCtpRedisXt] flag: " << flag;
         resetStreamKey();
+
+        m_quote_info_mysql_client = new OcQuoteInfoMysql(m_config->szSqlIp, m_config->nSqlPort, m_config->szSqlUser, m_config->szSqlPassword);
+        m_quote_info_mysql_client->QueryInstrumentInfoList(m_instrument_info_list);
+
+        for (auto iter = m_instrument_info_list.begin(); iter != m_instrument_info_list.end(); iter++)
+        {
+            std::cout << iter->symbol << std::endl;
+            std::cout << iter->exchange << std::endl;
+            std::cout << iter->name << std::endl;
+            std::cout << iter->type << std::endl;
+            std::cout << iter->limit_up << std::endl;
+            std::cout << iter->limit_down << std::endl;
+            std::cout << iter->pre_close << std::endl;
+            std::cout << iter->update_date << std::endl;
+            break;
+        }
+        std::cout << "QueryInstrumentInfoList size" << m_instrument_info_list.size() << std::endl;
     }
     //*/
 
@@ -47,6 +64,7 @@ void OcQuoteIpcServerCtpRedisXt::OnTimer()
 
 void OcQuoteIpcServerCtpRedisXt::OnCommandRtn(const char* type, const char* command)
 {
+    return;
     json j = json::parse(command);
 
     for(auto iter = j.begin(); iter != j.end(); iter++){
@@ -118,12 +136,21 @@ int OcQuoteIpcServerCtpRedisXt::loadConfig(std::string iniFileName){
     
     m_config->szQuoteIpcTopic       = string(_iniFile["oc_quote_ipc_server_ctp_redis_xt"]["quote_ipc_topic"]);
     
+    m_config->szSqlIp       = string(_iniFile["oc_quote_ipc_server_ctp_redis_xt"]["sql_ip"]);
+    m_config->nSqlPort      = _iniFile["oc_quote_ipc_server_ctp_redis_xt"]["sql_port"];
+    m_config->szSqlUser     = string(_iniFile["oc_quote_ipc_server_ctp_redis_xt"]["sql_user"]);
+    m_config->szSqlPassword = string(_iniFile["oc_quote_ipc_server_ctp_redis_xt"]["sql_password"]);
+
     if( m_config->szIp.empty() |
         !m_config->nPort |
         m_config->szQuoteStreamGroup.empty() |
         m_config->szQuoteStreamKey.empty() |
-        m_config->szQuoteConsumerId.empty()|
-        m_config->szQuoteIpcTopic.empty() )
+        m_config->szQuoteConsumerId.empty() |
+        m_config->szQuoteIpcTopic.empty() |
+        m_config->szSqlIp.empty() |
+        !m_config->nSqlPort |
+        m_config->szSqlUser.empty() |
+        m_config->szSqlPassword.empty() )
     {
         delete m_config;
         m_config = NULL;

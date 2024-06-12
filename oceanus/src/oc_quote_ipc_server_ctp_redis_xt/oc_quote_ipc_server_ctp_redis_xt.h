@@ -6,9 +6,9 @@
 #include "redis_commander.h"
 #include "redis_sync_handle.h"
 #include <nlohmann/json.hpp>
+#include "oc_quote_info_mysql.h"
 
 using namespace nlohmann;
-
 using namespace std;
 
 class OcQuoteIpcServerCtpRedisXt
@@ -27,6 +27,11 @@ public:
         std::string szQuoteConsumerId;
 
         std::string szQuoteIpcTopic;
+
+        std::string szSqlIp;
+        int         nSqlPort;
+        std::string szSqlUser;
+        std::string szSqlPassword;
     } ConfigInfo;
 
     class Locker
@@ -65,10 +70,12 @@ public:
 
 private:
     RedisSyncHandle m_redis;
+    OcQuoteInfoMysql* m_quote_info_mysql_client;
+
     uv_timer_t m_timer;
     ConfigInfo* m_config;
-    json m_json_cash;
-    json m_json_msg;
+    
+    std::vector<OCInstrumentInfo> m_instrument_info_list;
 
 private:
     int loadConfig(std::string iniFileName);
