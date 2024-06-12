@@ -70,4 +70,7 @@ def download_future_instruments():
 
 
 if __name__ == "__main__":
+    download_etf_instruments()
+    download_stock_instruments()
+    download_index_instruments()
     download_future_instruments()
