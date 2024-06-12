@@ -97,6 +97,16 @@ long long datetime::get_timestamp_ms(long long datetime_num){
     return get_timestamp_ms(_day, _time);
 };
 
+void datetime::get_date_time_num_from_timestamp_ms(long long timestamp_ms, int32_t &day_num, int32_t &time_num)
+{
+    struct tm *tm_t;
+    time_t _time = timestamp_ms / 1000;
+    tm_t = localtime(&_time);
+    
+    day_num = (tm_t->tm_year + 1900)*10000+ (tm_t->tm_mon + 1)*100 + tm_t->tm_mday;
+    time_num = tm_t->tm_hour*10000000 + tm_t->tm_min*100000 + tm_t->tm_sec*1000 + timestamp_ms%1000;
+};
+
 void datetime::get_format_timestamp_ms(long long src_timestamp, char *dis_str_time, unsigned int dis_len) { 
     if (dis_len < 32) {
         printf("input buff len less than 32");	

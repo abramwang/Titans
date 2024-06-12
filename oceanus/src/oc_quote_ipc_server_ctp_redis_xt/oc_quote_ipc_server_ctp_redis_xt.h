@@ -7,12 +7,19 @@
 #include "redis_sync_handle.h"
 #include <nlohmann/json.hpp>
 #include "oc_quote_info_mysql.h"
+#include "oc_quote_cache.h"
+
+#include "ti_ctp_quote_client.h"
+#include "ti_quote_cache.h"
+#include "ti_quote_callback.h"
+#include "ti_ipc_api.h"
+#include "datetime.h"
 
 using namespace nlohmann;
 using namespace std;
 
 class OcQuoteIpcServerCtpRedisXt
-    : public RedisCommander
+    : public RedisCommander, public TiQuoteCallback
 {
 public:
     typedef struct ConfigInfo
@@ -68,6 +75,14 @@ public:
 
     static void onTimer(uv_timer_t* handle);
 
+
+    virtual void OnTradingDayRtn(const unsigned int day, const char* exchangeName){};
+   
+    virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){};
+    virtual void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData){};
+    virtual void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){};
+    virtual void OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){};
+    virtual void OnL2StockOrderRtn(const TiQuoteOrderField* pData){};
 private:
     RedisSyncHandle m_redis;
     OcQuoteInfoMysql* m_quote_info_mysql_client;
@@ -76,6 +91,7 @@ private:
     ConfigInfo* m_config;
     
     std::vector<OCInstrumentInfo> m_instrument_info_list;
+    OcQuoteCache m_quote_cache;
 
 private:
     int loadConfig(std::string iniFileName);

@@ -3,6 +3,7 @@
 #include "oc_quote_ipc_server_ctp_redis_xt.h"
 #include "iniFile.h"
 #include "datetime.h"
+#include "ti_quote_formater.h"
 #include <glog/logging.h>
 
 OcQuoteIpcServerCtpRedisXt::OcQuoteIpcServerCtpRedisXt(uv_loop_s* loop, std::string configPath)
@@ -13,7 +14,6 @@ OcQuoteIpcServerCtpRedisXt::OcQuoteIpcServerCtpRedisXt(uv_loop_s* loop, std::str
 
     ///*
     if(m_config){
-        std::cout << "test" << std::endl;
         connect(m_config->szIp.c_str(), m_config->nPort, m_config->szAuth.c_str());
         
         bool flag = m_redis.connect(m_config->szIp.c_str(), m_config->nPort, m_config->szAuth.c_str());
@@ -23,19 +23,9 @@ OcQuoteIpcServerCtpRedisXt::OcQuoteIpcServerCtpRedisXt(uv_loop_s* loop, std::str
         m_quote_info_mysql_client = new OcQuoteInfoMysql(m_config->szSqlIp, m_config->nSqlPort, m_config->szSqlUser, m_config->szSqlPassword);
         m_quote_info_mysql_client->QueryInstrumentInfoList(m_instrument_info_list);
 
-        for (auto iter = m_instrument_info_list.begin(); iter != m_instrument_info_list.end(); iter++)
-        {
-            std::cout << iter->symbol << std::endl;
-            std::cout << iter->exchange << std::endl;
-            std::cout << iter->name << std::endl;
-            std::cout << iter->type << std::endl;
-            std::cout << iter->limit_up << std::endl;
-            std::cout << iter->limit_down << std::endl;
-            std::cout << iter->pre_close << std::endl;
-            std::cout << iter->update_date << std::endl;
-            break;
-        }
-        std::cout << "QueryInstrumentInfoList size" << m_instrument_info_list.size() << std::endl;
+        std::cout << "QueryInstrumentInfoList size: " << m_instrument_info_list.size() << std::endl;
+
+        m_quote_cache.init_instrument(m_instrument_info_list);
     }
     //*/
 
@@ -64,12 +54,33 @@ void OcQuoteIpcServerCtpRedisXt::OnTimer()
 
 void OcQuoteIpcServerCtpRedisXt::OnCommandRtn(const char* type, const char* command)
 {
-    return;
+    //return;
     json j = json::parse(command);
 
-    for(auto iter = j.begin(); iter != j.end(); iter++){
+    for(auto iter = j.begin(); iter != j.end(); iter++)
+    {
+        TiQuoteSnapshotStockField* stock_ptr = nullptr;
+        TiQuoteSnapshotIndexField* index_ptr = nullptr;
 
-        std::cout << iter.key() << ":" << iter.value() << std::endl;
+        bool flag = m_quote_cache.update_xt_snapshot_cache(iter.key(), iter.value(), stock_ptr, index_ptr);
+        std::cout << "flag " << flag << " code" << iter.key() << ":" << iter.value() << std::endl;
+
+        if (stock_ptr)
+        {
+            json snapshot;
+            TiQuoteFormater::FormatSnapshot(stock_ptr, snapshot);
+            std::cout << "stock: " << snapshot << std::endl;
+            /* code */
+        }
+        
+        if (index_ptr)
+        {
+            json snapshot;
+            TiQuoteFormater::FormatSnapshot(index_ptr, snapshot);
+            std::cout << "index: " << snapshot << std::endl;
+            /* code */
+        }
+        
         break;
     }
 };

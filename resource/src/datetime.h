@@ -26,6 +26,8 @@ namespace datetime {
 
     long long get_timestamp_ms(long long datetime_num);
 
+    void get_date_time_num_from_timestamp_ms(long long timestamp_ms, int32_t &day_num, int32_t &time_num);
+
     void get_format_timestamp_ms(long long src_timestamp, char *dis_str_time, unsigned int dis_len);
     std::string get_format_timestamp_ms(long long src_timestamp);
     
