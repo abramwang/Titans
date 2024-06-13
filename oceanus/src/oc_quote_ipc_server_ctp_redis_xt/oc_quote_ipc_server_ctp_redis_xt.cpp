@@ -30,6 +30,7 @@ OcQuoteIpcServerCtpRedisXt::OcQuoteIpcServerCtpRedisXt(uv_loop_s* loop, std::str
         m_ctp_client = new TiCtpQuoteClient("./config.ini", &m_ipc_server);
 
         m_quote_cache.init_instrument(m_instrument_info_list);
+        m_ctp_client->connect();
     }
     //*/
 
