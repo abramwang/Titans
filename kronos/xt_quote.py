@@ -71,6 +71,10 @@ def on_data(datas):
         }
         , maxlen= 2000
     )
+    return
+    for key, data in datas.items():
+        print(key, data)
+        break
 
 if __name__ == "__main__":
     get_instrument_info()
