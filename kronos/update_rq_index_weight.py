@@ -1,6 +1,7 @@
 import pandas as pd
 from sqlalchemy import create_engine, text
 import rqdatac
+from datetime import datetime, timedelta
 
 # 创建MySQL数据库连接引擎
 # 请替换以下参数为您的数据库信息
@@ -44,7 +45,17 @@ def query_index_instruments():
     df = df[df["exchange"].isin(["SH", "SZ"])]
     print(df)
 
-def download_index_weights(order_book_ids):
+def query_index_weights():
+    df = pd.read_sql("select date from ti_index_weights", con=engine)
+    return df["date"].min(), df["date"].max()
+
+def download_index_weights(order_book_ids, begin_date):
+    print("download_index_weights 开始下载", begin_date)
+    if begin_date is None:
+        return
+    if begin_date == datetime.now().date():
+        print("download_index_weights 今天已经下载")
+        return
     global engine
     sql = text("""
     CREATE TABLE IF NOT EXISTS ti_index_weights (
@@ -75,7 +86,11 @@ def download_index_weights(order_book_ids):
     for order_book_id in order_book_ids:
         symbol = order_book_id.split(".")[0]
         exchange = exchange_dict[order_book_id.split(".")[1]]
-        index_weights_df = rqdatac.index_weights(order_book_id, start_date="20240101", end_date="20240301", market='cn')
+        index_weights_df = rqdatac.index_weights(order_book_id, 
+                                                start_date=(begin_date + timedelta(days=1)).strftime("%Y-%m-%d"), 
+                                                end_date=datetime.now().date().strftime("%Y-%m-%d"), 
+                                                market='cn')
+        #print(index_weights_df)
         try:
             index_weights_df.reset_index(inplace=True)
             index_weights_df["component_symbol"] = index_weights_df["order_book_id"].str.split(".", expand=True)[0]
@@ -95,4 +110,5 @@ def download_index_weights(order_book_ids):
 
 if __name__ == "__main__":
     order_book_ids = query_etf_instruments()
-    download_index_weights(order_book_ids)
+    min_date, max_date = query_index_weights()
+    download_index_weights(order_book_ids, begin_date = max_date)
