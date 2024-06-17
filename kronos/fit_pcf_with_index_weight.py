@@ -134,6 +134,7 @@ def fit_pcf_index_weight(ETF_code):
         "symbol": "m_symbol", 
         "exchange": "m_exchange", 
         "fit_reality_vol": "m_fit_reality_vol"}, inplace=True)
+    new_etf_constituent_info_df.fillna(0, inplace=True)
     new_etf_constituent_info_df = new_etf_constituent_info_df[
         ["m_tradeDate", "m_fundId", "m_symbol", "m_exchange", "m_name", 
         "m_replace_flag", "m_replace_amount", "m_creation_amount", "m_redemption_amount",
