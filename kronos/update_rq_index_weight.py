@@ -21,6 +21,7 @@ rqdatac.init()
 exchange_dict = {
     "XSHG": "SH",
     "XSHE": "SZ",
+    "INDX" : "INDX",
     "DCE": "DCE",
     "SHFE": "SHFE",
     "CZCE": "CZCE",
@@ -31,7 +32,6 @@ exchange_dict = {
 
 def query_etf_instruments():
     df = pd.read_sql("select * from rq_base_etf_instruments Where status ='Active'", con=engine)
-    df = df[df["underlying_exchange"].isin(["SH", "SZ"])]
 
     index_list = df["underlying_order_book_id"].unique().tolist()
     del index_list[0]
@@ -45,17 +45,14 @@ def query_index_instruments():
     df = df[df["exchange"].isin(["SH", "SZ"])]
     print(df)
 
-def query_index_weights():
-    df = pd.read_sql("select date from ti_index_weights", con=engine)
-    return df["date"].min(), df["date"].max()
+def query_index_weights(order_book_id):
+    df = pd.read_sql(f"SELECT date FROM ti_index_weights WHERE order_book_id = '{order_book_id}' AND date = (SELECT MAX(date) FROM ti_index_weights)", con=engine)
+    if df.empty:
+        return datetime(2024, 1, 1).date()
+    else:
+        return df["date"].max()
 
-def download_index_weights(order_book_ids, begin_date):
-    print("download_index_weights 开始下载", begin_date)
-    if begin_date is None:
-        return
-    if begin_date == datetime.now().date():
-        print("download_index_weights 今天已经下载")
-        return
+def download_index_weights(order_book_ids):
     global engine
     sql = text("""
     CREATE TABLE IF NOT EXISTS ti_index_weights (
@@ -84,14 +81,23 @@ def download_index_weights(order_book_ids, begin_date):
             connection.close()
 
     for order_book_id in order_book_ids:
-        symbol = order_book_id.split(".")[0]
-        exchange = exchange_dict[order_book_id.split(".")[1]]
-        index_weights_df = rqdatac.index_weights(order_book_id, 
+        begin_date = query_index_weights(order_book_id)
+        print(f"download_index_weights {order_book_id} 开始下载", begin_date)
+        if begin_date is None:
+            continue
+        if begin_date == datetime.now().date():
+            print(f"download_index_weights {order_book_id} 今天已经下载")
+            continue
+
+        #print(index_weights_df)
+        try:
+            symbol = order_book_id.split(".")[0]
+            exchange = exchange_dict[order_book_id.split(".")[1]]
+            index_weights_df = rqdatac.index_weights(order_book_id, 
                                                 start_date=(begin_date + timedelta(days=1)).strftime("%Y-%m-%d"), 
                                                 end_date=datetime.now().date().strftime("%Y-%m-%d"), 
                                                 market='cn')
-        #print(index_weights_df)
-        try:
+            
             index_weights_df.reset_index(inplace=True)
             index_weights_df["component_symbol"] = index_weights_df["order_book_id"].str.split(".", expand=True)[0]
             index_weights_df["component_exchange"] = index_weights_df["order_book_id"].str.split(".", expand=True)[1].map(exchange_dict)
@@ -107,8 +113,9 @@ def download_index_weights(order_book_ids, begin_date):
         #break
     print("download_index_weights 基础信息下载完成")
 
+def main():
+    order_book_ids = query_etf_instruments()
+    download_index_weights(order_book_ids)
 
 if __name__ == "__main__":
-    order_book_ids = query_etf_instruments()
-    min_date, max_date = query_index_weights()
-    download_index_weights(order_book_ids, begin_date = max_date)
+    main()
