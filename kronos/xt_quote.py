@@ -78,6 +78,6 @@ def on_data(datas):
 
 if __name__ == "__main__":
     get_instrument_info()
-    xtdata.subscribe_whole_quote(['SH', 'SZ'], callback=on_data)
+    xtdata.subscribe_whole_quote(['SH', 'SZ', 'BJ'], callback=on_data)
     #死循环 阻塞主线程退出
     xtdata.run()
