@@ -53,8 +53,24 @@ OcQuoteIpcServerCtpRedisXt::~OcQuoteIpcServerCtpRedisXt(){
 
 void OcQuoteIpcServerCtpRedisXt::OnTimer()
 {
+    std::time_t currentTime = std::time(nullptr);
+    std::tm* localTime = std::localtime(&currentTime);
+    /*
+    std::cout << "当前时间: "
+            << localTime->tm_year + 1900 << "-" << localTime->tm_mon + 1 << "-" << localTime->tm_mday << " "
+            << localTime->tm_hour << ":" << localTime->tm_min << ":" << localTime->tm_sec
+            << std::endl;
+    */
+    if (localTime->tm_hour >= 15 )
+    {
+        if (localTime->tm_hour == 15 && localTime->tm_min < 30)
+        {
+            return;
+        }
+        std::cout << "terminate" << std::endl;
+        std::terminate();
+    }
 };
-
 
 void OcQuoteIpcServerCtpRedisXt::OnCommandRtn(const char* type, const char* command)
 {
