@@ -77,24 +77,34 @@ def fit_pcf_index_weight(ETF_code):
     if index_weight_df.empty:
         print(f"ETF {ETF_code['symbol']} has no index weight")
         return False
+    
+    if index_weight_df.shape[0] > etf_constituent_info_df.shape[0] * 1.5:
+        print(f"ETF {ETF_code['symbol']} has more index weight {index_weight_df.shape[0]} than constituent info {etf_constituent_info_df.shape[0]}")
+        return False
 
     etf_constituent_info_df = pd.merge(etf_constituent_info_df, index_weight_df, on=["date", "symbol", "exchange"], how = "outer")
-    etf_constituent_info_df["m_tradeDate"].fillna(method="ffill", inplace=True)
-    etf_constituent_info_df["m_fundId"].fillna(method="ffill", inplace=True)
-    etf_constituent_info_df["m_replace_flag"].fillna('ERT_CASH_OPTIONAL', inplace=True)
-    etf_constituent_info_df["m_cash_replaced_creation_premium_rate"].fillna(method="ffill", inplace=True)
-    etf_constituent_info_df["m_cash_replaced_redemption_discount_rate"].fillna(method="ffill", inplace=True)
-    etf_constituent_info_df.fillna(0, inplace=True)
-
-    print(etf_constituent_info_df)
+    etf_constituent_info_df["m_tradeDate"] = etf_constituent_info_df["m_tradeDate"].ffill()
+    etf_constituent_info_df["m_tradeDate"] = etf_constituent_info_df["m_tradeDate"].bfill()
+    etf_constituent_info_df["m_fundId"] = etf_constituent_info_df["m_fundId"].ffill()
+    etf_constituent_info_df["m_fundId"] = etf_constituent_info_df["m_fundId"].bfill()
+    etf_constituent_info_df["m_name"] = etf_constituent_info_df["m_name"].fillna('')
+    etf_constituent_info_df["m_replace_flag"] = etf_constituent_info_df["m_replace_flag"].fillna('ERT_CASH_OPTIONAL')
+    etf_constituent_info_df["m_cash_replaced_creation_premium_rate"] = etf_constituent_info_df["m_cash_replaced_creation_premium_rate"].ffill()
+    etf_constituent_info_df["m_cash_replaced_creation_premium_rate"] = etf_constituent_info_df["m_cash_replaced_creation_premium_rate"].bfill()
+    etf_constituent_info_df["m_cash_replaced_redemption_discount_rate"] = etf_constituent_info_df["m_cash_replaced_redemption_discount_rate"].ffill()
+    etf_constituent_info_df["m_cash_replaced_redemption_discount_rate"] = etf_constituent_info_df["m_cash_replaced_redemption_discount_rate"].bfill()
     
+    #print(etf_constituent_info_df)
+    #return True
 
     stock_day_bar_df = pd.read_sql(f"SELECT * FROM ti_instrument_info;", ti_data_engine)
     stock_day_bar_df["date"] = pd.to_datetime(stock_day_bar_df["update_date"])
     stock_day_bar_df.rename(columns={"pre_close": "prev_close"}, inplace=True)
 
+
     etf_constituent_info_df = pd.merge(etf_constituent_info_df, stock_day_bar_df, on=["date", "symbol", "exchange"], how="left")
     etf_constituent_info_df["market_value"] = etf_constituent_info_df["m_disclosure_vol"] * etf_constituent_info_df["prev_close"]
+    etf_constituent_info_df.fillna(0, inplace=True)
     
     fit_df_list = []
     group = etf_constituent_info_df.groupby("date")
@@ -137,8 +147,8 @@ def main():
     etf_code_list = get_etf_code_list()
     fitted_code_list = []
     for ETF_code in etf_code_list:
-        if ETF_code["symbol"] != "159150":
-            continue
+        #if ETF_code["symbol"] != "159150":
+        #    continue
         if fit_pcf_index_weight(ETF_code):
             fitted_code_list.append(ETF_code)
             #break
