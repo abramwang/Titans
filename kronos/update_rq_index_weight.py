@@ -81,6 +81,7 @@ def download_index_weights(order_book_ids):
             connection.close()
 
     for order_book_id in order_book_ids:
+        """
         begin_date = query_index_weights(order_book_id)
         print(f"download_index_weights {order_book_id} 开始下载", begin_date)
         if begin_date is None:
@@ -88,13 +89,16 @@ def download_index_weights(order_book_ids):
         if begin_date == datetime.now().date():
             print(f"download_index_weights {order_book_id} 今天已经下载")
             continue
-
+        continue
+        """
+        begin_date = datetime.now().date()
+        print(f"download_index_weights {order_book_id} 开始下载", begin_date)
         #print(index_weights_df)
         try:
             symbol = order_book_id.split(".")[0]
             exchange = exchange_dict[order_book_id.split(".")[1]]
             index_weights_df = rqdatac.index_weights(order_book_id, 
-                                                start_date=(begin_date + timedelta(days=1)).strftime("%Y-%m-%d"), 
+                                                start_date=begin_date.strftime("%Y-%m-%d"), 
                                                 end_date=datetime.now().date().strftime("%Y-%m-%d"), 
                                                 market='cn')
             
@@ -107,8 +111,12 @@ def download_index_weights(order_book_ids):
             index_weights_df["exchange"] = exchange
 
             index_weights_df.to_sql("ti_index_weights", con=engine, if_exists='append', index=False)
-        except:
+        except Exception as e:
             print(f"error: {order_book_id}")
+                    # 当异常发生时执行的代码
+            print(f"An error occurred: {e}")
+            # 如果你想获取异常的类型和更详细的信息，可以使用:
+            print(f"Exception type: {type(e)}")
             continue
         #break
     print("download_index_weights 基础信息下载完成")
