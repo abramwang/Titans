@@ -39,6 +39,7 @@ public:
         std::string szInfluxToken;
         std::string szInfluxOrg;
         std::string szInfluxBucket;
+        std::string szInfluxMeasurement;
 
     } ConfigInfo;
 

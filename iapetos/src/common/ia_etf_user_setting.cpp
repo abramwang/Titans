@@ -58,7 +58,7 @@ void IaEtfUserSetting::init_etf_info(bool only_use_fitted_pcf)
     }
 
     // 补齐有拟合清单的ETF
-    {
+    if (only_use_fitted_pcf) {
         std::vector<std::string> all_fitted_symbol_vec;
         m_etf_info_mysql_client->QueryFittedEtfList(date_num, all_fitted_symbol_vec);
 

@@ -96,7 +96,7 @@ void IaEtfJager::OnTimer()
                     continue;
                 }
                 m_redis->hmset(m_config->szSignalMap.c_str(), iter.key().c_str(), iter.value().dump().c_str());
-                m_influxdb_client->add_point("jager", iter.value()["influx"]);
+                m_influxdb_client->add_point(m_config->szInfluxMeasurement, iter.value()["influx"]);
             }
             m_influxdb_client->write(m_config->szInfluxBucket.c_str(), m_config->szInfluxOrg.c_str(), "ms");
             //m_redis->xadd(m_config->szSignalStream.c_str(), signal_array.dump().c_str(), 2000);
@@ -176,7 +176,9 @@ int IaEtfJager::loadConfig(std::string iniFileName){
 
     if (m_enable_only_use_fitted_pcf)
     {
-        m_config->szSignalMap += "_fitted";
+        m_config->szInfluxMeasurement = "jager_fitted";
+    }else{
+        m_config->szInfluxMeasurement = "jager";
     }
 
     if( m_config->szIp.empty() |
