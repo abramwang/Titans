@@ -5,13 +5,15 @@
 #include "datetime.h"
 #include <glog/logging.h>
 
-IaEtfJager::IaEtfJager(uv_loop_s* loop, std::string configPath)
+IaEtfJager::IaEtfJager(uv_loop_s* loop, std::string configPath, bool only_use_fitted_pcf)
 {
     m_loop = loop;
 
     m_redis = new RedisSyncHandle();
     m_quote_client = new TiQuoteIpcClient(configPath, loop, this);
     m_config = NULL;
+    m_enable_only_use_fitted_pcf = only_use_fitted_pcf;
+
     m_mysql = NULL;
     m_user_setting = NULL;
     m_quote_cache = NULL;
@@ -27,7 +29,7 @@ IaEtfJager::IaEtfJager(uv_loop_s* loop, std::string configPath)
         resetStreamKey();
 
         m_mysql = new IaEtfInfoMysql(m_config->szSqlIp.c_str(), m_config->nSqlPort, m_config->szSqlUser.c_str(), m_config->szSqlPassword.c_str());
-        m_user_setting = new IaEtfUserSetting(m_redis, m_mysql);
+        m_user_setting = new IaEtfUserSetting(m_redis, m_mysql, only_use_fitted_pcf);
         m_quote_cache = new IaEtfQuoteDataCache();
         m_signal_center = new IaEtfSignalCenter(m_user_setting, m_quote_cache);
         m_influxdb_client = new IaEtfFactorToInflux(m_config->szInfluxUrl.c_str(), m_config->szInfluxToken.c_str());
@@ -106,7 +108,7 @@ void IaEtfJager::OnTimer()
         }
     }
     
-    return;
+    //return;
     std::time_t currentTime = std::time(nullptr);
     std::tm* localTime = std::localtime(&currentTime);
     /*
@@ -152,21 +154,30 @@ int IaEtfJager::loadConfig(std::string iniFileName){
 
     m_config = new ConfigInfo();
 
-    m_config->szIp        = string(_iniFile["ia_etf_jager_tacit_ronin"]["ip"]);
-    m_config->nPort       = _iniFile["ia_etf_jager_tacit_ronin"]["port"];
-    m_config->szAuth      = string(_iniFile["ia_etf_jager_tacit_ronin"]["auth"]);
+    m_config->szIp        = string(_iniFile["ia_etf_jager"]["ip"]);
+    m_config->nPort       = _iniFile["ia_etf_jager"]["port"];
+    m_config->szAuth      = string(_iniFile["ia_etf_jager"]["auth"]);
 
-    m_config->szSignalMap   = string(_iniFile["ia_etf_jager_tacit_ronin"]["signal_map"]);
+    m_config->szSignalMap   = string(_iniFile["ia_etf_jager"]["signal_map"]);
+    if (m_enable_only_use_fitted_pcf)
+    {
+        m_config->szSignalMap += "_fitted";
+    }
 
-    m_config->szSqlIp       = string(_iniFile["ia_etf_jager_tacit_ronin"]["sql_ip"]);
-    m_config->nSqlPort      = _iniFile["ia_etf_jager_tacit_ronin"]["sql_port"];
-    m_config->szSqlUser     = string(_iniFile["ia_etf_jager_tacit_ronin"]["sql_user"]);
-    m_config->szSqlPassword = string(_iniFile["ia_etf_jager_tacit_ronin"]["sql_password"]);
+    m_config->szSqlIp       = string(_iniFile["ia_etf_jager"]["sql_ip"]);
+    m_config->nSqlPort      = _iniFile["ia_etf_jager"]["sql_port"];
+    m_config->szSqlUser     = string(_iniFile["ia_etf_jager"]["sql_user"]);
+    m_config->szSqlPassword = string(_iniFile["ia_etf_jager"]["sql_password"]);
 
-    m_config->szInfluxUrl   = string(_iniFile["ia_etf_jager_tacit_ronin"]["influx_url"]);
-    m_config->szInfluxToken = string(_iniFile["ia_etf_jager_tacit_ronin"]["influx_token"]);
-    m_config->szInfluxOrg   = string(_iniFile["ia_etf_jager_tacit_ronin"]["influx_org"]);
-    m_config->szInfluxBucket= string(_iniFile["ia_etf_jager_tacit_ronin"]["influx_bucket"]);
+    m_config->szInfluxUrl   = string(_iniFile["ia_etf_jager"]["influx_url"]);
+    m_config->szInfluxToken = string(_iniFile["ia_etf_jager"]["influx_token"]);
+    m_config->szInfluxOrg   = string(_iniFile["ia_etf_jager"]["influx_org"]);
+    m_config->szInfluxBucket= string(_iniFile["ia_etf_jager"]["influx_bucket"]);
+
+    if (m_enable_only_use_fitted_pcf)
+    {
+        m_config->szSignalMap += "_fitted";
+    }
 
     if( m_config->szIp.empty() |
         !m_config->nPort |

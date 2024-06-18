@@ -8,18 +8,28 @@ IaEtfUserSetting::IaEtfUserSetting(RedisSyncHandle* redis_client, IaEtfInfoMysql
     m_redis_client = redis_client;
     m_etf_info_mysql_client = etf_info_mysql;
 
-    //init_monitor_etf_symbol();
-    init_etf_info();
+    init_etf_info(false);
     init_account_info();
 
     std::cout << m_monitor_etf_symbol_vec.size() << std::endl;
 }
 
+IaEtfUserSetting::IaEtfUserSetting(RedisSyncHandle* redis_client, IaEtfInfoMysql* etf_info_mysql, bool only_use_fitted_pcf)
+{
+    m_redis_client = redis_client;
+    m_etf_info_mysql_client = etf_info_mysql;
+
+    init_etf_info(only_use_fitted_pcf);
+    init_account_info();
+
+    std::cout << m_monitor_etf_symbol_vec.size() << " only_use_fitted_pcf:" << only_use_fitted_pcf << std::endl;
+};
+
 IaEtfUserSetting::~IaEtfUserSetting()
 {
 }
 
-void IaEtfUserSetting::init_etf_info()
+void IaEtfUserSetting::init_etf_info(bool only_use_fitted_pcf)
 {
     int32_t last_trading_date_num = m_etf_info_mysql_client->QueryLatestTradingDate();
     int date_num = datetime::get_today();
@@ -27,8 +37,7 @@ void IaEtfUserSetting::init_etf_info()
 
     //date_num = 20240527;
     // 查询有真实清单的ETF
-#if 1
-    {
+    if (!only_use_fitted_pcf) {
         std::vector<IaEtfInfo> etfInfoList;
         m_etf_info_mysql_client->QueryEtfInfoList(date_num, m_monitor_etf_symbol_vec, etfInfoList);
         std::cout << "realvol_fund_vec: " << etfInfoList.size() << std::endl;
@@ -47,7 +56,6 @@ void IaEtfUserSetting::init_etf_info()
             m_etf_constituent_info_map.insert(std::make_pair(constituentInfo.m_fundId, info_ptr));
         }
     }
-#endif
 
     // 补齐有拟合清单的ETF
     {

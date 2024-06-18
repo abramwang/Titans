@@ -72,7 +72,7 @@ public:
     virtual void OnTimer();
 
 public:
-	IaEtfJager(uv_loop_s* loop, std::string configPath);
+	IaEtfJager(uv_loop_s* loop, std::string configPath, bool only_use_fitted_pcf);
 	virtual ~IaEtfJager();
 
     static void onTimer(uv_timer_t* handle);
@@ -83,6 +83,7 @@ private:
     RedisSyncHandle* m_redis;
     TiQuoteIpcClient* m_quote_client;
     ConfigInfo* m_config;
+    bool m_enable_only_use_fitted_pcf;
 
     IaEtfUserSetting* m_user_setting;
     IaEtfInfoMysql* m_mysql;

@@ -24,11 +24,12 @@ private:
 
     std::unordered_map<std::string, std::shared_ptr<IaAccountDBInfo>> m_account_info_map;           //account info map          account_id -> account info
 private:
-    void init_etf_info();
+    void init_etf_info(bool only_use_fitted_pcf);
     void init_account_info();
 
 public:
     IaEtfUserSetting(RedisSyncHandle* redis_client, IaEtfInfoMysql* etf_info_mysql);
+    IaEtfUserSetting(RedisSyncHandle* redis_client, IaEtfInfoMysql* etf_info_mysql, bool only_use_fitted_pcf);
     ~IaEtfUserSetting();
 
 public:
