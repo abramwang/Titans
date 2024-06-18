@@ -54,6 +54,8 @@ CREATE TABLE `etf_info` (
   `m_maxRedemptionVol` float DEFAULT NULL,
   `m_requiredToDiscloseIOPV` tinyint(1) DEFAULT NULL,
   `m_constituentStockNum` int DEFAULT NULL,
+  `m_isCrossMarket` tinyint(1) DEFAULT NULL,
+  `m_hasRealityList` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`m_tradeDate`,`m_fundId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 */
@@ -75,6 +77,8 @@ struct IaEtfInfo {
     float m_maxRedemptionVol;
     bool m_requiredToDiscloseIOPV;
     int m_constituentStockNum;
+    bool m_isCrossMarket;
+    bool m_hasRealityList;
 };
 
 /*

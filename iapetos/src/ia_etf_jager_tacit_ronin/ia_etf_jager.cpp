@@ -152,21 +152,21 @@ int IaEtfJager::loadConfig(std::string iniFileName){
 
     m_config = new ConfigInfo();
 
-    m_config->szIp        = string(_iniFile["ia_etf_follow_trade_bot_gf"]["ip"]);
-    m_config->nPort       = _iniFile["ia_etf_follow_trade_bot_gf"]["port"];
-    m_config->szAuth      = string(_iniFile["ia_etf_follow_trade_bot_gf"]["auth"]);
+    m_config->szIp        = string(_iniFile["ia_etf_jager_tacit_ronin"]["ip"]);
+    m_config->nPort       = _iniFile["ia_etf_jager_tacit_ronin"]["port"];
+    m_config->szAuth      = string(_iniFile["ia_etf_jager_tacit_ronin"]["auth"]);
 
-    m_config->szSignalMap   = string(_iniFile["ia_etf_follow_trade_bot_gf"]["signal_map"]);
-    
-    m_config->szSqlIp       = string(_iniFile["ia_etf_follow_trade_bot_gf"]["sql_ip"]);
-    m_config->nSqlPort      = _iniFile["ia_etf_follow_trade_bot_gf"]["sql_port"];
-    m_config->szSqlUser     = string(_iniFile["ia_etf_follow_trade_bot_gf"]["sql_user"]);
-    m_config->szSqlPassword = string(_iniFile["ia_etf_follow_trade_bot_gf"]["sql_password"]);
+    m_config->szSignalMap   = string(_iniFile["ia_etf_jager_tacit_ronin"]["signal_map"]);
 
-    m_config->szInfluxUrl   = string(_iniFile["ia_etf_follow_trade_bot_gf"]["influx_url"]);
-    m_config->szInfluxToken = string(_iniFile["ia_etf_follow_trade_bot_gf"]["influx_token"]);
-    m_config->szInfluxOrg   = string(_iniFile["ia_etf_follow_trade_bot_gf"]["influx_org"]);
-    m_config->szInfluxBucket= string(_iniFile["ia_etf_follow_trade_bot_gf"]["influx_bucket"]);
+    m_config->szSqlIp       = string(_iniFile["ia_etf_jager_tacit_ronin"]["sql_ip"]);
+    m_config->nSqlPort      = _iniFile["ia_etf_jager_tacit_ronin"]["sql_port"];
+    m_config->szSqlUser     = string(_iniFile["ia_etf_jager_tacit_ronin"]["sql_user"]);
+    m_config->szSqlPassword = string(_iniFile["ia_etf_jager_tacit_ronin"]["sql_password"]);
+
+    m_config->szInfluxUrl   = string(_iniFile["ia_etf_jager_tacit_ronin"]["influx_url"]);
+    m_config->szInfluxToken = string(_iniFile["ia_etf_jager_tacit_ronin"]["influx_token"]);
+    m_config->szInfluxOrg   = string(_iniFile["ia_etf_jager_tacit_ronin"]["influx_org"]);
+    m_config->szInfluxBucket= string(_iniFile["ia_etf_jager_tacit_ronin"]["influx_bucket"]);
 
     if( m_config->szIp.empty() |
         !m_config->nPort |

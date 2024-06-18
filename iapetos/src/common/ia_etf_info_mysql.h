@@ -12,6 +12,7 @@ public:
 private:
     TiMysqlClient* m_pcf_db;
     TiMysqlClient* m_ref_db;
+    TiMysqlClient* m_ti_db;
 
 private:
     std::string format_vec(const std::vector<std::string>& vec);
@@ -21,6 +22,11 @@ public:
     void QueryEtfConstituentInfoList(int32_t date_num, std::vector<std::string> fund_symbol_vec, std::vector<IaEtfConstituentInfo>& out);
 
     void QueryAccountInfoList(std::vector<IaAccountDBInfo>& out);
+
+    // 和拟合pcf相关的接口
+    void QueryFittedEtfList(int32_t date_num, std::vector<std::string>& fund_symbol_vec);
+    void QueryFittedEtfInfoList(int32_t date_num, std::vector<std::string>& fund_symbol_vec, std::vector<IaEtfInfo>& out);
+    void QueryFittedEtfConstituentInfoList(int32_t date_num, std::vector<std::string>& fund_symbol_vec, std::vector<IaEtfConstituentInfo>& out);
 };
 
 #endif // __IA_ETF_INFO_MYSQL_H__
