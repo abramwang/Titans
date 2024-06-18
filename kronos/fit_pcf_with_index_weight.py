@@ -78,7 +78,7 @@ def fit_pcf_index_weight(ETF_code):
         print(f"ETF {ETF_code['symbol']} has no index weight")
         return False
     
-    if index_weight_df.shape[0] > etf_constituent_info_df.shape[0] * 1.5:
+    if index_weight_df.shape[0] > etf_constituent_info_df.shape[0] * 1.3:
         print(f"ETF {ETF_code['symbol']} has more index weight {index_weight_df.shape[0]} than constituent info {etf_constituent_info_df.shape[0]}")
         return False
 
@@ -119,6 +119,10 @@ def fit_pcf_index_weight(ETF_code):
         c = model.coef_[0]
 
         print(date, c)
+
+        if c < 0:
+            print(f"ETF {ETF_code['symbol']} has error LinearRegression {c}")
+            return False
 
         group_df["new_weight"] = c * group_df["weight"]
         group_df["fit_reality_vol"] = group_df["new_weight"] / group_df["prev_close"]
