@@ -112,6 +112,8 @@ def GetMarket(date_, exchange_:str, symbols_, dateType_:str, columns_:list = [] 
     if not columns_:
         df = pd.read_parquet(file_path)
     else:
+        if "symbol" not in columns_:
+            columns_.append("symbol")
         df = pd.read_parquet(file_path, columns=columns_)
     if symbols_list:
         df = df[df["symbol"].isin(symbols_list)]
