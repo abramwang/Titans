@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-project(ia_etf_jager_tacit_ronin)
+project(ia_etf_jager)
 
 # This ensures that things like gnu++11 get passed correctly
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -31,3 +31,14 @@ link_directories( "./" )
 add_executable( ${PROJECT_NAME} ${SRCS} )
 
 target_link_libraries(${PROJECT_NAME} -lcurl -lmysqlclient -larrow -lparquet -luv -lhiredis -lglog -lrt)
+
+
+# 指定源文件和目标文件路径
+set(SOURCE_FILE "./ia_etf_jager")
+set(TARGET_DIR "/home/dist/production_env")
+
+# 添加自定义命令
+add_custom_command(
+    TARGET ia_etf_jager POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy ${SOURCE_FILE} ${TARGET_DIR}
+)
