@@ -65,6 +65,7 @@ def on_data(datas):
     global instrument_len
     global instrument_full_time
 
+    """
     redis_conn.xadd("oc_xt_quote",
         {
             "snapshot": json.dumps(datas)
@@ -72,12 +73,13 @@ def on_data(datas):
         , maxlen= 2000
     )
     return
+    """
     for key, data in datas.items():
         print(key, data)
         break
 
 if __name__ == "__main__":
     get_instrument_info()
-    xtdata.subscribe_whole_quote(['SH', 'SZ', 'BJ'], callback=on_data)
+    xtdata.subscribe_whole_quote(['CSI'], callback=on_data)
     #死循环 阻塞主线程退出
     xtdata.run()

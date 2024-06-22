@@ -57,7 +57,7 @@ void IaETFConstituentCache::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField
     nBidIopvFactor = pData->bid_price[0] ? (pData->bid_price[0] * m_info.m_disclosure_vol) : (last * m_info.m_disclosure_vol);
     nAskIopvFactor = pData->ask_price[0] ? (pData->ask_price[0] * m_info.m_disclosure_vol) : (last * m_info.m_disclosure_vol);
 
-    nSellFee = nBidIopvFactor * ( m_commission + 0.001);    //卖手续费 佣金和 千1的印花税
+    nSellFee = nBidIopvFactor * ( m_commission + 0.0005);    //卖手续费 佣金和 千1的印花税
     nBuyFee = nAskIopvFactor * m_commission;                //买手续费
 
     nBidIopvFactor = nBidIopvFactor - nSellFee;
@@ -178,7 +178,7 @@ void IaETFConstituentCache::calcTradingCost(const TiQuoteSnapshotStockField* pDa
     
      // 交易成本算上手续费
     nBuyCost = buy_turnover + buy_turnover * m_commission;                   // 佣金
-    nSellCost = sell_turnover - sell_turnover * ( m_commission + 0.0001);    // 佣金和 千1的印花税
+    nSellCost = sell_turnover - sell_turnover * ( m_commission + 0.0005);    // 佣金和 千1的印花税
     
     nHighLimitValue = 0;
     nLowLimitValue = 0;

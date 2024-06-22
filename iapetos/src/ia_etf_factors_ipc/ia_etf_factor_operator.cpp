@@ -196,8 +196,8 @@ void IaETFFactorOperator::calcTradingCost()
         sell_cost = m_etf_last_snap.pre_close * m_minUnit;
     }
 
-    buy_cost = buy_cost + buy_cost * (0.00001);        // 万1 佣金
-    sell_cost = sell_cost - sell_cost * (0.00001);     // 万1 佣金
+    buy_cost = buy_cost + buy_cost * (0.000005);        // 万1 佣金
+    sell_cost = sell_cost - sell_cost * (0.000005);     // 万1 佣金
 #endif
 
     auto iter = m_cashMap.begin();
@@ -229,8 +229,8 @@ void IaETFFactorOperator::calcLimitOrderProfit()
         sell_cost = m_etf_last_snap.pre_close * m_minUnit;
     }
 
-    buy_cost = buy_cost + buy_cost * (0.00001);        // 万1 佣金
-    sell_cost = sell_cost - sell_cost * (0.00001);     // 万1 佣金
+    buy_cost = buy_cost + buy_cost * (0.000005);        // 万1 佣金
+    sell_cost = sell_cost - sell_cost * (0.000005);     // 万1 佣金
 
     auto iter = m_cashMap.begin();
     for(; iter != m_cashMap.end(); iter++){
