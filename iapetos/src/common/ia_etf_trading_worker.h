@@ -39,6 +39,7 @@ protected:
 
     std::shared_ptr<IaETFTradingWorker> m_pre_worker;
 protected:
+    int64_t m_id;
     int64_t m_check_time;   //检查时间
     Status m_status;
     TiQuoteSnapshotStockField m_open_snap;
@@ -73,7 +74,7 @@ public:
     virtual int64_t open() = 0;
     virtual bool isOver();
 public:
-    IaETFTradingWorker(TiTraderClient* client, IaEtfQuoteDataCache* quote_cache,IaEtfSignalFactorPtr factor, std::string account);
+    IaETFTradingWorker(int64_t id, TiTraderClient* client, IaEtfQuoteDataCache* quote_cache,IaEtfSignalFactorPtr factor, std::string account);
     virtual ~IaETFTradingWorker(){};
 };
 

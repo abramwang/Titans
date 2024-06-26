@@ -51,7 +51,7 @@ public:
     json getStatusJson();
     bool isOver();
 public:
-    IaETFWorkerBasketStock(TiTraderClient* client, IaEtfQuoteDataCache* quote_cache, IaEtfSignalFactorPtr factor, std::string account, 
+    IaETFWorkerBasketStock(int64_t id, TiTraderClient* client, IaEtfQuoteDataCache* quote_cache, IaEtfSignalFactorPtr factor, std::string account, 
         TI_TradeSideType side);
     virtual ~IaETFWorkerBasketStock(){};
 };

@@ -1,7 +1,8 @@
 #include "ia_etf_trading_worker.h"
 #include "datetime.h"
 
-IaETFTradingWorker::IaETFTradingWorker(TiTraderClient* client, IaEtfQuoteDataCache* quote_cache,IaEtfSignalFactorPtr factor, std::string account){
+IaETFTradingWorker::IaETFTradingWorker(int64_t id, TiTraderClient* client, IaEtfQuoteDataCache* quote_cache,IaEtfSignalFactorPtr factor, std::string account){
+    m_id = m_id;
     m_quote_cache = quote_cache;
     m_client = client;
     m_etf_factor = factor;

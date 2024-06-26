@@ -7,11 +7,15 @@
 #include "ia_etf_worker_purchase_etf.h"
 #include "ia_etf_worker_redemption_etf.h"
 
+#include "datetime.h"
+
 IaEtfTradeWorkerCenter::IaEtfTradeWorkerCenter(TiTraderClient* trade_client, 
     IaEtfQuoteDataCache* quote_cache, 
     IaEtfUserSetting* user_setting,
     IaEtfSignalCenter* signal_center)
 {
+    m_work_id = datetime::get_time_sec_num()*10;
+
     m_trade_client = trade_client;
     m_quote_cache = quote_cache;
     m_user_setting = user_setting;
@@ -127,6 +131,7 @@ void IaEtfTradeWorkerCenter::create_etf_smart_worker(const std::string &symbol, 
     std::cout << "IaEtfTradeWorkerCenter::create_etf_smart_worker" << symbol << " " << account << " " << side<< std::endl;
     std::cout << etf_factor->m_info.diff << " creation_profit:" << etf_factor->m_info.creation_profit << " redemption_profit:"  << etf_factor->m_info.redemption_profit << std::endl;
 
+    return;
     IaETFTradingWorkerPtr worker;
     /*
     if (side == TI_TradeSideType_Buy)
@@ -142,7 +147,7 @@ void IaEtfTradeWorkerCenter::create_etf_smart_worker(const std::string &symbol, 
         return;
     }
 //  */
-    worker = std::make_shared<IaETFWorkerBasketStock>(m_trade_client, m_quote_cache, etf_factor, account, side);
+    worker = std::make_shared<IaETFWorkerBasketStock>(m_work_id ,m_trade_client, m_quote_cache, etf_factor, account, side);
 
     if ( etf_factor->m_info.creation_profit  >  etf_factor->m_info.redemption_profit)
     {
@@ -161,6 +166,7 @@ void IaEtfTradeWorkerCenter::create_etf_trading_worker(bool etf, const std::stri
     std::cout << "IaEtfTradeWorkerCenter::create_etf_trading_worker" << symbol << " " << account << " " << side<< std::endl;
     std::cout << etf_factor->m_info.diff << " creation_profit:" << etf_factor->m_info.creation_profit << " redemption_profit:"  << etf_factor->m_info.redemption_profit << std::endl;
 
+    m_work_id++;
 
     IaETFTradingWorkerPtr worker;
     
@@ -168,14 +174,14 @@ void IaEtfTradeWorkerCenter::create_etf_trading_worker(bool etf, const std::stri
     {
         if (side == TI_TradeSideType_Buy)
         {
-            worker = std::make_shared<IaETFWorkerBuyEtf>(m_trade_client, m_quote_cache, etf_factor, account);
-            IaETFWorkerRedemptionEtfPtr next_worker = std::make_shared<IaETFWorkerRedemptionEtf>(m_trade_client, m_quote_cache, etf_factor, account);
+            worker = std::make_shared<IaETFWorkerBuyEtf>(m_work_id, m_trade_client, m_quote_cache, etf_factor, account);
+            IaETFWorkerRedemptionEtfPtr next_worker = std::make_shared<IaETFWorkerRedemptionEtf>(m_work_id, m_trade_client, m_quote_cache, etf_factor, account);
             next_worker->setPreWorker(worker);
             m_trading_waiting_worker_list.push_back(next_worker);
         }
         else if (side == TI_TradeSideType_Sell)
         {
-            worker = std::make_shared<IaETFWorkerSellEtf>(m_trade_client, m_quote_cache, etf_factor, account);
+            worker = std::make_shared<IaETFWorkerSellEtf>(m_work_id, m_trade_client, m_quote_cache, etf_factor, account);
         }
         else
         {
@@ -186,14 +192,14 @@ void IaEtfTradeWorkerCenter::create_etf_trading_worker(bool etf, const std::stri
     {
         if (side == TI_TradeSideType_Buy)
         {
-            worker = std::make_shared<IaETFWorkerBasketStock>(m_trade_client, m_quote_cache, etf_factor, account, side);
-            IaETFTradingWorkerPtr next_worker = std::make_shared<IaETFWorkerPurchaseEtf>(m_trade_client, m_quote_cache, etf_factor, account);
+            worker = std::make_shared<IaETFWorkerBasketStock>(m_work_id, m_trade_client, m_quote_cache, etf_factor, account, side);
+            IaETFTradingWorkerPtr next_worker = std::make_shared<IaETFWorkerPurchaseEtf>(m_work_id, m_trade_client, m_quote_cache, etf_factor, account);
             next_worker->setPreWorker(worker);
             m_trading_waiting_worker_list.push_back(next_worker);
         }
         else if (side == TI_TradeSideType_Sell)
         {
-            worker = std::make_shared<IaETFWorkerBasketStock>(m_trade_client, m_quote_cache, etf_factor, account, side);
+            worker = std::make_shared<IaETFWorkerBasketStock>(m_work_id, m_trade_client, m_quote_cache, etf_factor, account, side);
         }
         else
         {

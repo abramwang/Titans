@@ -13,7 +13,7 @@ class IaETFWorkerRedemptionEtf :
 public:
     int64_t open();
 public:
-    IaETFWorkerRedemptionEtf(TiTraderClient* client, IaEtfQuoteDataCache* m_quote_cache, IaEtfSignalFactorPtr factor, std::string account);
+    IaETFWorkerRedemptionEtf(int64_t id, TiTraderClient* client, IaEtfQuoteDataCache* m_quote_cache, IaEtfSignalFactorPtr factor, std::string account);
     virtual ~IaETFWorkerRedemptionEtf(){};
 };
 

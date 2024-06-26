@@ -4,9 +4,10 @@
 #include <glog/logging.h>
 #include "datetime.h"
 
-IaETFWorkerBasketStock:: IaETFWorkerBasketStock(TiTraderClient* client, IaEtfQuoteDataCache* quote_cache, IaEtfSignalFactorPtr factor, std::string account, 
+IaETFWorkerBasketStock::IaETFWorkerBasketStock(
+    int64_t id, TiTraderClient* client, IaEtfQuoteDataCache* quote_cache, IaEtfSignalFactorPtr factor, std::string account, 
         TI_TradeSideType side)
-    : IaETFTradingWorker(client, quote_cache, factor, account)
+    : IaETFTradingWorker(id, client, quote_cache, factor, account)
 {
     m_side = side;
     m_basket_status.symbol = factor->GetEtfInfo()->m_fundId;
@@ -141,9 +142,9 @@ int64_t IaETFWorkerBasketStock::open()
             }
         }
         
-        LOG(INFO) << "Single Stock:  ETF " << m_basket_status.symbol << "," << m_basket_status.exchange<< "," << constituent_info_ptr->m_symbol << std::endl;
+        std::cout << "Single Stock:  ETF " << m_basket_status.symbol << "," << m_basket_status.exchange<< "," << constituent_info_ptr->m_symbol << std::endl;
 
-        IaETFWorkerSingleStockPtr worker = std::make_shared<IaETFWorkerSingleStock>(m_client, m_quote_cache, m_etf_factor, m_account, constituent_info_ptr, m_side);
+        IaETFWorkerSingleStockPtr worker = std::make_shared<IaETFWorkerSingleStock>(m_id, m_client, m_quote_cache, m_etf_factor, m_account, constituent_info_ptr, m_side);
         m_trading_worker_map[constituent_info_ptr->m_symbol] = worker;
     }
 

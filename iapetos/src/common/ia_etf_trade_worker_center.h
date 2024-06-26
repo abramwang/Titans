@@ -38,6 +38,8 @@ public:
     virtual void OnTimer();
 
 private:
+    int64_t m_work_id;   //检查时间
+
     TiTraderClient* m_trade_client;
     IaEtfUserSetting* m_user_setting;
     IaEtfQuoteDataCache* m_quote_cache;

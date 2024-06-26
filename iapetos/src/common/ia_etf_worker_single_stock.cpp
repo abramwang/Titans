@@ -3,9 +3,9 @@
 #include "ti_trader_formater.h"
 #include "datetime.h"
 
-IaETFWorkerSingleStock:: IaETFWorkerSingleStock(TiTraderClient* client, IaEtfQuoteDataCache* quote_cache, IaEtfSignalFactorPtr factor, std::string account, 
+IaETFWorkerSingleStock:: IaETFWorkerSingleStock(int64_t id, TiTraderClient* client, IaEtfQuoteDataCache* quote_cache, IaEtfSignalFactorPtr factor, std::string account, 
         std::shared_ptr<IaEtfConstituentInfo> constituentInfoPtr, TI_TradeSideType side)
-    : IaETFTradingWorker(client, quote_cache, factor, account)
+    : IaETFTradingWorker(id, client, quote_cache, factor, account)
 {
     m_side = side;
     m_status.exchange = constituentInfoPtr->m_exchange;

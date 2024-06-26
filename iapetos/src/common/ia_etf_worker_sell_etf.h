@@ -13,7 +13,7 @@ class IaETFWorkerSellEtf :
 public:
     int64_t open();
 public:
-    IaETFWorkerSellEtf(TiTraderClient* client, IaEtfQuoteDataCache* m_quote_cache, IaEtfSignalFactorPtr factor, std::string account);
+    IaETFWorkerSellEtf(int64_t id, TiTraderClient* client, IaEtfQuoteDataCache* m_quote_cache, IaEtfSignalFactorPtr factor, std::string account);
     virtual ~IaETFWorkerSellEtf(){};
 };
 

@@ -32,7 +32,7 @@ public:
     int64_t open();
     json getStatusJson();
 public:
-    IaETFWorkerSingleStock(TiTraderClient* client, IaEtfQuoteDataCache* quote_cache, IaEtfSignalFactorPtr factor, std::string account, 
+    IaETFWorkerSingleStock(int64_t id, TiTraderClient* client, IaEtfQuoteDataCache* quote_cache, IaEtfSignalFactorPtr factor, std::string account, 
         std::shared_ptr<IaEtfConstituentInfo> constituentInfoPtr, TI_TradeSideType side);
     virtual ~IaETFWorkerSingleStock(){};
 };

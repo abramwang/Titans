@@ -3,8 +3,8 @@
 #include "ti_quote_formater.h"
 #include "datetime.h"
 
-IaETFWorkerPurchaseEtf::IaETFWorkerPurchaseEtf(TiTraderClient* client, IaEtfQuoteDataCache* m_quote_cache, IaEtfSignalFactorPtr factor, std::string account)
-    : IaETFTradingWorker(client, m_quote_cache, factor, account)
+IaETFWorkerPurchaseEtf::IaETFWorkerPurchaseEtf(int64_t id, TiTraderClient* client, IaEtfQuoteDataCache* m_quote_cache, IaEtfSignalFactorPtr factor, std::string account)
+    : IaETFTradingWorker(id, client, m_quote_cache, factor, account)
 {
     m_status.symbol = factor->GetEtfInfo()->m_fundId;
     m_status.exchange = factor->GetEtfInfo()->m_exchange;
