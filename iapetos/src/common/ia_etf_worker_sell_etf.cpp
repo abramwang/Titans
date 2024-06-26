@@ -21,101 +21,6 @@ IaETFWorkerSellEtf::IaETFWorkerSellEtf(TiTraderClient* client, IaEtfQuoteDataCac
     updateExpectCost(snap);
 }
 
-void IaETFWorkerSellEtf::OnRspOrderDelete(const TiRspOrderDelete* pData)
-{
-    
-};
-
-void IaETFWorkerSellEtf::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
-{
-    if(isOver())
-    {
-        return;
-    }
-    auto iter = m_req_id_set.find(pData->nReqId);
-    if (iter == m_req_id_set.end())
-    {
-        return;
-    }
-    if (pData->nStatus == TI_OrderStatusType_fail)
-    {
-        m_status.wrong_number++;
-    }
-    m_order_map[pData->nOrderId] = *pData;
-    updateStatus();
-};
-
-void IaETFWorkerSellEtf::OnTimer()
-{
-    if(isOver())
-    {
-        return;
-    }
-    int64_t now = datetime::get_now_timestamp_ms();
-    if((now - m_check_time) >= 3000) //1s 检查一次
-    {
-        m_check_time = now;
-        for (auto iter = m_order_map.begin(); iter != m_order_map.end(); ++iter)
-        {
-            if (iter->second.nStatus > 0 && iter->second.nDealtVol == 0)
-            {
-                TiReqOrderDelete req;
-                memset(&req, 0, sizeof(TiReqOrderDelete));
-                req.nOrderId = iter->second.nOrderId;
-                strcpy(req.szOrderStreamId, iter->second.szOrderStreamId);
-                strcpy(req.szAccount, iter->second.szAccount);
-                m_client->orderDelete(&req);
-            }
-        }
-        if (!hasQueueOrder())
-        {
-            open(); 
-        }
-    }
-};
-
-void IaETFWorkerSellEtf::updateExpectCost(TiQuoteSnapshotStockField* pData)
-{
-    double price = pData->ask_price[0];
-
-    if (price == 0)
-    {
-        price = pData->bid_price[0];
-    }
-
-    if (price == 0)
-    {
-        price = pData->last;
-    }
-
-    m_status.expect_cost = m_status.volume * price;
-};
-
-void IaETFWorkerSellEtf::updateStatus()
-{
-    m_status.real_cost = 0;
-    m_status.finish_volume = 0;
-
-    for (auto iter = m_order_map.begin(); iter != m_order_map.end(); iter++)
-    {
-        m_status.real_cost += (double)iter->second.nDealtVol * iter->second.nDealtPrice;
-        m_status.finish_volume += iter->second.nDealtVol;
-    }
-};
-
-
-bool IaETFWorkerSellEtf::hasQueueOrder()
-{
-    for (auto iter = m_order_map.begin(); iter != m_order_map.end(); iter++)
-    {
-        if (iter->second.nStatus >= 0)
-        {
-            return true;
-        }
-    }
-    return false;
-};
-
 int64_t IaETFWorkerSellEtf::open()
 {
     std::shared_ptr<IaEtfInfo> m_etf_info = m_etf_factor->GetEtfInfo();
@@ -127,7 +32,7 @@ int64_t IaETFWorkerSellEtf::open()
     }
     
     double price = IaEtfPriceTool::get_order_price(
-            m_status.volume, etf_snap->bid_price, etf_snap->bid_volume, TI_STOCK_ARRAY_LEN);
+            m_status.volume, etf_snap->bid_price, etf_snap->bid_volume, 5);
     double vol = m_status.volume - m_status.finish_volume;
 
 
@@ -153,17 +58,4 @@ int64_t IaETFWorkerSellEtf::open()
         m_req_id_set.insert(req.nReqId);
     }
     return 0;
-};
-
-bool IaETFWorkerSellEtf::isOver()
-{
-    if (m_status.finish_volume == m_status.volume)
-    {
-        return true;
-    }
-    if (m_status.wrong_number > 3)
-    {
-        return true;
-    }
-    return false;
 };

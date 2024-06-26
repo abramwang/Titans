@@ -29,7 +29,7 @@ class IaETFWorkerBasketStock:
     public IaETFTradingWorker
 {
 public:
-    struct Status
+    struct BasketStatus
     {
         std::string symbol;
         std::string exchange;
@@ -37,25 +37,14 @@ public:
         int over_num;
     }; 
 public:
-    virtual void OnCommonJsonRespones(const json* rspData, int req_id, bool isLast, int err, const char* err_str){};     //非交易逻辑的统一实现接口
-    
-    virtual void OnRspAccountInfo(const TiRspAccountInfo* pData){};
-
     virtual void OnRspOrderDelete(const TiRspOrderDelete* pData);
     
-    virtual void OnRspQryOrder(const TiRspQryOrder* pData, bool isLast){};
-    virtual void OnRspQryMatch(const TiRspQryMatch* pData, bool isLast){};
-    virtual void OnRspQryPosition(const TiRspQryPosition* pData, bool isLast){};
-
     virtual void OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData);
-    virtual void OnRtnOrderMatchEvent(const TiRtnOrderMatch* pData){};
 
     virtual void OnTimer();
 private:
     TI_TradeSideType m_side;
-    Status m_status;
-    int64_t m_check_time;   //检查时间
-
+    BasketStatus m_basket_status;
     std::map<std::string, IaETFWorkerSingleStockPtr> m_trading_worker_map;
 public:
     int64_t open();

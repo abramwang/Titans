@@ -337,6 +337,7 @@ void IaEtfFollowTradeBotGt::OnTimer()
 void IaEtfFollowTradeBotGt::OnCommandRtn(const char* type, const char* command)
 {
     LOG(INFO) << "[IaEtfFollowTradeBotGt::OnCommandRtn]" << type << ";" << command;
+    std::cout << "[IaEtfFollowTradeBotGt::OnCommandRtn]" << type << ";" << command;
 
     if (!strcmp(type, "etfTradingSignal"))
     {

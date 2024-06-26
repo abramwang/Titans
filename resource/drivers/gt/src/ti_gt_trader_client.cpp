@@ -412,7 +412,6 @@ void TiGtTraderClient::onOrder(int nRequestId, int orderID, const char* strRemar
         << endl;
 
     auto order_iter = m_order_req_map.find(nRequestId);
-
     if (order_iter != m_order_req_map.end())
     {
         order_iter->second->nInsertTimestamp = datetime::get_now_timestamp_ms();
@@ -424,8 +423,18 @@ void TiGtTraderClient::onOrder(int nRequestId, int orderID, const char* strRemar
             account_iter->second->enterOrder(order_iter->second);
             m_cb->OnRtnOrderStatusEvent(order_iter->second.get());
         }
-        return;
+        //return;
     }
+
+    auto catch_order_iter = m_catch_order_map.find(orderID);
+    if (catch_order_iter != m_catch_order_map.end())
+    {
+        std::cout << "catch order: " << orderID << std::endl;
+        COrderInfo order_info = catch_order_iter->second;
+        onRtnOrder(&order_info);
+        m_catch_order_map.erase(catch_order_iter);
+    }
+    
     
     auto range = m_order_batch_req_map.equal_range(nRequestId);
 
@@ -476,6 +485,7 @@ void TiGtTraderClient::onRtnOrder(const COrderInfo* data)
 
     TiRtnOrderStatus* order_ptr = account_iter->second->getOrderStatus(data->m_nOrderID);
     if(!order_ptr){
+        m_catch_order_map[data->m_nOrderID] = *data;
         return;
     }
 
@@ -614,7 +624,7 @@ void TiGtTraderClient::onRtnOrderError(const COrderError* data)
     std::thread::id threadId = std::this_thread::get_id();
     int32_t reqId = getReqIdFromRemark(data->m_strRemark);
 
-    LOG(ERROR) << "[onRtnOrderError] orderId: " << data->m_nOrderID 
+    LOG(INFO) << "[onRtnOrderError] orderId: " << data->m_nOrderID 
         << "\n    m_strRemark: " << data->m_strRemark
         << "\n    error id: " << data->m_nErrorID
         << "\n    errormsg: " << data->m_strErrorMsg

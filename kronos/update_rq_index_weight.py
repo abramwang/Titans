@@ -15,8 +15,10 @@ database = 'ti_data'
 engine = create_engine(f'mysql+mysqldb://{username}:{password}@{host}:{port}/{database}')
 
 
-rqdatac.init()
+#rqdatac.init()
 #rqdatac.init("license","g4po_ijeLmLocHb42KlSJlyoJfhttsva4DLTHhiPCj7CJ68XOtuoOWO8Lpf9rNuOehA30mZa5Gx3cbaGeFn9MEI2iw2NxyOfOkUpMY9RleBDONF0OQMnHKEKNDG9qGKQwKzTIXOeZqAiaH2uxa9Rw72iZk-7CgyjCBuoXpOAxc0=QE4nBAaytdktLQt3S4Bi5-lHaGcnfZSJcmL0z8m8jdJI77kh722PPK5usbY-5EkZzMNio1g0w0dpMaE7MxuN7II5nw3aAhMRjZ5kYX7lR0q6rcgD2lCke879PhITb5hZ8cnSQaygNZ0jDKnrkKzOls698b1vQ-yjW5WWAh4Y8q4=")
+
+rqdatac.init("license", "DvJCo50puUe8uL6BV5p1HGc7ncC5ENYrEYmrFing2-DjNq7sDPnYn8TOe8J3sKQ-ciCDF2F2kRarnrMvpJVH0EXS7PoYKpEkkKS_24DP8qjmQhxTNL5dH5Lxjtx7B2aSx0HcgdbJhU1FrNM9YVZA2htQZzgMYL2oaOSbOiOngE4=CzahxBeSgoGQ50Ycm_kuaVSBX9yeFiryUYFKp8Ui5F4UgGtZQseDfmKiyPeCm2fDaHTlBX7v0OV9n4I3vYT-YuzkJxBoHm8-BJvZ6VqhPSOMmvclnzD0fBgdeCZwzoDWtLwljNhtLvCzMMUlaepoo5o1Km0cm37LiXa8JtZcg2I=")
 
 exchange_dict = {
     "XSHG": "SH",

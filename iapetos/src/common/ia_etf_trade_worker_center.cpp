@@ -243,7 +243,7 @@ void IaEtfTradeWorkerCenter::OnTradingSignal(json &msg)
     {
         enable_smart = false;
         std::string security_type = msg["security_type"].get<std::string>();
-        if (security_type == "ETF")
+        if (security_type == "etf")
         {
             etf = true;
         }else{
