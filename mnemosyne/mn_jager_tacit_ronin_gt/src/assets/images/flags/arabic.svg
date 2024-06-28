@@ -1,9 +1,0 @@
-<svg version="1.2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18" width="18" height="18">
-	<title>800px-Flag_of_the_Arabic_language</title>
-	<defs>
-		<image  width="27" height="18" id="img1" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABsAAAASCAMAAACdBVWvAAAAAXNSR0IB2cksfwAAAMBQTFRFAHo9LJFfZK+JAns/KI9bZ7CLAns+Bn1COJdnJY5ZJY1ZvNzM1enf+fz6Qp1vFYVNn822OJdocraUUKR6OZhpDIFHg76gQ51wMJNhabGNoM63D4JIBX1BVKZ91+rgyePW2+zjutvKttnHhsCjIItWMpRjlsivd7iYNpZmJ49bDYFHXauEI41YYa2HJo5ZPJlqGohRPppszeXZR59zc7aVlciuhcCizuXaxuHUudvKhL+iGIdQAXo9EoNLF4ZPCn9EGb+o/gAAAHpJREFUeJxjYKA9YGRixinHwsqGRyc7BycuKS5uHl4+7FL8AoIMQsJYJERYRMXEJSSlpFGFZUCErJy8gqKSsgqaFlUQIa2mrqGphW6aJguIZNbWwWKTrh6I1DfA5jxDI2MJDRNTrE6XMTO3sLSyxirHYGNrZ49dhnQAAOGgCIzwscNLAAAAAElFTkSuQmCC"/>
-	</defs>
-	<style>
-	</style>
-	<use id="Background" href="#img1" x="-5" y="0"/>
-</svg>
