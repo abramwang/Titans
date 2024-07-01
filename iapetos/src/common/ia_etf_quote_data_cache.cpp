@@ -18,7 +18,9 @@ void IaEtfQuoteDataCache::OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* 
         m_index_map[id] = std::make_shared<TiQuoteSnapshotIndexField>();
     }
 
-    memcpy(m_index_map[id].get(), pData, sizeof(TiQuoteSnapshotIndexField));        
+    memcpy(m_index_map[id].get(), pData, sizeof(TiQuoteSnapshotIndexField));
+
+    m_bar_cache.OnL2IndexSnapshotRtn(pData);  
 };
 
 void IaEtfQuoteDataCache::OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData)
@@ -31,7 +33,9 @@ void IaEtfQuoteDataCache::OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField
         m_future_map[id] = std::make_shared<TiQuoteSnapshotFutureField>();
     }
 
-    memcpy(m_future_map[id].get(), pData, sizeof(TiQuoteSnapshotFutureField));        
+    memcpy(m_future_map[id].get(), pData, sizeof(TiQuoteSnapshotFutureField));
+
+    m_bar_cache.OnL2FutureSnapshotRtn(pData);
 };
 
 
@@ -45,7 +49,9 @@ void IaEtfQuoteDataCache::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* 
         m_snapshot_map[id] = std::make_shared<TiQuoteSnapshotStockField>();
     }
 
-    memcpy(m_snapshot_map[id].get(), pData, sizeof(TiQuoteSnapshotStockField));        
+    memcpy(m_snapshot_map[id].get(), pData, sizeof(TiQuoteSnapshotStockField));
+
+    m_bar_cache.OnL2StockSnapshotRtn(pData);
 }
 
 TiQuoteSnapshotStockField* IaEtfQuoteDataCache::GetStockSnapshot(const char* symbol, const char* exchange)

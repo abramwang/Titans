@@ -3,11 +3,12 @@
 
 #include <memory>
 #include <string>
+#include "unordered_map"
 
 #include "ti_quote_tools.h"
 #include "ti_quote_callback.h"
 
-#include "unordered_map"
+#include "ia_etf_quote_bar_cache.h"
 
 class IaEtfQuoteDataCache 
     : public TiQuoteCallback
@@ -16,6 +17,8 @@ private:
     std::unordered_map<int64_t, std::shared_ptr<TiQuoteSnapshotStockField>> m_snapshot_map;
     std::unordered_map<int64_t, std::shared_ptr<TiQuoteSnapshotIndexField>> m_index_map;
     std::unordered_map<int64_t, std::shared_ptr<TiQuoteSnapshotFutureField>> m_future_map;
+
+    IaEtfQuoteBarCache m_bar_cache;
 
 public:     /*   行情回调   */
     virtual void OnTradingDayRtn(const unsigned int day, const char* exchangeName){};
