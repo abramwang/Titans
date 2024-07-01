@@ -18,6 +18,7 @@ typedef char TI_BarCycType;
 struct TiBarData
 {
     int64_t timestamp;
+    TI_BarCycType cyc;
     double open;
     double high;
     double low;

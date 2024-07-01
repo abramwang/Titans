@@ -26,6 +26,7 @@ void TiMinBar::processTrade(const int64_t timestamp,  const double value)  {
     }  else  {
         //  创建新的OHLC  bar数据
         TiBarDataPtr newBar = std::make_shared<TiBarData>();
+        newBar->cyc     = m_cyc;
         newBar->open    = value;
         newBar->high    = value;
         newBar->low     = value;
