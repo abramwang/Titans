@@ -6,6 +6,9 @@
 #include <vector>
 #include <map>
 
+#include <nlohmann/json.hpp>
+using namespace nlohmann;
+
 const char TI_BarCycType_1m         = 1;    // 1 分钟
 const char TI_BarCycType_5m         = 5;    // 5 分钟
 const char TI_BarCycType_10m        = 10;   // 卖出
@@ -32,6 +35,9 @@ private:
     std::map<int64_t,  TiBarDataPtr>  m_bars;  //  存储OHLC  bar数据的map
     TI_BarCycType m_cyc;
 
+private:
+    //  生成OHLC  bar数据
+    int64_t getBarTimestamp(const int64_t timestamp);
 public:
     TiMinBar();
     TiMinBar(TI_BarCycType cyc);
@@ -39,10 +45,11 @@ public:
 
 
     //  处理成交数据
-    void  processTrade(const int64_t timestamp,  const double value);
+    void processTrade(const int64_t timestamp,  const double value);
 
     //  获取所有生成的OHLC  bar数据
     std::vector<TiBarDataPtr>  getBars();
+    void getBarsJson(json& j);
 
 };
 

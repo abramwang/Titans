@@ -1,4 +1,5 @@
 #include "ti_min_bar.h"
+#include "datetime.h"
 
 TiMinBar::TiMinBar()
 {
@@ -10,10 +11,18 @@ TiMinBar::TiMinBar(TI_BarCycType cyc)
     m_cyc = cyc;
 };
 
-void TiMinBar::processTrade(const int64_t timestamp,  const double value)  {
-    //  获取当前分钟的时间戳
+
+int64_t TiMinBar::getBarTimestamp(const int64_t timestamp)
+{
     int64_t time_mod  =  timestamp % (int(m_cyc) * 60 * 1000);
     int64_t currentMinute_time = timestamp - time_mod;
+    return currentMinute_time + int(m_cyc) * 60 * 1000;
+};
+
+void TiMinBar::processTrade(const int64_t timestamp,  const double value)
+{
+    //  获取当前分钟的时间戳
+    int64_t currentMinute_time = getBarTimestamp(timestamp);
 
     //  查找当前分钟是否有bar数据
     auto  it  =  m_bars.find(currentMinute_time);
@@ -38,10 +47,26 @@ void TiMinBar::processTrade(const int64_t timestamp,  const double value)  {
     }
 };
 
-std::vector<TiBarDataPtr> TiMinBar::getBars()  {
+std::vector<TiBarDataPtr> TiMinBar::getBars() {
     std::vector<TiBarDataPtr>  result;
     for  (const  auto&  bar  :  m_bars)  {
         result.push_back(bar.second);
     }
     return result;
 }
+
+void TiMinBar::getBarsJson(json& j) {
+    j = json::array();
+    for  (const  auto&  bar  :  m_bars)  {
+        json  barJson;
+        barJson["timestamp"]  =  datetime::get_format_timestamp_ms(bar.second->timestamp);
+        barJson["cyc"]        =  bar.second->cyc;
+        barJson["open"]       =  bar.second->open;
+        barJson["high"]       =  bar.second->high;
+        barJson["low"]        =  bar.second->low;
+        barJson["close"]      =  bar.second->close;
+        barJson["num"]        =  bar.second->num;
+
+        j.push_back(barJson);
+    }
+};
