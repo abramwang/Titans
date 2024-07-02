@@ -11,10 +11,10 @@ using namespace nlohmann;
 
 const char TI_BarCycType_1m         = 1;    // 1 分钟
 const char TI_BarCycType_5m         = 5;    // 5 分钟
-const char TI_BarCycType_10m        = 10;   // 卖出
-const char TI_BarCycType_15m        = 15;   // 买入
-const char TI_BarCycType_30m        = 30;   // 申购
-const char TI_BarCycType_1h         = 60;   // 赎回
+const char TI_BarCycType_10m        = 10;   // 10 分钟
+const char TI_BarCycType_15m        = 15;   // 15 分钟
+const char TI_BarCycType_30m        = 30;   // 30 分钟
+const char TI_BarCycType_1h         = 60;   // 1 小时
 typedef char TI_BarCycType;
 
 
