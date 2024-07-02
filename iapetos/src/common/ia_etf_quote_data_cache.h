@@ -38,6 +38,8 @@ public:
     TiQuoteSnapshotStockField* GetStockSnapshot(const char* symbol, const char* exchange);
     TiQuoteSnapshotIndexField* GetIndexSnapshot(const char* symbol, const char* exchange);
     TiQuoteSnapshotFutureField* GetFutureSnapshot(const char* symbol, const char* exchange);
+    
+    bool getMinBar(const char* symbol, const char* exchange, TI_BarCycType cyc, TiMinBarPtr& minBar);
 };
 
 

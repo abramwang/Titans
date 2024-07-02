@@ -70,10 +70,22 @@ void IaEtfJager::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData)
     Locker locker(&m_mutex);
     m_quote_cache->OnL2StockSnapshotRtn(pData);
     m_signal_center->OnL2StockSnapshotRtn(pData);
+
+    if (strcmp(pData->symbol, "510500") == 0)
+    {
+        TiMinBarPtr minBar_ptr = NULL;
+        if (m_quote_cache->getMinBar("510500", "SH", TI_BarCycType_5m, minBar_ptr))
+        {
+            json j;
+            minBar_ptr->getBarsJson(j);
+            std::cout << j.dump() << std::endl;
+        }
+    }
 };
 
 void IaEtfJager::OnTimer()
 {
+    return;
     Locker locker(&m_mutex);
     m_signal_center->OnTimer();
 

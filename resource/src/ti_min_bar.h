@@ -57,4 +57,7 @@ public:
 
 };
 
+
+typedef std::shared_ptr<TiMinBar> TiMinBarPtr;
+
 #endif //__TI_MIN_BAR_H__

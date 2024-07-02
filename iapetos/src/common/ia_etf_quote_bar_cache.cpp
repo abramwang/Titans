@@ -65,7 +65,7 @@ void IaEtfQuoteBarCache::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* p
 };
 
 
-std::vector<TiBarDataPtr> IaEtfQuoteBarCache::getBarData(const char* symbol, const char* exchange, TI_BarCycType cyc)
+bool IaEtfQuoteBarCache::getMinBar(const char* symbol, const char* exchange, TI_BarCycType cyc,TiMinBarPtr& minBar)
 {
     int64_t id = TiQuoteTools::GetSymbolID(exchange, symbol);
 
@@ -75,8 +75,9 @@ std::vector<TiBarDataPtr> IaEtfQuoteBarCache::getBarData(const char* symbol, con
         auto it = map_iter->second.find(id);
         if (it != map_iter->second.end())
         {
-            return it->second->getBars();
+            minBar = it->second;
+            return true;
         }
     }
-    return std::vector<TiBarDataPtr>();
+    return false;
 };

@@ -10,6 +10,10 @@
 
 #include "unordered_map"
 
+#include <nlohmann/json.hpp>
+using namespace nlohmann;
+
+
 class IaEtfQuoteBarCache 
     : public TiQuoteCallback
 {
@@ -35,7 +39,7 @@ public:
     IaEtfQuoteBarCache();
     ~IaEtfQuoteBarCache();
 
-    std::vector<TiBarDataPtr> getBarData(const char* symbol, const char* exchange, TI_BarCycType cyc);
+    bool getMinBar(const char* symbol, const char* exchange, TI_BarCycType cyc, TiMinBarPtr& minBar);
 
 };
 
