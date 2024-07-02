@@ -70,3 +70,29 @@ void TiMinBar::getBarsJson(json& j) {
         j.push_back(barJson);
     }
 };
+
+
+bool TiMinBar::getLastBar(TiBarDataPtr& bar)
+{
+    if  (m_bars.empty())  {
+        return false;
+    }
+
+    bar = m_bars.rbegin()->second;
+    return true;
+};
+
+bool TiMinBar::getCloseSeries(std::vector<double>& closeSeries)
+{
+    if  (m_bars.empty())  {
+        return false;
+    }
+
+    closeSeries.clear();
+
+    for  (const  auto&  bar  :  m_bars)  {
+        closeSeries.push_back(bar.second->close);
+    }
+
+    return true;
+};

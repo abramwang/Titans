@@ -51,6 +51,10 @@ public:
     std::vector<TiBarDataPtr>  getBars();
     void getBarsJson(json& j);
 
+    bool getLastBar(TiBarDataPtr& bar);
+    bool getCloseSeries(std::vector<double>& closeSeries);
+    
+
 };
 
 #endif //__TI_MIN_BAR_H__
