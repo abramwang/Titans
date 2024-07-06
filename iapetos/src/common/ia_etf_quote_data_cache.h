@@ -39,7 +39,8 @@ public:
     TiQuoteSnapshotIndexField* GetIndexSnapshot(const char* symbol, const char* exchange);
     TiQuoteSnapshotFutureField* GetFutureSnapshot(const char* symbol, const char* exchange);
     
-    bool getMinBar(const char* symbol, const char* exchange, TI_BarCycType cyc, TiMinBarPtr& minBar);
+    IaEtfQuoteBarCache* getBarCache() { return &m_bar_cache; };
+
 };
 
 

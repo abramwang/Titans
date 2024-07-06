@@ -19,7 +19,7 @@ int64_t TiMinBar::getBarTimestamp(const int64_t timestamp)
     return currentMinute_time + int(m_cyc) * 60 * 1000;
 };
 
-void TiMinBar::processTrade(const int64_t timestamp,  const double value)
+void TiMinBar::updateData(const int64_t timestamp,  const double value)
 {
     //  获取当前分钟的时间戳
     int64_t currentMinute_time = getBarTimestamp(timestamp);

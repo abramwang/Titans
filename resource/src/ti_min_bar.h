@@ -45,7 +45,7 @@ public:
 
 
     //  处理成交数据
-    void processTrade(const int64_t timestamp,  const double value);
+    void updateData(const int64_t timestamp, const double value);
 
     //  获取所有生成的OHLC  bar数据
     std::vector<TiBarDataPtr>  getBars();

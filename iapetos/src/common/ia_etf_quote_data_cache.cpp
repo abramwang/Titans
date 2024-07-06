@@ -86,9 +86,3 @@ TiQuoteSnapshotFutureField* IaEtfQuoteDataCache::GetFutureSnapshot(const char* s
     }
     return nullptr;
 };
-
-
-bool IaEtfQuoteDataCache::getMinBar(const char* symbol, const char* exchange, TI_BarCycType cyc, TiMinBarPtr& minBar)
-{
-    return m_bar_cache.getMinBar(symbol, exchange, cyc, minBar);
-};

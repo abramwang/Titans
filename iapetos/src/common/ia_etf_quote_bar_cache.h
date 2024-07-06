@@ -21,9 +21,10 @@ private:
 
     typedef std::unordered_map<int64_t, std::shared_ptr<TiMinBar>> TiBarMap;
 
-    //std::unordered_map<int64_t, std::shared_ptr<TiMinBar>> m_min_bar_map;
+    std::unordered_map<TI_BarCycType, TiBarMap> m_min_price_bar_map;
 
-    std::unordered_map<TI_BarCycType, TiBarMap> m_min_bar_map;
+    std::unordered_map<TI_BarCycType, TiBarMap> m_min_change_percentage_bar_map;
+
 
 public:     /*   行情回调   */
     virtual void OnTradingDayRtn(const unsigned int day, const char* exchangeName){};
@@ -35,11 +36,15 @@ public:     /*   行情回调   */
     virtual void OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){};
     virtual void OnL2StockOrderRtn(const TiQuoteOrderField* pData){};
 
+private:
+    void updateMinBar(std::unordered_map<TI_BarCycType, TiBarMap> &barMap, int64_t symbol_id, int64_t timestamp, double value);
+
 public:
     IaEtfQuoteBarCache();
     ~IaEtfQuoteBarCache();
 
     bool getMinBar(const char* symbol, const char* exchange, TI_BarCycType cyc, TiMinBarPtr& minBar);
+    bool getMinChangePercentageBar(const char* symbol, const char* exchange, TI_BarCycType cyc, TiMinBarPtr& minBar);
 
 };
 
