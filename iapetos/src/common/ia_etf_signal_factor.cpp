@@ -1,6 +1,7 @@
 #include "ia_etf_signal_factor.h"
 #include "datetime.h"
 #include <iostream>
+#include  <armadillo>
 
 #include "ti_quote_formater.h"
 
@@ -43,6 +44,7 @@ void IaEtfSignalFactor::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pD
     format_influx_factor(pData, m_info);
     m_out["c_iopv"] = m_info.creation_iopv;
     m_out["r_iopv"] = m_info.redemption_iopv;
+    calc_corr();
 };
 
 void IaEtfSignalFactor::OnTimer()
@@ -124,6 +126,73 @@ TiQuoteSnapshotIndexField* IaEtfSignalFactor::get_future_replace_price(std::stri
     }
 
     return m_quote_data_cache->GetIndexSnapshot(symbol.c_str(), exchange.c_str());
+};
+
+double IaEtfSignalFactor::calc_corr()
+{
+    TiMinBarPtr sh_index_min_bar = NULL;
+    TiMinBarPtr fund_min_bar = NULL;
+    
+    if(!m_quote_data_cache->getBarCache()->getMinChangePercentageBar(
+        "000001", "SH", TI_BarCycType_1m, sh_index_min_bar))
+    {
+        return 0.0;
+    };
+
+    if(!m_quote_data_cache->getBarCache()->getMinChangePercentageBar(
+        m_etf_info_ptr->m_fundId.c_str(), m_etf_info_ptr->m_exchange.c_str(), TI_BarCycType_1m, fund_min_bar))
+    {
+        return 0.0;
+    };
+
+
+    std::vector<double> sh_index_close_vec, fund_close_vec;
+
+    if(!sh_index_min_bar->getCloseSeries(sh_index_close_vec)){
+        return 0.0;
+    }
+    if(!fund_min_bar->getCloseSeries(fund_close_vec)){
+        return 0.0;
+    }
+
+    size_t len = sh_index_close_vec.size() < fund_close_vec.size() ? sh_index_close_vec.size() : fund_close_vec.size();
+
+    if (len < 1)
+    {
+        return 0.0;
+    }
+
+    while (sh_index_close_vec.size() > len)
+    {
+        sh_index_close_vec.erase(sh_index_close_vec.begin());
+    }
+
+    while (fund_close_vec.size() > len)
+    {
+        fund_close_vec.erase(fund_close_vec.begin());
+    }
+
+
+    arma::vec sh_index_close_series = arma::vec(sh_index_close_vec);
+    arma::vec fund_close_series = arma::vec(fund_close_vec);
+
+
+    if (m_etf_info_ptr->m_fundId != "159531")
+    {
+        return 0.0;
+    }
+
+    arma::mat  correlation_matrix = arma::cor(sh_index_close_series, fund_close_series);
+    double  correlation  =  correlation_matrix(0,  0);
+    
+    std::cout << "[calc_corr] " << len 
+        << ", " << sh_index_close_vec.size() << " " << *sh_index_close_vec.begin() << " " << *sh_index_close_vec.rbegin() 
+        << " " << fund_close_vec.size() << " " << *fund_close_vec.begin() << " " << *fund_close_vec.rbegin() << ", "
+        << " " << sh_index_close_series.size() << " " << sh_index_close_series[0] << " " << sh_index_close_series[len -1]
+        << " " << fund_close_series.size() << " " << fund_close_series[0] << " " << fund_close_series[len - 1]
+        << "," << correlation << std::endl;
+
+    return 0.0;
 };
 
 double IaEtfSignalFactor::calc_diff()

@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <vector>
+#include <armadillo>
 
 #include "ti_quote_callback.h"
 #include "ia_etf_info_struct.h"
@@ -95,6 +96,8 @@ private:
 
     //获取期货替代指数行情
     TiQuoteSnapshotIndexField* get_future_replace_price(std::string future_symbol);
+
+    double calc_corr(); //计算与大盘的相关性
 
     double calc_diff(); //计算现金差值
     void calc_iopv(const TiQuoteSnapshotStockField* pEtfSnap, profit_info &info); //计算IOPV
