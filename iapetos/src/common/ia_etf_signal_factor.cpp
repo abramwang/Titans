@@ -3,6 +3,7 @@
 #include <iostream>
 #include <armadillo>
 #include <cmath>
+#include <limits>
 
 #include "ti_quote_formater.h"
 
@@ -189,16 +190,16 @@ double IaEtfSignalFactor::calc_corr()
         << " " << fund_close_series.size() << " " << fund_close_series[0] << " " << fund_close_series[len - 1]
         << "," << correlation << std::endl;
     */
-    if (!std::isnan(correlation))
+    if (!std::isnan(correlation) && !std::isinf(correlation))
     {
         m_info.corr = correlation;
     }
-    /*
+    ///*
     std::cout << "[calc_corr] " << len 
         << ", " << m_etf_info_ptr->m_fundId
         << "," << correlation
         << "," << m_info.corr << std::endl;
-    */
+    //*/
     return 0.0;
 };
 
