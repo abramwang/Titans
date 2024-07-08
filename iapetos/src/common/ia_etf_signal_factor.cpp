@@ -194,12 +194,12 @@ double IaEtfSignalFactor::calc_corr()
     {
         m_info.corr = correlation;
     }
-    ///*
+    /*
     std::cout << "[calc_corr] " << len 
         << ", " << m_etf_info_ptr->m_fundId
         << "," << correlation
         << "," << m_info.corr << std::endl;
-    //*/
+    */
     return 0.0;
 };
 
