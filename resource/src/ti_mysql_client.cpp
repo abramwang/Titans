@@ -75,7 +75,9 @@ void TiMysqlClient::query(std::string sql, std::vector<std::map<std::string, std
     while ((row = mysql_fetch_row(res))) {
         std::map<std::string, std::string> row_map;
         for (unsigned int i = 0; i < mysql_num_fields(res); i++) {
-            row_map[mysql_fetch_field_direct(res, i)->name] = row[i];
+            std::string key(mysql_fetch_field_direct(res, i)->name);
+            std::string value = row[i] ? row[i] : "";
+            row_map[key] = value;
         }
         out.push_back(row_map);
     }
