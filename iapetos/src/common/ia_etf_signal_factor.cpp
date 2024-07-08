@@ -177,11 +177,6 @@ double IaEtfSignalFactor::calc_corr()
     arma::vec fund_close_series = arma::vec(fund_close_vec);
 
 
-    if (m_etf_info_ptr->m_fundId != "159531")
-    {
-        return 0.0;
-    }
-
     arma::mat  correlation_matrix = arma::cor(sh_index_close_series, fund_close_series);
     double  correlation  =  correlation_matrix(0,  0);
     
