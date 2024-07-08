@@ -41,10 +41,10 @@ void IaEtfSignalFactor::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pD
     m_out["diff"] = m_info.diff;
     calc_iopv(pData, m_info);
     format_json_profit(m_info);
+    calc_corr();
     format_influx_factor(pData, m_info);
     m_out["c_iopv"] = m_info.creation_iopv;
     m_out["r_iopv"] = m_info.redemption_iopv;
-    calc_corr();
 };
 
 void IaEtfSignalFactor::OnTimer()
