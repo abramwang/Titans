@@ -185,13 +185,15 @@ double IaEtfSignalFactor::calc_corr()
     arma::mat  correlation_matrix = arma::cor(sh_index_close_series, fund_close_series);
     double  correlation  =  correlation_matrix(0,  0);
     
+    /*
     std::cout << "[calc_corr] " << len 
         << ", " << sh_index_close_vec.size() << " " << *sh_index_close_vec.begin() << " " << *sh_index_close_vec.rbegin() 
         << " " << fund_close_vec.size() << " " << *fund_close_vec.begin() << " " << *fund_close_vec.rbegin() << ", "
         << " " << sh_index_close_series.size() << " " << sh_index_close_series[0] << " " << sh_index_close_series[len -1]
         << " " << fund_close_series.size() << " " << fund_close_series[0] << " " << fund_close_series[len - 1]
         << "," << correlation << std::endl;
-
+    */
+    m_info.corr = correlation;
     return 0.0;
 };
 
@@ -257,7 +259,10 @@ double IaEtfSignalFactor::calc_diff()
                 
                 if (replace_amount)
                 {
-                    diff = replace_amount * (last - snap_ptr->pre_close)/snap_ptr->pre_close;
+                    if (!constituent_info->m_reality_vol)
+                    {
+                        diff = replace_amount * (last - snap_ptr->pre_close)/snap_ptr->pre_close;
+                    }
                 }
             }
 #if __TEST__
@@ -397,6 +402,8 @@ void IaEtfSignalFactor::format_json_profit(profit_info &info)
     m_out["profit"]["iopv"] = info.iopv;
     m_out["profit"]["creation_iopv"] = info.creation_iopv;
     m_out["profit"]["redemption_iopv"] = info.redemption_iopv;
+    
+    m_out["profit"]["corr"] = info.corr;
 };
 
 void IaEtfSignalFactor::format_influx_factor(const TiQuoteSnapshotStockField* pEtfSnap, profit_info &info)

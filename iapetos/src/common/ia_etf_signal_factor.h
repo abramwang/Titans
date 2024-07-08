@@ -64,6 +64,9 @@ struct profit_info
     double iopv;                        //IOPV 自己计算的iopv
     double creation_iopv;
     double redemption_iopv;
+
+    /// @brief 相关性
+    double corr;                        //与大盘的相关性
 };
 
 /*   行情回调   */
