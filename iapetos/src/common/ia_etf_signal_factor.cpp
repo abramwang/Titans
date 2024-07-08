@@ -1,7 +1,8 @@
 #include "ia_etf_signal_factor.h"
 #include "datetime.h"
 #include <iostream>
-#include  <armadillo>
+#include <armadillo>
+#include <cmath>
 
 #include "ti_quote_formater.h"
 
@@ -178,7 +179,7 @@ double IaEtfSignalFactor::calc_corr()
 
 
     arma::mat  correlation_matrix = arma::cor(sh_index_close_series, fund_close_series);
-    double  correlation  =  correlation_matrix(0,  0);
+    double correlation  = correlation_matrix(0,  0);
     
     /*
     std::cout << "[calc_corr] " << len 
@@ -188,7 +189,16 @@ double IaEtfSignalFactor::calc_corr()
         << " " << fund_close_series.size() << " " << fund_close_series[0] << " " << fund_close_series[len - 1]
         << "," << correlation << std::endl;
     */
-    m_info.corr = correlation;
+    if (!std::isnan(correlation))
+    {
+        m_info.corr = correlation;
+    }
+    /*
+    std::cout << "[calc_corr] " << len 
+        << ", " << m_etf_info_ptr->m_fundId
+        << "," << correlation
+        << "," << m_info.corr << std::endl;
+    */
     return 0.0;
 };
 
