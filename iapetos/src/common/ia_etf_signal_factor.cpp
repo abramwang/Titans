@@ -431,6 +431,8 @@ void IaEtfSignalFactor::format_influx_factor(const TiQuoteSnapshotStockField* pE
     m_out["influx"]["fields"]["creation_profit"] = info.creation_profit;
     m_out["influx"]["fields"]["redemption_profit"] = info.redemption_profit;
 
+    m_out["influx"]["fields"]["corr"] = info.corr;
+
 
     m_out["influx"]["timestamp"] = datetime::get_timestamp_ms(pEtfSnap->date, pEtfSnap->time);
 
