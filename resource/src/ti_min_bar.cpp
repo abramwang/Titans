@@ -58,9 +58,7 @@ std::vector<TiBarDataPtr> TiMinBar::getBars() {
 std::vector<TiBarDataPtr> TiMinBar::getBars(const int64_t last_timestamp){
     std::vector<TiBarDataPtr>  result;
     for  (const  auto&  bar  :  m_bars)  {
-        for  (const  auto&  bar  :  m_bars)  {
-            result.push_back(bar.second);
-        }
+        result.push_back(bar.second);
     }
     int64_t last_minute_time = getBarTimestamp(last_timestamp);
     auto iter = m_bars.find(last_minute_time);
