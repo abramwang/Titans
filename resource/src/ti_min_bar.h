@@ -55,6 +55,14 @@ public:
     bool getCloseSeries(std::vector<double>& closeSeries);
     
 
+    // 通过传入时间戳，补齐最后一根bar的相关实现
+
+    std::vector<TiBarDataPtr> getBars(const int64_t last_timestamp);
+    void getBarsJson(json& j, const int64_t last_timestamp);
+
+    bool getLastBar(TiBarDataPtr& bar, const int64_t last_timestamp);
+    bool getCloseSeries(std::vector<double>& closeSeries, const int64_t last_timestamp);
+
 };
 
 

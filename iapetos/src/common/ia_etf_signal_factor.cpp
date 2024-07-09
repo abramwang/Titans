@@ -42,8 +42,8 @@ void IaEtfSignalFactor::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pD
     m_info.diff = calc_diff();
     m_out["diff"] = m_info.diff;
     calc_iopv(pData, m_info);
+    calc_corr(pData);
     format_json_profit(m_info);
-    calc_corr();
     format_influx_factor(pData, m_info);
     m_out["c_iopv"] = m_info.creation_iopv;
     m_out["r_iopv"] = m_info.redemption_iopv;
@@ -130,7 +130,7 @@ TiQuoteSnapshotIndexField* IaEtfSignalFactor::get_future_replace_price(std::stri
     return m_quote_data_cache->GetIndexSnapshot(symbol.c_str(), exchange.c_str());
 };
 
-double IaEtfSignalFactor::calc_corr()
+double IaEtfSignalFactor::calc_corr(const TiQuoteSnapshotStockField* pData)
 {
     TiMinBarPtr sh_index_min_bar = NULL;
     TiMinBarPtr fund_min_bar = NULL;
@@ -150,10 +150,10 @@ double IaEtfSignalFactor::calc_corr()
 
     std::vector<double> sh_index_close_vec, fund_close_vec;
 
-    if(!sh_index_min_bar->getCloseSeries(sh_index_close_vec)){
+    if(!sh_index_min_bar->getCloseSeries(sh_index_close_vec, pData->timestamp)){
         return 0.0;
     }
-    if(!fund_min_bar->getCloseSeries(fund_close_vec)){
+    if(!fund_min_bar->getCloseSeries(fund_close_vec, pData->timestamp)){
         return 0.0;
     }
 
@@ -194,12 +194,12 @@ double IaEtfSignalFactor::calc_corr()
     {
         m_info.corr = correlation;
     }
-    /*
+    ///*
     std::cout << "[calc_corr] " << len 
         << ", " << m_etf_info_ptr->m_fundId
         << "," << correlation
         << "," << m_info.corr << std::endl;
-    */
+    //*/
     return 0.0;
 };
 
