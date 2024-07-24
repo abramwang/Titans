@@ -5,9 +5,11 @@
 #include <vector>
 #include <armadillo>
 
+#include "ti_fee.h"
 #include "ti_quote_callback.h"
 #include "ia_etf_info_struct.h"
 #include "ia_etf_quote_data_cache.h"
+
 
 #include <nlohmann/json.hpp>
 using namespace nlohmann;
