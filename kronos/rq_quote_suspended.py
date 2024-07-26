@@ -8,7 +8,7 @@ import json
 
 rqdatac.init("license", "DvJCo50puUe8uL6BV5p1HGc7ncC5ENYrEYmrFing2-DjNq7sDPnYn8TOe8J3sKQ-ciCDF2F2kRarnrMvpJVH0EXS7PoYKpEkkKS_24DP8qjmQhxTNL5dH5Lxjtx7B2aSx0HcgdbJhU1FrNM9YVZA2htQZzgMYL2oaOSbOiOngE4=CzahxBeSgoGQ50Ycm_kuaVSBX9yeFiryUYFKp8Ui5F4UgGtZQseDfmKiyPeCm2fDaHTlBX7v0OV9n4I3vYT-YuzkJxBoHm8-BJvZ6VqhPSOMmvclnzD0fBgdeCZwzoDWtLwljNhtLvCzMMUlaepoo5o1Km0cm37LiXa8JtZcg2I=")
 
-redis_pool = redis.ConnectionPool(host='192.168.71.26', 
+redis_pool = redis.ConnectionPool(host='192.168.71.215', 
                                   port= 20184, 
                                   password= 'P7pO48Lw4AZTOLXKlR', db= 0)
 redis_conn = redis.Redis(connection_pool= redis_pool)
@@ -97,7 +97,7 @@ def on_data():
             "volRatio": 0.0,
             "speed1Min": 0.0,
             "speed5Min": 0.0
-        },
+        }
 
     print(datas["000836.SZ"])
 
