@@ -11,6 +11,17 @@ OcQuoteCache::~OcQuoteCache()
 {
 }
 
+void OcQuoteCache::add_bj_stock_cache(std::string symbol, std::string exchange, double pre_close)
+{
+    StockPtr stock = std::make_shared<TiQuoteSnapshotStockField>();
+    memset(stock.get(), 0, sizeof(TiQuoteSnapshotStockField));
+    strcpy(stock->symbol, symbol.c_str());
+    strcpy(stock->exchange, exchange.c_str());
+    stock->high_limit = double(int(pre_close * 1.3 * 100))/100;
+    stock->low_limit = double(int(pre_close * 0.7 * 100))/100;
+    stock->pre_close = pre_close;
+    m_stock_cache[TiQuoteTools::GetSymbolID(stock->exchange, stock->symbol)] = stock;
+};
 
 void OcQuoteCache::init_instrument(std::vector<OCInstrumentInfo> m_instrument_info_list)
 {
@@ -48,6 +59,15 @@ bool OcQuoteCache::update_xt_snapshot_cache(std::string code, const json &pData,
     memcpy(symbol, code.substr(0, 6).c_str(), 6);
 
     int64_t id = TiQuoteTools::GetSymbolID(exchange, symbol);
+
+    if( strcmp(exchange, "BJ") == 0)
+    {
+        if (m_stock_cache.find(id) == m_stock_cache.end())
+        {
+            add_bj_stock_cache(symbol, exchange, pData["open"].get<double>());
+        }
+    }
+
     if(m_stock_cache.find(id) != m_stock_cache.end())
     {
         StockPtr stock = m_stock_cache[id];

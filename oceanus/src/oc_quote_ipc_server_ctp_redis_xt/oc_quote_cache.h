@@ -21,6 +21,9 @@ public:
     OcQuoteCache(/* args */);
     ~OcQuoteCache();
 
+private:
+    //添加北交所涨跌停
+    void add_bj_stock_cache(std::string symbol, std::string exchange, double pre_close);
 public:
     void init_instrument(std::vector<OCInstrumentInfo> m_instrument_info_list);
     bool update_xt_snapshot_cache(std::string code, const json &pData, TiQuoteSnapshotStockField* &stock, TiQuoteSnapshotIndexField* &index);

@@ -49,6 +49,7 @@ private:
     TiQuoteDepthCallback* m_depth_cb;
     std::set<std::string>          m_sh_symbol_set;       //
     std::set<std::string>          m_sz_symbol_set;       //
+    std::set<std::string>          m_bj_symbol_set;       //
     std::set<std::string>          m_cf_symbol_set;       //    期货
 protected:
     TiQuoteCache* m_cache;

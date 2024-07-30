@@ -180,6 +180,15 @@ bool TiQuoteIpcClient::isSubscribed(const char* exchangeName, const char* symbol
             return m_sz_symbol_set.find(symbol) != m_sz_symbol_set.end();
         }
     }
+    if(!strcmp(exchangeName, "BJ"))
+    {
+        if (m_bj_symbol_set.empty())
+        {
+            return true;
+        }else{
+            return m_bj_symbol_set.find(symbol) != m_bj_symbol_set.end();
+        }
+    }
     if(!strcmp(exchangeName, "CF"))
     {
         if (m_cf_symbol_set.empty())
@@ -247,6 +256,15 @@ void TiQuoteIpcClient::subData(const char* exchangeName, char* codeList[], size_
         for (size_t i = 0; i < len; i++)
         {
             m_sz_symbol_set.insert(codeList[i]);
+        }
+        return;
+    }
+
+    if(!strcmp(exchangeName, "BJ"))
+    {
+        for (size_t i = 0; i < len; i++)
+        {
+            m_bj_symbol_set.insert(codeList[i]);
         }
         return;
     }

@@ -30,6 +30,8 @@ public:
         m_selected_symbols.insert("000001");
         m_selected_symbols.insert("688981");
         m_selected_symbols.insert("300152");
+        m_selected_symbols.insert("873679");
+        m_selected_symbols.insert("400174");  
         //*/
         /*
         301129
@@ -65,7 +67,6 @@ public:
 
         m_selected_symbols.insert("399905");  
         */
-        m_selected_symbols.insert("400174");  
         //m_selected_symbols.insert("399300");  
     };
     virtual ~UserCallback(){};
@@ -85,6 +86,7 @@ public:
     
     virtual void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData)
     {
+        //return;
         if ((pData->time - m_cout_future_time) > 5000)
         {
             printf("[OnL2FutureSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
@@ -94,10 +96,18 @@ public:
     };
 
     virtual void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){
+        ///*
         auto iter = m_selected_symbols.find(pData->symbol);
         if(iter == m_selected_symbols.end()){
             return;
         }
+        //*/
+        /*
+        if (strcmp(pData->exchange, "BJ"))
+        {
+            return;
+        }
+        */
         if ((pData->time - m_cout_snap_time) > 5000)
         {
             printf("[OnL2StockSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
