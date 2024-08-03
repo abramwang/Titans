@@ -1,4 +1,0 @@
-I0803 15:40:00.648614 2628187 scheduler.py:16] Task 1 started
-I0803 15:40:00.648990 2628187 download_rq_index.py:11] Task 1 is executing
-I0803 15:40:00.649110 2628187 download_rq_index.py:13] Task 1 finished execution
-I0803 15:40:00.649192 2628187 scheduler.py:18] Task 1 completed successfully
