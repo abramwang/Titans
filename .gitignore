@@ -2,3 +2,4 @@ dev-env
 build
 dist
 test
+*.pyc
