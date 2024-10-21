@@ -19,9 +19,15 @@ file(GLOB SRCS *.c *.cpp *.cc *.h *.hpp )
 # 复制依赖so文件 到编译目录
 file(GLOB allCopyFiles  "../../../resource/drivers/anxin_internet/lib/*")
 file(COPY ${allCopyFiles} DESTINATION "./")
+
+# 复制依赖so文件 到编译目录
+file(GLOB allCopyFiles  "../../../resource/drivers/ctp/lib/*")
+file(COPY ${allCopyFiles} DESTINATION "./")
+
 file(COPY ${allCopyFiles} DESTINATION "/home/dist/production_env")
 
 aux_source_directory("../../../resource/src" SRCS)
+aux_source_directory("../../../resource/drivers/ctp/src" SRCS)
 aux_source_directory("../../../resource/drivers/anxin_internet/src" SRCS)
 
 include_directories(
@@ -29,6 +35,8 @@ include_directories(
     "../../../resource/src"
     "../../../resource/drivers/anxin_internet/include"
     "../../../resource/drivers/anxin_internet/src"
+    "../../../resource/drivers/ctp/include"
+    "../../../resource/drivers/ctp/src"
 )
 
 link_directories( "./" )
@@ -36,7 +44,7 @@ link_directories( "./" )
 
 add_executable( ${PROJECT_NAME} ${SRCS} )
 
-target_link_libraries(${PROJECT_NAME} -lmysqlclient -lama -lcurl -larrow -lparquet -luv -lhiredis -lglog -lrt)
+target_link_libraries(${PROJECT_NAME} -lmysqlclient -lthostmduserapi_se -lthosttraderapi_se -lama -lcurl -larrow -lparquet -luv -lhiredis -lglog -lrt)
 
 # 指定源文件和目标文件路径
 set(SOURCE_FILE "./oc_quote_ipc_server_anxin_internet")

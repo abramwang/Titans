@@ -84,7 +84,7 @@ public:
         for (auto iter = etf_code.begin(); iter != etf_code.end(); iter++)
         {
             m_redis.hset("etf_factor.disclosure_info.anxin", (*iter)["symbol"].dump().c_str(), (*iter).dump().c_str());
-        }        
+        }
         m_redis.hset("task_worked_time", "etf_factor.disclosure_info.anxin", datetime::get_format_now_time_ms().c_str());
     };
 
@@ -92,7 +92,7 @@ public:
         
 
     };
-   
+
     virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){
         m_mutex.lock();
         if ((pData->time - m_cout_time_index) > 5000)
