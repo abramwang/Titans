@@ -19,11 +19,11 @@ file(GLOB SRCS *.c *.cpp *.cc *.h *.hpp )
 # 复制依赖so文件 到编译目录
 file(GLOB allCopyFiles  "../../../resource/drivers/anxin_internet/lib/*")
 file(COPY ${allCopyFiles} DESTINATION "./")
+file(COPY ${allCopyFiles} DESTINATION "/home/dist/production_env")
 
 # 复制依赖so文件 到编译目录
 file(GLOB allCopyFiles  "../../../resource/drivers/ctp/lib/*")
 file(COPY ${allCopyFiles} DESTINATION "./")
-
 file(COPY ${allCopyFiles} DESTINATION "/home/dist/production_env")
 
 aux_source_directory("../../../resource/src" SRCS)
@@ -47,11 +47,11 @@ add_executable( ${PROJECT_NAME} ${SRCS} )
 target_link_libraries(${PROJECT_NAME} -lmysqlclient -lthostmduserapi_se -lthosttraderapi_se -lama -lcurl -larrow -lparquet -luv -lhiredis -lglog -lrt)
 
 # 指定源文件和目标文件路径
-set(SOURCE_FILE "./oc_quote_ipc_server_anxin_internet")
+set(SOURCE_FILE "./oc_quote_ipc_server_anxin_ctp")
 set(TARGET_DIR "/home/dist/production_env")
 
 # 添加自定义命令
 add_custom_command(
-    TARGET oc_quote_ipc_server_anxin_internet POST_BUILD
+    TARGET oc_quote_ipc_server_anxin_ctp POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy ${SOURCE_FILE} ${TARGET_DIR}
 )
