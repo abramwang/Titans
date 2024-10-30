@@ -5,11 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "cwd": "${workspaceFolder}/oceanus/src/oc_trader_commander_huaxin/build/",
+            "cwd": "${workspaceFolder}/oceanus/src/oc_quote_ipc_server_anxin_ctp/build/",
             "name": "Remote Debug",
             "type": "cppdbg",
             "request": "launch",
-            "program": "./oc_trader_commander_huaxin",
+            "program": "./oc_quote_ipc_server_anxin_ctp",
             "miDebuggerServerAddress": "localhost:1234",
             "miDebuggerPath": "gdb"
         }
