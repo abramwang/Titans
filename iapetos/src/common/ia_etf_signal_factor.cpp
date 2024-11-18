@@ -23,7 +23,7 @@ IaEtfSignalFactor::~IaEtfSignalFactor()
 void IaEtfSignalFactor::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData)
 {
 #if __TEST__
-    if (strcmp(pData->symbol, "510300") != 0)
+    if (strcmp(pData->symbol, "159875") != 0)
     {
         return;
     }
@@ -51,6 +51,7 @@ void IaEtfSignalFactor::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pD
 
 void IaEtfSignalFactor::OnTimer()
 {
+    //return;
     TiQuoteSnapshotStockField* snap_ptr = m_quote_data_cache->GetStockSnapshot(m_etf_info_ptr->m_fundId.c_str(), m_etf_info_ptr->m_exchange.c_str());
     if(snap_ptr){
         OnL2StockSnapshotRtn(snap_ptr);
@@ -216,7 +217,8 @@ double IaEtfSignalFactor::calc_diff()
         TiQuoteSnapshotStockField* snap_ptr = m_quote_data_cache->GetStockSnapshot(constituent_info->m_symbol.c_str(), constituent_info->m_exchange.c_str());
         TiQuoteSnapshotFutureField* future_snap_ptr = nullptr;
         TiQuoteSnapshotIndexField* index_snap_ptr = nullptr;
-        if (constituent_info->m_exchange != "SH" && constituent_info->m_exchange != "SZ")
+
+        if (constituent_info->m_exchange != "SH" && constituent_info->m_exchange != "SZ" && constituent_info->m_exchange != "BJ")
         {
             double last = 0;
             double pre_close = 0;
@@ -251,6 +253,7 @@ double IaEtfSignalFactor::calc_diff()
             
             bool is_replace = false;
             double replace_amount = constituent_info->m_replace_amount;
+                        
             if ((constituent_info->m_replace_flag == IA_ERT_CASH_MUST) ||
                 (constituent_info->m_replace_flag == IA_ERT_CASH_MUST_INTER_SZ) ||
                 (constituent_info->m_replace_flag == IA_ERT_CASH_MUST_INTER_OTHER) ||
@@ -267,12 +270,9 @@ double IaEtfSignalFactor::calc_diff()
                     replace_amount = constituent_info->m_redemption_amount;
                 }
                 
-                if (replace_amount)
+                if (!constituent_info->m_reality_vol)
                 {
-                    if (!constituent_info->m_reality_vol)
-                    {
-                        diff = replace_amount * (last - snap_ptr->pre_close)/snap_ptr->pre_close;
-                    }
+                    diff = replace_amount * (last - snap_ptr->pre_close)/snap_ptr->pre_close;
                 }
             }
 #if __TEST__
@@ -345,6 +345,22 @@ void IaEtfSignalFactor::calc_iopv(const TiQuoteSnapshotStockField* pEtfSnap, pro
             info.creation_iopv += c_iopv;
             info.redemption_iopv += r_iopv;
             info.iopv += iopv;
+
+
+            /////计算涨跌停
+            {
+                if (last_price >= snap_ptr->high_limit)
+                {
+                    info.LU_market_value += last_price * constituent_info->m_disclosure_vol;
+                    info.LU_count++;
+                }
+                if (last_price <= snap_ptr->low_limit)
+                {
+                    info.LD_market_value += last_price * constituent_info->m_disclosure_vol;
+                    info.LD_count++;
+                }
+            }
+
         }
     }
 
@@ -378,6 +394,13 @@ void IaEtfSignalFactor::calc_iopv(const TiQuoteSnapshotStockField* pEtfSnap, pro
     //info.redemption_profit = info.redemption_iopv *  m_etf_info_ptr->m_minUnit - info.buy_etf_amount + info.diff - info.sell_stock_fee - info.buy_etf_fee;
     info.creation_profit = info.sell_etf_amount - info.creation_iopv *  m_etf_info_ptr->m_minUnit - info.buy_stock_fee - info.sell_etf_fee; 
     info.redemption_profit = info.redemption_iopv *  m_etf_info_ptr->m_minUnit - info.buy_etf_amount - info.sell_stock_fee - info.buy_etf_fee;
+
+    info.creation_profit_with_diff = info.creation_profit - info.diff;
+    info.redemption_profit_with_diff = info.redemption_profit + info.diff;
+
+
+    info.LU_weight = info.LU_market_value / info.buy_stock_amount;
+    info.LD_weight = info.LD_market_value / info.sell_stock_amount;
 };
 
 void IaEtfSignalFactor::format_json_profit(profit_info &info)
@@ -396,6 +419,7 @@ void IaEtfSignalFactor::format_json_profit(profit_info &info)
     m_out["profit"]["creation"]["sell_etf_fee"] = info.sell_etf_fee;
     m_out["profit"]["creation_turnover"] = info.creation_turnover;
     m_out["profit"]["creation_profit"] = info.creation_profit;
+    m_out["profit"]["creation_profit_with_diff"] = info.creation_profit_with_diff;
 
 
     m_out["profit"]["redemption"] = json::object();
@@ -411,6 +435,7 @@ void IaEtfSignalFactor::format_json_profit(profit_info &info)
     m_out["profit"]["redemption"]["buy_etf_fee"] = info.buy_etf_fee;
     m_out["profit"]["redemption_turnover"] = info.redemption_turnover;
     m_out["profit"]["redemption_profit"] = info.redemption_profit;
+    m_out["profit"]["redemption_profit_with_diff"] = info.redemption_profit_with_diff;
 
     m_out["profit"]["diff"] = info.diff;
     m_out["profit"]["iopv"] = info.iopv;
@@ -418,6 +443,20 @@ void IaEtfSignalFactor::format_json_profit(profit_info &info)
     m_out["profit"]["redemption_iopv"] = info.redemption_iopv;
     
     m_out["profit"]["corr"] = info.corr;
+
+
+    m_out["profit"]["LU_market_value"] = info.LU_market_value;
+    m_out["profit"]["LU_count"] = info.LU_count;
+    m_out["profit"]["LU_weight"] = info.LU_weight;
+
+    m_out["profit"]["creation_profit_with_risk_pr"] = info.creation_profit_with_diff - info.LU_market_value * 0.1 + info.LD_market_value * 0.1;
+    
+    m_out["profit"]["LD_market_value"] = info.LD_market_value;
+    m_out["profit"]["LD_count"] = info.LD_count;
+    m_out["profit"]["LD_weight"] = info.LD_weight;
+    
+    m_out["profit"]["redemption_profit_with_risk_pr"] = info.redemption_profit_with_diff - info.LD_market_value * 0.1 + info.LU_market_value * 0.1;
+
 };
 
 void IaEtfSignalFactor::format_influx_factor(const TiQuoteSnapshotStockField* pEtfSnap, profit_info &info)

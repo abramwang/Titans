@@ -3,7 +3,6 @@
 
 #include <memory>
 #include <vector>
-#include <armadillo>
 
 #include "ti_fee.h"
 #include "ti_quote_callback.h"
@@ -15,6 +14,7 @@
 using namespace nlohmann;
 
 class IaEtfTradeWorkerCenter;
+class IaEtfTradeWorkerSignalManager;
 class IaEtfSignalFactor 
     : public TiQuoteCallback
 {
@@ -39,6 +39,8 @@ struct profit_info
     double creation_turnover;           //申购成交额    
     
     double creation_profit;             //申购瞬时利润   
+    double creation_profit_with_diff;   //申购瞬时利润   
+
 
     /// @brief 赎回瞬时利润
 
@@ -58,6 +60,7 @@ struct profit_info
     double redemption_turnover;         //赎回成交额
 
     double redemption_profit;           //赎回瞬时利润
+    double redemption_profit_with_diff; //赎回瞬时利润
 
     /// @brief diff
     double diff;                        //现金差值
@@ -69,6 +72,17 @@ struct profit_info
 
     /// @brief 相关性
     double corr;                        //与大盘的相关性
+
+    
+    /// @brief 成分股情况
+    double LU_market_value;             //涨停股票市值
+    double LU_count;                    //涨停股票数量
+    double LU_weight;                   //涨停股票权重
+
+    double LD_market_value;             //涨停股票市值
+    double LD_count;                    //涨停股票数量
+    double LD_weight;                   //涨停股票权重
+
 };
 
 /*   行情回调   */
@@ -124,6 +138,7 @@ public:
 
 public:
     friend class IaEtfTradeWorkerCenter;
+    friend class IaEtfTradeWorkerSignalManager;
 };
 
 typedef std::shared_ptr<IaEtfSignalFactor> IaEtfSignalFactorPtr;
