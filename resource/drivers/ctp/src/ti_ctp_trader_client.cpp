@@ -11,20 +11,21 @@ TiCtpTraderClient::TiCtpTraderClient(std::string configPath, TiTraderCallback* u
     m_config = NULL;
     m_trading_day = 0;
 
+    loadConfig(configPath);
+
     m_client = CThostFtdcTraderApi::CreateFtdcTraderApi();
     m_client->RegisterSpi(this);
     m_client->SubscribePrivateTopic(THOST_TERT_RESTART);
     m_client->SubscribePublicTopic(THOST_TERT_RESTART);
-    m_client->RegisterFront("tcp://124.93.32.65:31254");
+    m_client->RegisterFront((char*)m_config->szLocations.c_str());
 
     m_client->Init();
-    //m_client->Join();
+    m_client->Join();
 
     nSessionId = 0;
 
     m_cb = userCb;
 
-    loadConfig(configPath);
     nReqId = 100;   //跳过xtp client设置成交模式的区段
 };
 
@@ -45,22 +46,15 @@ TiCtpTraderClient::~TiCtpTraderClient()
 void TiCtpTraderClient::OnFrontConnected()
 {
     std::cout << "交易前置已连接" << std::endl;
-    // 连接成功后可以进行交易操作
 
-    //return;
-    ///*
-    CThostFtdcReqAuthenticateField req2 = {0};
-    strcpy(req2.BrokerID, "1022");
-    strcpy(req2.UserID, "00206");
-    strcpy(req2.UserProductInfo, "client_sntz_1.0");
-    strcpy(req2.AppID, "client_sntz_1.0");
-    strcpy(req2.AuthCode, "S78K2HXU9KWLTWF6");
 
+    CThostFtdcReqAuthenticateField req = {0};
+    strncpy(req.BrokerID, m_config->szBrokerID.c_str(), sizeof(req.BrokerID));
+    strncpy(req.AppID, m_config->szAppID.c_str(), sizeof(req.AppID));
+    strncpy(req.AuthCode, m_config->szAuthCode.c_str(), sizeof(req.AuthCode));
     
-    int flag2 = m_client->ReqAuthenticate(&req2, 2);
-    
+    int flag2 = m_client->ReqAuthenticate(&req, 2);
     std::cout << "ReqAuthenticate: " << flag2 << std::endl;
-    //*/
 };
 
 void TiCtpTraderClient::OnFrontDisconnected(int nReason)
@@ -72,17 +66,15 @@ void TiCtpTraderClient::OnFrontDisconnected(int nReason)
 void TiCtpTraderClient::OnRspAuthenticate(CThostFtdcRspAuthenticateField *pRspAuthenticateField, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
     
     std::cout << "OnRspAuthenticate：" << nRequestID << " ErrorID:" << pRspInfo->ErrorID << std::endl;
-
     
     CThostFtdcReqUserLoginField req = {0};
-    strcpy(req.BrokerID, "1022");
-    strcpy(req.UserID, "00206");
-    strcpy(req.Password, "testdce");
+    strncpy(req.BrokerID, m_config->szBrokerID.c_str(), sizeof(req.BrokerID));
+    strncpy(req.UserID, m_config->szUser.c_str(), sizeof(req.UserID));
+    strncpy(req.Password, m_config->szPass.c_str(), sizeof(req.Password));
 
     int flag = m_client->ReqUserLogin(&req, 1);
 
     std::cout << "ReqUserLogin: " << flag << std::endl;
-
 };
 
 
@@ -113,27 +105,21 @@ int TiCtpTraderClient::loadConfig(std::string iniFileName){
     _iniFile.load(iniFileName);
 
     m_config = new ConfigInfo();
-    m_config->szLocations   = string(_iniFile["ti_ctp_trader_client"]["locations"]);
-    m_config->szLocations2   = string(_iniFile["ti_ctp_trader_client"]["locations2"]);
+    m_config->szLocations       = string(_iniFile["ti_ctp_trader_client"]["locations"]);
+
+    m_config->szBrokerID        = string(_iniFile["ti_ctp_trader_client"]["broker_id"]);
+    m_config->szAppID           = string(_iniFile["ti_ctp_trader_client"]["app_id"]);
+    m_config->szAuthCode        = string(_iniFile["ti_ctp_trader_client"]["auth_code"]);
     
-    m_config->szUser                = string(_iniFile["ti_ctp_trader_client"]["user"]);
-    m_config->szPass                = string(_iniFile["ti_ctp_trader_client"]["pass"]);
-
-    m_config->szSoftwareName        = string(_iniFile["ti_ctp_trader_client"]["software_name"]);
-    m_config->szSoftwareVersion     = string(_iniFile["ti_ctp_trader_client"]["software_version"]);
-
-    m_config->szBranchCode     = string(_iniFile["ti_ctp_trader_client"]["branch_code"]);
-    m_config->szCustomerId     = string(_iniFile["ti_ctp_trader_client"]["customer_id"]);
-    m_config->szFundAccount     = string(_iniFile["ti_ctp_trader_client"]["fund_account"]);
-    m_config->szFundPass     = string(_iniFile["ti_ctp_trader_client"]["fund_pass"]);
+    m_config->szUser            = string(_iniFile["ti_ctp_trader_client"]["user"]);
+    m_config->szPass            = string(_iniFile["ti_ctp_trader_client"]["pass"]);
     
     if( m_config->szLocations.empty() |
         m_config->szUser.empty() |
         m_config->szPass.empty() |
-        m_config->szBranchCode.empty() |
-        m_config->szCustomerId.empty() |
-        m_config->szFundAccount.empty() |
-        m_config->szFundPass.empty() )
+        m_config->szBrokerID.empty() |
+        m_config->szAuthCode.empty() |
+        m_config->szAuthCode.empty() )
     {
         LOG(INFO) << "[loadConfig] Not enough parameters in inifile";
         delete m_config;

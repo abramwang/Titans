@@ -14,18 +14,14 @@ public:
     typedef struct ConfigInfo
     {
         std::string szLocations;
-        std::string szLocations2;
 
-        std::string szUser;
-        std::string szPass;
-        
-        std::string szSoftwareName;
-        std::string szSoftwareVersion;
+        std::string szBrokerID;
+        std::string szAppID;    
+        std::string szAuthCode;
 
-        std::string szBranchCode;   //营业部编号
-        std::string szCustomerId;   //客户代码
-        std::string szFundAccount;  //资金账号
-        std::string szFundPass;     //资金账号密码
+        std::string szUser;     //投资者账户
+        std::string szPass;     //投资者密码
+
     } ConfigInfo;
     
 private:
@@ -63,6 +59,7 @@ private:
     
 public:
 	void connect();
+    int orderInsertBatch(std::vector<TiReqOrderInsert> &req_vec, std::string account_id){};
     int orderInsert(TiReqOrderInsert* req);
     int orderDelete(TiReqOrderDelete* req);
     TiRtnOrderStatus* getOrderStatus(int64_t req_id, int64_t order_id);
