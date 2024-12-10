@@ -2,6 +2,7 @@
 #include <glog/logging.h>
 #include "iniFile.h"
 #include "datetime.h"
+#include "ti_encoding_tool.h"
 
 #include <atomic>
 
@@ -83,14 +84,38 @@ void TiCtpTraderClient::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogi
     std::cout << "OnRspUserLogin:" << nRequestID << " ErrorID:" << pRspInfo->ErrorID << std::endl;
 };
 
-
-void TiCtpTraderClient::OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
-{
-    std::cout << "错误回报：" << pRspInfo->ErrorMsg << std::endl;
-    // 错误回报的处理
+////////////////////////////////////////////////////////////////////////
+// 订单回调
+////////////////////////////////////////////////////////////////////////
+///报单录入请求响应
+void TiCtpTraderClient::OnRspOrderInsert(CThostFtdcInputOrderField *pInputOrder, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
+    std::cout << "OnRspOrderInsert:" << nRequestID << " ErrorID:" << pRspInfo->ErrorID << std::endl;
+};
+///报单操作请求响应
+void TiCtpTraderClient::OnRspOrderAction(CThostFtdcInputOrderActionField *pInputOrderAction, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
+    std::cout << "OnRspOrderAction:" << nRequestID << " ErrorID:" << pRspInfo->ErrorID << std::endl;
 };
 
-
+///错误应答
+void TiCtpTraderClient::OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast){
+    std::cout << "OnRspError:" << nRequestID << " ErrorID:" << pRspInfo->ErrorID << std::endl;
+};
+///报单通知
+void TiCtpTraderClient::OnRtnOrder(CThostFtdcOrderField *pOrder){
+    std::cout << "OnRtnOrder:" << pOrder->OrderSysID << std::endl;
+};
+///成交通知
+void TiCtpTraderClient::OnRtnTrade(CThostFtdcTradeField *pTrade){
+    std::cout << "OnRtnTrade:" << pTrade->TradeID << std::endl;
+};
+///报单录入错误回报
+void TiCtpTraderClient::OnErrRtnOrderInsert(CThostFtdcInputOrderField *pInputOrder, CThostFtdcRspInfoField *pRspInfo){
+    std::cout << "OnErrRtnOrderInsert:" << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg).c_str() << std::endl;
+};
+///报单操作错误回报
+void TiCtpTraderClient::OnErrRtnOrderAction(CThostFtdcOrderActionField *pOrderAction, CThostFtdcRspInfoField *pRspInfo){
+    std::cout << "OnErrRtnOrderAction:" << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg).c_str() << std::endl;
+};
 ////////////////////////////////////////////////////////////////////////
 // 私有工具方法
 ////////////////////////////////////////////////////////////////////////

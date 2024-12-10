@@ -1070,7 +1070,7 @@ std::shared_ptr<TiRtnOrderStatus> TiGfTraderClient::getOrderPtr(int64_t req_id, 
     {
         return m_order_map[order_id];
     }
-    if (m_order_req_map.find(req_id) != m_order_map.end())
+    if (m_order_req_map.find(req_id) != m_order_req_map.end())
     {
         return m_order_req_map[req_id];
     }
