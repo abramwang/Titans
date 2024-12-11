@@ -35,4 +35,4 @@ link_directories( "./" )
 
 add_executable( ${PROJECT_NAME} ${SRCS} )
 
-target_link_libraries(${PROJECT_NAME} -lthostmduserapi_se -lthosttraderapi_se -larrow -lparquet -luv -lhiredis -lglog -lrt)
+target_link_libraries(${PROJECT_NAME} -lthostmduserapi_se -lthosttraderapi_se -lmariadbclient -lcurl  -larrow -lparquet -luv -lhiredis -lglog -lrt)

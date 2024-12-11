@@ -35,8 +35,8 @@ private:
 
     json m_json_rsp;
     std::unordered_map<int64_t, std::shared_ptr<TiRtnOrderStatus>> m_order_req_map;     //req_id, order_status
-    std::unordered_map<int64_t, std::shared_ptr<TiRtnOrderStatus>> m_order_map;         //order_id, order_status
-    std::multimap<int64_t, std::shared_ptr<TiRtnOrderMatch>> m_matches_map;             //order_id, m_matches_map
+    std::unordered_map<std::string, std::shared_ptr<TiRtnOrderStatus>> m_order_map;     //order_id, order_status
+    std::multimap<std::string, std::shared_ptr<TiRtnOrderMatch>> m_matches_map;         //order_id, m_matches_map
 
     TiTraderCallback* m_cb;
 public:
@@ -72,11 +72,19 @@ public:
 private:
     int loadConfig(std::string iniFileName);
     
+    
+    TI_OrderStatusType getOrderStatus(TThostFtdcOrderStatusType status);
+    TI_OffsetType getOffsetType(TThostFtdcOffsetFlagType offset);
+
+    std::shared_ptr<TiRtnOrderStatus> getOrderPtr(int64_t req_id, std::string order_stream_id);
+    void updateOrderMap(std::shared_ptr<TiRtnOrderStatus> order_ptr);
+    void updateOrderMatch(std::shared_ptr<TiRtnOrderMatch> match_ptr);
 public:
 	void connect();
-    int orderInsertBatch(std::vector<TiReqOrderInsert> &req_vec, std::string account_id){};
+    int orderInsertBatch(std::vector<TiReqOrderInsert> &req_vec, std::string account_id){ return -1; };
     int orderInsert(TiReqOrderInsert* req);
     int orderDelete(TiReqOrderDelete* req);
+    TiRtnOrderStatus* getOrderStatus(int64_t req_id, std::string order_stream_id);
     TiRtnOrderStatus* getOrderStatus(int64_t req_id, int64_t order_id);
     
     

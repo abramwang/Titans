@@ -9,21 +9,24 @@
 OcTraderCommanderCtp::OcTraderCommanderCtp(uv_loop_s* loop, std::string configPath)
     : RedisCommander(loop)
 {
-    m_client = new TiCtpTraderClient(configPath, this);
     m_config = NULL;
     m_total_asset = 0;
     m_cash_asset = 0;
     loadConfig(configPath);
 
+    
+    std::cout << "[OcTraderCommanderCtp] OcTraderCommanderCtp: " << configPath << std::endl;
     ///*
     if(m_config){
         connect(m_config->szIp.c_str(), m_config->nPort, m_config->szAuth.c_str());
         
         bool flag = m_redis.connect(m_config->szIp.c_str(), m_config->nPort, m_config->szAuth.c_str());
         LOG(INFO) << "[OcTraderCommanderCtp] flag: " << flag;
+        std::cout << "[OcTraderCommanderCtp] flag: " << flag << std::endl;
         resetStreamKey();
     }
     //*/
+    m_client = new TiCtpTraderClient(configPath, this);
 
     m_timer.data = this;
     uv_timer_init(loop, &m_timer);
@@ -142,6 +145,12 @@ void OcTraderCommanderCtp::OnRtnOrderStatusEvent(const TiRtnOrderStatus* pData)
     json j;
     TiTraderFormater::FormatOrderStatus(pData, j);
     std::cout << "OnRtnOrderStatusEvent: " << j << std::endl;
+
+    if(!m_config->szOrderKey.empty())
+    {
+        TiTraderFormater::FormatOrderStatus(pData, m_json_cash);
+        m_redis.hmset(m_config->szOrderKey.c_str(), m_json_cash["szOrderStreamId"].get<std::string>().c_str(), m_json_cash.dump().c_str());
+    }
 };
 void OcTraderCommanderCtp::OnRtnOrderMatchEvent(const TiRtnOrderMatch* pData)
 {
@@ -149,6 +158,15 @@ void OcTraderCommanderCtp::OnRtnOrderMatchEvent(const TiRtnOrderMatch* pData)
     json j;
     TiTraderFormater::FormatOrderMatchEvent(pData, j);
     std::cout << "OnRtnOrderMatchEvent: " << j << std::endl;
+
+    if (m_config)
+    {
+        if(!m_config->szMatchKey.empty())
+        {
+            TiTraderFormater::FormatOrderMatchEvent(pData, m_json_cash);
+            m_redis.hmset(m_config->szMatchKey.c_str(), m_json_cash["szStreamId"].get<std::string>().c_str(), m_json_cash.dump().c_str());
+        }
+    }
 };
 
 
@@ -247,17 +265,17 @@ int OcTraderCommanderCtp::loadConfig(std::string iniFileName){
 
     m_config = new ConfigInfo();
 
-    m_config->szIp        = string(_iniFile["oc_trader_commander_anxin"]["ip"]);
-    m_config->nPort       = _iniFile["oc_trader_commander_anxin"]["port"];
-    m_config->szAuth      = string(_iniFile["oc_trader_commander_anxin"]["auth"]);
+    m_config->szIp        = string(_iniFile["oc_trader_commander_ctp"]["ip"]);
+    m_config->nPort       = _iniFile["oc_trader_commander_ctp"]["port"];
+    m_config->szAuth      = string(_iniFile["oc_trader_commander_ctp"]["auth"]);
 
-    m_config->nBlock          = _iniFile["oc_trader_commander_anxin"]["block"];
-    m_config->szCommandStreamKey     = string(_iniFile["oc_trader_commander_anxin"]["command_stream_key"]);
-    m_config->szCommandStreamGroup   = string(_iniFile["oc_trader_commander_anxin"]["command_stream_group"]);
-    m_config->szCommandConsumerId   = string(_iniFile["oc_trader_commander_anxin"]["command_consumer_id"]);
+    m_config->nBlock          = _iniFile["oc_trader_commander_ctp"]["block"];
+    m_config->szCommandStreamKey        = string(_iniFile["oc_trader_commander_ctp"]["command_stream_key"]);
+    m_config->szCommandStreamGroup      = string(_iniFile["oc_trader_commander_ctp"]["command_stream_group"]);
+    m_config->szCommandConsumerId       = string(_iniFile["oc_trader_commander_ctp"]["command_consumer_id"]);
     
-    m_config->szOrderKey         = string(_iniFile["oc_trader_commander_anxin"]["order_key"]);
-    m_config->szMatchKey         = string(_iniFile["oc_trader_commander_anxin"]["match_key"]);
+    m_config->szOrderKey         = string(_iniFile["oc_trader_commander_ctp"]["order_key"]);
+    m_config->szMatchKey         = string(_iniFile["oc_trader_commander_ctp"]["match_key"]);
     
     if( m_config->szIp.empty() |
         !m_config->nPort |
