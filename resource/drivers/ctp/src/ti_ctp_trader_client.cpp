@@ -66,7 +66,7 @@ void TiCtpTraderClient::OnFrontDisconnected(int nReason)
 
 void TiCtpTraderClient::OnRspAuthenticate(CThostFtdcRspAuthenticateField *pRspAuthenticateField, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
     
-    std::cout << "OnRspAuthenticate：" << nRequestID << " ErrorID:" << pRspInfo->ErrorID << std::endl;
+    std::cout << "OnRspAuthenticate：" << nRequestID << " ErrorID:" << pRspInfo->ErrorID << " ErrorMsg:" << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg) << std::endl;
     
     CThostFtdcReqUserLoginField req = {0};
     strncpy(req.BrokerID, m_config->szBrokerID.c_str(), sizeof(req.BrokerID));
@@ -81,7 +81,7 @@ void TiCtpTraderClient::OnRspAuthenticate(CThostFtdcRspAuthenticateField *pRspAu
 
 ///登录请求响应
 void TiCtpTraderClient::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
-    std::cout << "OnRspUserLogin:" << nRequestID << " ErrorID:" << pRspInfo->ErrorID << std::endl;
+    std::cout << "OnRspUserLogin:" << nRequestID << " ErrorID:" << pRspInfo->ErrorID << " ErrorMsg:" << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg) << std::endl;
 };
 
 ////////////////////////////////////////////////////////////////////////
