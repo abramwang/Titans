@@ -6,7 +6,7 @@ except ImportError:
 setup(
     name='pymoneta',  #
     author='bo.wang',  #
-    version='0.4.1',  #
+    version='0.5.0',  #
     license='MIT',
 
     description='moneta',  #

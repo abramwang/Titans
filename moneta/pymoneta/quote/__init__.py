@@ -22,7 +22,10 @@ __user_data__ = {
         "SH.matches": [],
         "SZ.snapshot": [],
         "SZ.orders": [],
-        "SZ.matches": []
+        "SZ.matches": [],
+        "BJ.snapshot": [],
+        "BJ.orders": [],
+        "BJ.matches": [],
     }
 }
 """
@@ -47,6 +50,7 @@ def Init(host_:str, port_:int, user_:str, pwd_:str):
                 "snapshot": {
                     "SH": set(),
                     "SZ": set(),
+                    "BJ": set(),
                     "CF": set(),
                 },
             }
