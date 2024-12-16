@@ -27,6 +27,7 @@ include_directories(
     "../../../resource/include"
     "../../../resource/src"
     "../../../resource/drivers/huaxin/include/quote"
+    "../../../resource/drivers/huaxin/include/trade"
     "../../../resource/drivers/huaxin/src"
 )
 
@@ -35,4 +36,4 @@ link_directories( "./" )
 
 add_executable( ${PROJECT_NAME} ${SRCS} )
 
-target_link_libraries(${PROJECT_NAME} -llev2mdapi -larrow -lparquet -luv -lhiredis -lglog -lrt)
+target_link_libraries(${PROJECT_NAME} -llev2mdapi -lfasttraderapi -lmysqlclient -lcurl -larrow -lparquet -luv -lhiredis -lglog -lrt)
