@@ -30,3 +30,14 @@ link_directories( "./" )
 add_executable( ${PROJECT_NAME} ${SRCS} )
 
 target_link_libraries(${PROJECT_NAME} -lcurl -lmysqlclient -larrow -lparquet -luv -lhiredis -lglog -lrt)
+
+
+# 指定源文件和目标文件路径
+set(SOURCE_FILE "./oc_ipc_quote_demo")
+set(TARGET_DIR "/home/dist/production_env")
+
+# 添加自定义命令
+add_custom_command(
+    TARGET oc_ipc_quote_demo POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy ${SOURCE_FILE} ${TARGET_DIR}
+)
