@@ -15,6 +15,10 @@ public:
         std::string szL2ShHost;
         std::string szL2SzHost;
 
+        bool bIsMulticast;                  //是否组播行情
+        std::string szL2Multicast;          //组播行情地址
+        std::string szL2MulticastInterface; //组播行情接收网卡地址
+
         std::string szProductInfo;
         std::string szAccount;
         std::string szPass;
@@ -29,6 +33,8 @@ public:
 private:
     int nReqId;
     ConfigInfo* m_config;
+    CTORATstpLev2MdApi *m_multicast_api;
+    LoginStatus* m_multicast_status;
     CTORATstpLev2MdApi *m_sh_api;
     CTORATstpLev2MdApi *m_sz_api;
     LoginStatus* m_sh_status;
@@ -39,7 +45,7 @@ private:
     TiQuoteSnapshotStockField   m_snapStockCash;
     TiQuoteSnapshotIndexField   m_snapIndexCash;
     TiQuoteOrderField           m_orderCash;
-    TiQuoteMatchesField           m_matchCash;
+    TiQuoteMatchesField         m_matchCash;
 
 public:
     TiHxQuoteClient(std::string configPath, TiQuoteCallback* userCb);

@@ -11,6 +11,10 @@ using namespace std;
 TiHxQuoteClient::TiHxQuoteClient(std::string configPath, TiQuoteCallback* userCb)
 {
     m_config = NULL;
+
+    m_multicast_api = NULL;
+    m_multicast_status = NULL;
+
     m_sh_api    = NULL;
     m_sh_status = NULL;
     m_sz_api    = NULL;
@@ -32,6 +36,11 @@ TiHxQuoteClient::~TiHxQuoteClient()
     if(m_config){
         delete m_config;
         m_config = NULL;
+    }
+    if (m_multicast_api)
+    {
+        m_multicast_api->Release();
+        m_multicast_api = NULL;
     }
     if (m_sh_api)
     {
@@ -68,6 +77,7 @@ void TiHxQuoteClient::OnFrontConnected()
         return ;
     }
     printf("TiHxQuoteClient::OnFrontConnected\n");
+
     CTORATstpReqUserLoginField req_user_login_field;
     memset(&req_user_login_field, 0, sizeof(req_user_login_field));
     strcpy(req_user_login_field.LogInAccount, m_config->szAccount.c_str());
@@ -76,6 +86,18 @@ void TiHxQuoteClient::OnFrontConnected()
     strcpy(req_user_login_field.Password, m_config->szPass.c_str());
     //strcpy(req_user_login_field.UserProductInfo, "lev2apidemo");
     strcpy(req_user_login_field.UserProductInfo, m_config->szProductInfo.c_str());
+
+    if(m_multicast_api && !m_multicast_status){
+        m_multicast_status = new LoginStatus();
+        m_multicast_status->nReqId = ++nReqId;
+        m_multicast_status->bLoginSuccess = false;
+        int ret = m_multicast_api->ReqUserLogin(&req_user_login_field, m_multicast_status->nReqId);
+        if (ret != 0)
+        {
+            printf("ReqUserLogin multicast fail, ret[%d]\n", ret);
+        }
+        return;
+    }
 
     if(m_sh_api && !m_sh_status){
         m_sh_status = new LoginStatus();
@@ -109,6 +131,15 @@ void TiHxQuoteClient::OnRspUserLogin(
 {
     LoginStatus* _status = NULL;
     char ex_str[TI_EXCHANGE_STR_LEN] = {0};
+
+    if(m_multicast_status){
+        if (m_multicast_status->nReqId == nRequestID)
+        {
+            strcpy(ex_str, "MULTICAST");
+            _status = m_multicast_status;
+        }
+    }
+
     if(m_sh_status){
         if (m_sh_status->nReqId == nRequestID)
         {
@@ -344,10 +375,17 @@ int TiHxQuoteClient::loadConfig(std::string iniFileName){
     m_config->szL2ShHost            = string(_iniFile["ti_hx_quote_client"]["l2_sh_host"]);
     m_config->szL2SzHost            = string(_iniFile["ti_hx_quote_client"]["l2_sz_host"]);
 
+    m_config->bIsMulticast          = bool(_iniFile["ti_hx_quote_client"]["is_multicast"]);
+    m_config->szL2Multicast         = string(_iniFile["ti_hx_quote_client"]["l2_multicast"]);
+    m_config->szL2MulticastInterface= string(_iniFile["ti_hx_quote_client"]["l2_multicast_interface"]);
+
     m_config->szProductInfo         = string(_iniFile["ti_hx_quote_client"]["product"]);
     m_config->szAccount             = string(_iniFile["ti_hx_quote_client"]["account"]);
     m_config->szPass                = string(_iniFile["ti_hx_quote_client"]["pass"]);
 
+    std::cout << "bIsMulticast: " << m_config->bIsMulticast << std::endl;
+    std::cout << "szL2Multicast: " << m_config->szL2Multicast << std::endl;
+    std::cout << "szL2MulticastInterface: " << m_config->szL2MulticastInterface << std::endl;
     
     if( (m_config->szL2ShHost.empty() && 
         m_config->szL2SzHost.empty()) |
@@ -367,15 +405,29 @@ void TiHxQuoteClient::connect(){
         LOG(INFO) << "[loadConfig] Do not have config info";
         return ;
     }
+
+    if(m_config->bIsMulticast && !m_multicast_api){
+        m_multicast_api = CTORATstpLev2MdApi::CreateTstpLev2MdApi(TORA_TSTP_MST_MCAST);
+        m_multicast_api->RegisterSpi(this);    
+        m_multicast_api->RegisterMulticast((char*)m_config->szL2Multicast.c_str(), 
+            (char*)m_config->szL2MulticastInterface.c_str(),
+            NULL);
+        m_multicast_api->Init();
+        return;
+    }
+
     if(!m_config->szL2ShHost.empty() && !m_sh_api){
         m_sh_api = CTORATstpLev2MdApi::CreateTstpLev2MdApi();
-        m_sh_api->RegisterSpi(this);
-        m_sh_api->RegisterFront((char*)m_config->szL2ShHost.c_str());
+        m_sh_api->RegisterSpi(this); 
+        m_sh_api->RegisterFront((char*)m_config->szL2SzHost.c_str());
         m_sh_api->Init();
     }
-    if(!m_config->szL2SzHost.empty() && !m_sz_api){
+
+    if(!m_config->szL2SzHost.empty() && !m_sz_api)
+    {
+        
         m_sz_api = CTORATstpLev2MdApi::CreateTstpLev2MdApi();
-        m_sz_api->RegisterSpi(this);
+        m_sz_api->RegisterSpi(this); 
         m_sz_api->RegisterFront((char*)m_config->szL2SzHost.c_str());
         m_sz_api->Init();
     }
@@ -384,6 +436,27 @@ void TiHxQuoteClient::connect(){
 
 void TiHxQuoteClient::subData(const char* exchangeName, char* codeList[], size_t len){
     int ret = 0;
+
+    if(m_multicast_api)
+    {
+        ret = m_multicast_api->SubscribeMarketData(codeList, len, TORA_TSTP_EXD_SSE);
+        if (ret != 0)
+        {
+            printf("SubscribeMarketData fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+        }
+        ret = m_multicast_api->SubscribeIndex(codeList, len, TORA_TSTP_EXD_SSE);
+        if (ret != 0)
+        {
+            printf("SubscribeIndex fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+        }
+        ret = m_multicast_api->SubscribeTransaction(codeList, len, TORA_TSTP_EXD_SSE);
+        if (ret != 0)
+        {
+            printf("SubscribeTransaction fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+        }
+        return;
+    }
+
     if(!strcmp(exchangeName, "SH")){
         ret = m_sh_api->SubscribeMarketData(codeList, len, TORA_TSTP_EXD_SSE);
         if (ret != 0)

@@ -13,12 +13,31 @@ public:
     virtual void OnTradingDayRtn(const unsigned int day, const char* exchangeName){
         printf("[OnTradingDayRtn] %d, %s\n", day, exchangeName);
 
-        if (strcmp(exchangeName, "SH") == 0)
+        /*
         {
-            char* shCodeList[3] = {"600000", "600004", "600008"};
+            char* shCodeList[3] = {"600***", "688***", "51****"};
             if(client)
             {
                 client->subData("SH", shCodeList, 3);
+            }
+        }
+        */
+        
+        {
+            char* shCodeList[3] = {"000***", "300***", "15****"};
+            if(client)
+            {
+                client->subData("SZ", shCodeList, 3);
+            }
+        }
+
+        return;
+        if (strcmp(exchangeName, "SZ") == 0)
+        {
+            char* shCodeList[3] = {"00*", "30*", "15*"};
+            if(client)
+            {
+                client->subData("SH", shCodeList, 1);
             }
         }
     };
