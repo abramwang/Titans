@@ -62,6 +62,12 @@ public:
         CTORATstpSpecificSecurityField *pSpecificSecurity,
         CTORATstpRspInfoField *pRspInfo, 
         int nRequestID, bool bIsLast);
+    ///订阅指数行情应答
+    virtual void OnRspSubIndex(CTORATstpSpecificSecurityField *pSpecificSecurity, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+    ///订阅逐笔成交应答(深圳非债券类、深圳可转债)
+    virtual void OnRspSubTransaction(CTORATstpSpecificSecurityField *pSpecificSecurity, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
+    ///订阅逐笔委托应答(深圳非债券类、深圳可转债)
+    virtual void OnRspSubOrderDetail(CTORATstpSpecificSecurityField *pSpecificSecurity, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast);
 
     ///行情通知(上海非债券类、深圳非债券类、深圳可转债)
     virtual void OnRtnMarketData(CTORATstpLev2MarketDataField *pDepthMarketData,

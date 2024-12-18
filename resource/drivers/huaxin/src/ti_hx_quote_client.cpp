@@ -2,6 +2,7 @@
 #include <iniFile.h>
 #include <glog/logging.h>
 #include <string.h>
+#include "ti_encoding_tool.h"
 #include "ti_hx_quote_client.h"
 #include "ti_quote_struct.h"
 #include "datetime.h"
@@ -174,7 +175,26 @@ void TiHxQuoteClient::OnRspSubMarketData(
     CTORATstpRspInfoField *pRspInfo, 
     int nRequestID, bool bIsLast)
 {
-    LOG(INFO) << "[OnRspSubMarketData] ErrorID: "<< pRspInfo->ErrorID << " ErrorMsg: " << pRspInfo->ErrorMsg;
+    std::cout << "[OnRspSubMarketData] ErrorID: "<< pRspInfo->ErrorID << " ErrorMsg: " << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg);
+    LOG(INFO) << "[OnRspSubMarketData] ErrorID: "<< pRspInfo->ErrorID << " ErrorMsg: " << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg);
+};
+
+void TiHxQuoteClient::OnRspSubIndex(CTORATstpSpecificSecurityField *pSpecificSecurity, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+    std::cout << "[OnRspSubIndex] ErrorID: "<< pRspInfo->ErrorID << " ErrorMsg: " << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg);
+    LOG(INFO) << "[OnRspSubIndex] ErrorID: "<< pRspInfo->ErrorID << " ErrorMsg: " << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg);
+};
+
+void TiHxQuoteClient::OnRspSubTransaction(CTORATstpSpecificSecurityField *pSpecificSecurity, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+    std::cout << "[OnRspSubTransaction] ErrorID: "<< pRspInfo->ErrorID << " ErrorMsg: " << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg);
+    LOG(INFO) << "[OnRspSubTransaction] ErrorID: "<< pRspInfo->ErrorID << " ErrorMsg: " << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg);
+};
+
+void TiHxQuoteClient::OnRspSubOrderDetail(CTORATstpSpecificSecurityField *pSpecificSecurity, CTORATstpRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+    std::cout << "[OnRspSubOrderDetail] ErrorID: "<< pRspInfo->ErrorID << " ErrorMsg: " << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg);
+    LOG(INFO) << "[OnRspSubOrderDetail] ErrorID: "<< pRspInfo->ErrorID << " ErrorMsg: " << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg);
 };
 
 void TiHxQuoteClient::OnRtnMarketData(CTORATstpLev2MarketDataField *pDepthMarketData,
@@ -323,6 +343,39 @@ void TiHxQuoteClient::OnRtnIndex(CTORATstpLev2IndexField *pIndex){
 void TiHxQuoteClient::OnRtnOrderDetail(CTORATstpLev2OrderDetailField *pOrderDetail) 
 {
     memset(&m_orderCash, 0, sizeof(TiQuoteOrderField));
+
+    strcpy(m_orderCash.symbol, pOrderDetail->SecurityID);
+    m_orderCash.date            = m_trading_day;
+    if(pOrderDetail->ExchangeID == '1'){
+        strcpy(m_orderCash.exchange, "SH");
+        m_orderCash.time            = pOrderDetail->OrderTime * 10;
+    }
+    if(pOrderDetail->ExchangeID == '2'){
+        strcpy(m_orderCash.exchange, "SZ");
+        m_orderCash.time            = pOrderDetail->OrderTime;
+    }
+    m_orderCash.timestamp       = datetime::get_timestamp_ms(m_trading_day, m_orderCash.time);
+    datetime::get_format_time_ms(m_trading_day, m_orderCash.time, m_orderCash.time_str, TI_TIME_STR_LEN);
+    datetime::get_format_now_time_us(m_orderCash.recv_time_str, TI_TIME_STR_LEN);
+    m_snapStockCash.recv_timestamp  = datetime::get_now_timestamp_ms();
+
+    m_orderCash.channel         = 0;
+    m_orderCash.seq             = pOrderDetail->MainSeq;
+    m_orderCash.price           = pOrderDetail->Price;
+    m_orderCash.volume          = pOrderDetail->Volume;
+
+    if(pOrderDetail->Side == '1'){
+        m_orderCash.function_code = 'B'; 
+    }
+    if(pOrderDetail->Side == '2'){
+        m_orderCash.function_code = 'S'; 
+    }
+    m_orderCash.order_type      = pOrderDetail->OrderType;
+    m_orderCash.order_orino     = pOrderDetail->OrderNO;
+
+    if(m_cb){
+        m_cb->OnL2StockOrderRtn(&m_orderCash);
+    }
 };
 
 void TiHxQuoteClient::OnRtnTransaction(CTORATstpLev2TransactionField *pTransaction) 
@@ -412,6 +465,10 @@ void TiHxQuoteClient::connect(){
         m_multicast_api->RegisterMulticast((char*)m_config->szL2Multicast.c_str(), 
             (char*)m_config->szL2MulticastInterface.c_str(),
             NULL);
+        TTORATstpMKSubTypesType subType;
+        memset(&subType, 0, sizeof(subType));
+        strcpy(subType, "MITO");
+        m_multicast_api->DeclareMKSubTypes(subType);
         m_multicast_api->Init();
         return;
     }
@@ -425,7 +482,6 @@ void TiHxQuoteClient::connect(){
 
     if(!m_config->szL2SzHost.empty() && !m_sz_api)
     {
-        
         m_sz_api = CTORATstpLev2MdApi::CreateTstpLev2MdApi();
         m_sz_api->RegisterSpi(this); 
         m_sz_api->RegisterFront((char*)m_config->szL2SzHost.c_str());
@@ -439,20 +495,51 @@ void TiHxQuoteClient::subData(const char* exchangeName, char* codeList[], size_t
 
     if(m_multicast_api)
     {
-        ret = m_multicast_api->SubscribeMarketData(codeList, len, TORA_TSTP_EXD_SSE);
-        if (ret != 0)
-        {
-            printf("SubscribeMarketData fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+        if(!strcmp(exchangeName, "SH")){
+            ret = m_multicast_api->SubscribeMarketData(codeList, len, TORA_TSTP_EXD_SSE);
+            if (ret != 0)
+            {
+                printf("SubscribeMarketData fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+            }
+            ret = m_multicast_api->SubscribeIndex(codeList, len, TORA_TSTP_EXD_SSE);
+            if (ret != 0)
+            {
+                printf("SubscribeIndex fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+            }
+            ret = m_multicast_api->SubscribeTransaction(codeList, len, TORA_TSTP_EXD_SSE);
+            if (ret != 0)
+            {
+                printf("SubscribeTransaction fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+            }
+            ret = m_multicast_api->SubscribeOrderDetail(codeList, len, TORA_TSTP_EXD_SSE);
+            if (ret != 0)
+            {
+                printf("SubscribeOrderDetail fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+            }
+            return;
         }
-        ret = m_multicast_api->SubscribeIndex(codeList, len, TORA_TSTP_EXD_SSE);
-        if (ret != 0)
-        {
-            printf("SubscribeIndex fail, exchange[%s], ret[%d]\n", exchangeName, ret);
-        }
-        ret = m_multicast_api->SubscribeTransaction(codeList, len, TORA_TSTP_EXD_SSE);
-        if (ret != 0)
-        {
-            printf("SubscribeTransaction fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+        if(!strcmp(exchangeName, "SZ")){
+            ret = m_multicast_api->SubscribeMarketData(codeList, len, TORA_TSTP_EXD_SZSE);
+            if (ret != 0)
+            {
+                printf("SubscribeMarketData fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+            }
+            ret = m_multicast_api->SubscribeIndex(codeList, len, TORA_TSTP_EXD_SZSE);
+            if (ret != 0)
+            {
+                printf("SubscribeIndex fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+            }
+            ret = m_multicast_api->SubscribeTransaction(codeList, len, TORA_TSTP_EXD_SZSE);
+            if (ret != 0)
+            {
+                printf("SubscribeTransaction fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+            }
+            ret = m_multicast_api->SubscribeOrderDetail(codeList, len, TORA_TSTP_EXD_SZSE);
+            if (ret != 0)
+            {
+                printf("SubscribeOrderDetail fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+            }
+            return;
         }
         return;
     }
