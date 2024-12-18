@@ -79,6 +79,9 @@ public:
 	virtual void OnRtnOrderDetail(CTORATstpLev2OrderDetailField *pOrderDetail);
     //逐笔成交通知(深圳非债券类、深圳可转债)
 	virtual void OnRtnTransaction(CTORATstpLev2TransactionField *pTransaction);
+    //上海NGTS非债券逐笔数据通知
+    virtual void OnRtnNGTSTick(CTORATstpLev2NGTSTickField *pTick);
+
 	
     virtual void OnFrontDisconnected(int nReason){};
 

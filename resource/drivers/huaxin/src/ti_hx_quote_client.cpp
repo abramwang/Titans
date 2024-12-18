@@ -357,7 +357,7 @@ void TiHxQuoteClient::OnRtnOrderDetail(CTORATstpLev2OrderDetailField *pOrderDeta
     m_orderCash.timestamp       = datetime::get_timestamp_ms(m_trading_day, m_orderCash.time);
     datetime::get_format_time_ms(m_trading_day, m_orderCash.time, m_orderCash.time_str, TI_TIME_STR_LEN);
     datetime::get_format_now_time_us(m_orderCash.recv_time_str, TI_TIME_STR_LEN);
-    m_snapStockCash.recv_timestamp  = datetime::get_now_timestamp_ms();
+    m_orderCash.recv_timestamp  = datetime::get_now_timestamp_ms();
 
     m_orderCash.channel         = 0;
     m_orderCash.seq             = pOrderDetail->MainSeq;
@@ -395,7 +395,7 @@ void TiHxQuoteClient::OnRtnTransaction(CTORATstpLev2TransactionField *pTransacti
     m_matchCash.timestamp           = datetime::get_timestamp_ms(m_trading_day, m_matchCash.time);
     datetime::get_format_time_ms(m_trading_day, m_matchCash.time, m_matchCash.time_str, TI_TIME_STR_LEN);
     datetime::get_format_now_time_us(m_matchCash.recv_time_str, TI_TIME_STR_LEN);
-    m_snapStockCash.recv_timestamp  = datetime::get_now_timestamp_ms();
+    m_matchCash.recv_timestamp  = datetime::get_now_timestamp_ms();
     
     m_matchCash.channel         = 0;
     m_matchCash.seq             = pTransaction->MainSeq;
@@ -409,6 +409,76 @@ void TiHxQuoteClient::OnRtnTransaction(CTORATstpLev2TransactionField *pTransacti
     if(m_cb){
         m_cb->OnL2StockMatchesRtn(&m_matchCash);
     }
+};
+
+void TiHxQuoteClient::OnRtnNGTSTick(CTORATstpLev2NGTSTickField *pTick)
+{
+    if (pTick->TickType == TORA_TSTP_LTT_Trade)
+    {
+        memset(&m_matchCash, 0, sizeof(TiQuoteMatchesField));
+    
+        strcpy(m_matchCash.symbol, pTick->SecurityID);
+        m_matchCash.date            = m_trading_day;
+        if(pTick->ExchangeID == '1'){
+            strcpy(m_matchCash.exchange, "SH");
+            m_matchCash.time            = pTick->TickTime * 10;
+        }
+
+        m_matchCash.timestamp         = datetime::get_timestamp_ms(m_trading_day, m_matchCash.time);
+        datetime::get_format_time_ms(m_trading_day, m_matchCash.time, m_matchCash.time_str, TI_TIME_STR_LEN);
+        datetime::get_format_now_time_us(m_matchCash.recv_time_str, TI_TIME_STR_LEN);
+        m_matchCash.recv_timestamp  = datetime::get_now_timestamp_ms();
+
+        m_matchCash.channel         = 0;
+        m_matchCash.seq             = pTick->MainSeq;
+        m_matchCash.price           = pTick->Price;
+        m_matchCash.volume          = pTick->Volume;
+        m_matchCash.ask_order_seq   = pTick->SellNo;
+        m_matchCash.bid_order_seq   = pTick->BuyNo;
+
+        m_matchCash.bs_flag         = pTick->TradeBSFlag;
+        m_matchCash.function_code   = '0';
+
+        if(m_cb){
+            m_cb->OnL2StockMatchesRtn(&m_matchCash);
+        }
+    }
+
+    if (pTick->TickType == TORA_TSTP_LTT_Add || pTick->TickType == TORA_TSTP_LTT_Delete)
+    {
+        memset(&m_orderCash, 0, sizeof(TiQuoteOrderField));
+
+        strcpy(m_orderCash.symbol, pTick->SecurityID);
+        m_orderCash.date            = m_trading_day;
+        if(pTick->ExchangeID == '1'){
+            strcpy(m_orderCash.exchange, "SH");
+            m_orderCash.time            = pTick->TickTime * 10;
+        }
+
+        m_orderCash.timestamp       = datetime::get_timestamp_ms(m_trading_day, m_orderCash.time);
+        datetime::get_format_time_ms(m_trading_day, m_orderCash.time, m_orderCash.time_str, TI_TIME_STR_LEN);
+        datetime::get_format_now_time_us(m_orderCash.recv_time_str, TI_TIME_STR_LEN);
+        m_orderCash.recv_timestamp  = datetime::get_now_timestamp_ms();
+
+        m_orderCash.channel         = 0;
+        m_orderCash.seq             = pTick->MainSeq;
+        m_orderCash.price           = pTick->Price;
+        m_orderCash.volume          = pTick->Volume;
+        m_orderCash.function_code   = pTick->TickType;
+        m_orderCash.order_orino     = pTick->MainSeq;
+        if(pTick->Side == '1'){
+            m_orderCash.function_code = 'B'; 
+        }
+        if(pTick->Side == '2'){
+            m_orderCash.function_code = 'S'; 
+        }
+        m_orderCash.order_type      = pTick->TickType;
+
+        if(m_cb){
+            m_cb->OnL2StockOrderRtn(&m_orderCash);
+        }
+    }
+    
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -515,6 +585,11 @@ void TiHxQuoteClient::subData(const char* exchangeName, char* codeList[], size_t
             if (ret != 0)
             {
                 printf("SubscribeOrderDetail fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+            }
+            ret = m_multicast_api->SubscribeNGTSTick(codeList, len, TORA_TSTP_EXD_SSE);
+            if (ret != 0)
+            {
+                printf("SubscribeNGTSTick fail, exchange[%s], ret[%d]\n", exchangeName, ret);
             }
             return;
         }
