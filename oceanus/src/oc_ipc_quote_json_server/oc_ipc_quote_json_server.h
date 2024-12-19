@@ -30,6 +30,7 @@ public:
         std::string szQuoteTopic;
 
         std::string szQuoteStreamKey;
+        std::string szQuoteQueryKey;
 
     } ConfigInfo;
 

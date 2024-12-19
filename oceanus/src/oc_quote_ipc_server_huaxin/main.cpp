@@ -65,6 +65,14 @@ public:
     virtual void OnTradingDayRtn(const unsigned int day, const char* exchangeName){
         printf("[OnTradingDayRtn] %d, %s\n", day, exchangeName);
 
+        /*
+        char* shCodeList[3] = {"600000"};
+        if(client)
+        {
+            client->subData("SH", shCodeList, 1);
+        }
+        return;
+        */
         ///*
         {
             char* shCodeList[3] = {"600***", "688***", "51****"};
@@ -75,7 +83,7 @@ public:
         }
         //*/
         
-        /*
+        ///*
         {
             char* shCodeList[3] = {"000***", "300***", "15****"};
             if(client)
@@ -83,25 +91,26 @@ public:
                 client->subData("SZ", shCodeList, 3);
             }
         }
-        */
+        //*/
     };
    
     virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){};
     virtual void OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData){};
 
-    virtual void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){m_mutex.lock();
+    virtual void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){
         //m_mutex.lock();
         if ((pData->time - m_cout_time_snap) > 5000)
         {
             printf("[OnL2StockSnapshotRtn] %s, %s, %d, %f, %ld, %f\n", 
                 pData->symbol, pData->time_str, pData->time, pData->last, pData->acc_volume, pData->acc_turnover);
+            /*
             json j;
             TiQuoteFormater::FormatSnapshot(pData, j);
             //printf("[OnMDSnapshot] %s\n", out);
             printf("[OnL2StockSnapshotRtn] %s\n", j.dump().c_str());
+            */
             m_cout_time_snap = pData->time;
         }
-        //return;
         if(!m_cache->try_addData(TI_QUOTE_DATA_TYPE_SNAPSHOT_STOCK, (void *)pData, sizeof(TiQuoteSnapshotStockField)))
         {
             ipc_pub();
@@ -122,6 +131,7 @@ public:
             printf("[OnL2StockMatchesRtn] %s\n", j.dump().c_str());
             m_cout_time_trans = pData->time;
         }
+        //return;
         if(!m_cache->try_addData(TI_QUOTE_DATA_TYPE_MATCH, (void *)pData, sizeof(TiQuoteMatchesField)))
         {
             ipc_pub();
@@ -141,6 +151,7 @@ public:
             printf("[OnL2StockOrderRtn] %s\n", j.dump().c_str());
             m_cout_time_order = pData->time;
         }
+        //return;
         if(!m_cache->try_addData(TI_QUOTE_DATA_TYPE_ORDER, (void *)pData, sizeof(TiQuoteOrderField)))
         {
             ipc_pub();
@@ -162,10 +173,16 @@ int main()
 
     api.connect();
 
-
     while (1)
     {
-        sleep(10000);
+        usleep(1000000);
+        std::time_t currentTime = std::time(nullptr);
+        std::tm* localTime = std::localtime(&currentTime);
+        if (localTime->tm_hour > 16 )
+        {
+            return 0;
+        }
     }
+    
     return 0;
 }

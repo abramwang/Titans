@@ -70,7 +70,6 @@ void OcIpcQuoteJsonServer::OnTimer()
     }
     //*/
 
-
     if (m_json_cash.empty())
     {
         return;
@@ -95,8 +94,8 @@ void OcIpcQuoteJsonServer::OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField*
     m_json_cash.push_back(j);
 };
 
-void OcIpcQuoteJsonServer::OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData){
-    
+void OcIpcQuoteJsonServer::OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData)
+{    
     json j;
     TiQuoteFormater::FormatSnapshot(pData, j);
     j["type"] = "snapshot";
@@ -106,6 +105,7 @@ void OcIpcQuoteJsonServer::OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureFiel
 
 void OcIpcQuoteJsonServer::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData)
 {
+    //return;
     if ((pData->time - m_cout_time_snap) > 5000)
     {
         printf("[OnL2StockSnapshotRtn] %s, %s, %d, %f, %ld, %f\n", 
@@ -116,8 +116,9 @@ void OcIpcQuoteJsonServer::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField*
     json j;
     TiQuoteFormater::FormatSnapshot(pData, j);
     j["type"] = "snapshot";
-
     m_json_cash.push_back(j);
+
+    m_redis.hset(m_config->szQuoteQueryKey.c_str(), pData->symbol, j.dump().c_str());
 };
 
 void OcIpcQuoteJsonServer::OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){
@@ -202,7 +203,13 @@ int OcIpcQuoteJsonServer::loadConfig(std::string iniFileName){
 
     m_config->szQuoteTopic      = string(_iniFile["oc_ipc_quote_json_server"]["ipc_quote_topic"]);
 
-    m_config->szQuoteStreamKey          = string(_iniFile["oc_ipc_quote_json_server"]["quote_notify_stream_key"]);
+    m_config->szQuoteStreamKey  = string(_iniFile["oc_ipc_quote_json_server"]["quote_notify_stream_key"]);
+    m_config->szQuoteQueryKey   = string(_iniFile["oc_ipc_quote_json_server"]["quote_query_key"]);
+
+    //m_config->szQuoteQueryKey = "oc_ipc_quote_json_server.query";
+
+    std::cout << "szQuoteStreamKey: " << m_config->szQuoteStreamKey << std::endl;
+    std::cout << "szQuoteQueryKey: " << m_config->szQuoteQueryKey << std::endl;
     
     if( m_config->szIp.empty() |
         !m_config->nPort )
