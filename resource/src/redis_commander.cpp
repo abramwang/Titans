@@ -140,6 +140,9 @@ void RedisCommander::auth(){
         int flag = redisAsyncUVCommand(this->auvc, RedisCommander::onAuth, this, command);
         LOG(INFO) << "flag: " << flag << "command: " << command;
         return;
+    }else{
+        this->onAuth(REDIS_OK, "auth success");
+        LOG(INFO) << "auth success";
     }
 };
 
