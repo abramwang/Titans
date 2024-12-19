@@ -27,7 +27,7 @@ public:
     UserCallback(uv_loop_s* loop){
         m_influxdb_client = new TiInfluxdbClient(
             "http://192.168.71.26:8086", 
-            "mFdhDhbwTEAmaXHyYDDEyIJHhM8vjZt0w2ZQePhoAv5cMOZriLiMLpXLKH8_c5tooZ5LPYN9-eB5CC2Owd4u8A==");
+            "sbB2OFOtAcL-StvkbW1ONfoY9LDtfdBtIqDBPaigr1gFAc_qfiz52itwb3tRxZ9DJ245LZey95cW8VzfU0WTZg==");
 
         m_cout_future_time = 0;
         m_cout_snap_time = 0;
