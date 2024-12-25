@@ -13,13 +13,14 @@ class OcIpcQuoteDepthServer
     : public TiQuoteCallback
 {
 public:
-    OcIpcQuoteDepthServer();
+    OcIpcQuoteDepthServer(uv_loop_s* loop);
     virtual ~OcIpcQuoteDepthServer(){};
 private:
     int32_t m_cout_time;
     std::vector<TiQuoteCallback*>      m_worker_vec;
     TiQuoteWorkerPool*                 m_quote_worker_pool;
     TiQuoteIpcPublisher*               m_quote_ipc_publisher;
+    uv_timer_t m_timer;
 public:
     virtual void OnTradingDayRtn(const unsigned int day, const char* exchangeName){};
    
@@ -29,6 +30,10 @@ public:
     virtual void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData);
     virtual void OnL2StockMatchesRtn(const TiQuoteMatchesField* pData);
     virtual void OnL2StockOrderRtn(const TiQuoteOrderField* pData);
+
+public:
+    static void onTimer(uv_timer_t* handle);
+    virtual void OnTimer();
 
 };
 

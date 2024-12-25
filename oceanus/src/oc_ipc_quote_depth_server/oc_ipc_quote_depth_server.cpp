@@ -1,6 +1,6 @@
 #include "oc_ipc_quote_depth_server.h"
 
-OcIpcQuoteDepthServer::OcIpcQuoteDepthServer(){
+OcIpcQuoteDepthServer::OcIpcQuoteDepthServer(uv_loop_s* loop){
     m_cout_time = 0;
     m_quote_ipc_publisher = new TiQuoteIpcPublisher("quote_depth_data");
     for(int32_t i = 0; i < 6; i++){
@@ -11,6 +11,11 @@ OcIpcQuoteDepthServer::OcIpcQuoteDepthServer(){
     m_quote_ipc_publisher->start();
     m_quote_worker_pool = new TiQuoteWorkerPool(m_worker_vec);
     m_quote_worker_pool->start();
+
+
+    m_timer.data = this;
+    uv_timer_init(loop, &m_timer);
+    uv_timer_start(&m_timer, onTimer, 1000, 500);
 };
 
 void OcIpcQuoteDepthServer::OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData)
@@ -37,4 +42,32 @@ void OcIpcQuoteDepthServer::OnL2StockMatchesRtn(const TiQuoteMatchesField* pData
 };
 void OcIpcQuoteDepthServer::OnL2StockOrderRtn(const TiQuoteOrderField* pData){
     m_quote_worker_pool->OnL2StockOrderRtn(pData);
+};
+
+
+void OcIpcQuoteDepthServer::onTimer(uv_timer_t* handle)
+{
+    OcIpcQuoteDepthServer* pThis = (OcIpcQuoteDepthServer*)handle->data;
+    pThis->OnTimer();
+};
+
+void OcIpcQuoteDepthServer::OnTimer()
+{
+    std::time_t currentTime = std::time(nullptr);
+    std::tm* localTime = std::localtime(&currentTime);
+    /*
+    std::cout << "当前时间: "
+            << localTime->tm_year + 1900 << "-" << localTime->tm_mon + 1 << "-" << localTime->tm_mday << " "
+            << localTime->tm_hour << ":" << localTime->tm_min << ":" << localTime->tm_sec
+            << std::endl;
+    */
+    if (localTime->tm_hour >= 15 )
+    {
+        if (localTime->tm_hour == 15 && localTime->tm_min < 30)
+        {
+            return;
+        }
+        printf("terminate\n");
+        std::terminate();
+    }
 };

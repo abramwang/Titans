@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
 
     uv_loop_t* loop = uv_default_loop();
 
-    OcIpcQuoteDepthServer cb;
+    OcIpcQuoteDepthServer cb(loop);
 
     TiQuoteIpcClient client("./config.ini", loop, &cb);
 	

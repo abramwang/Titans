@@ -25,7 +25,7 @@ public:
         m_cout_match_time = 0;
         m_cout_order_time = 0;
         m_cout_order_book_time = 0;
-        ///*
+        /*
         m_selected_symbols.insert("600000");
         m_selected_symbols.insert("000001");
         m_selected_symbols.insert("688981");
@@ -96,12 +96,12 @@ public:
     };
 
     virtual void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){
-        ///*
+        /*
         auto iter = m_selected_symbols.find(pData->symbol);
         if(iter == m_selected_symbols.end()){
             return;
         }
-        //*/
+        */
         /*
         if (strcmp(pData->exchange, "BJ"))
         {
@@ -110,8 +110,9 @@ public:
         */
         if ((pData->time - m_cout_snap_time) > 5000)
         {
-            printf("[OnL2StockSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
-                pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
+            printf("[OnL2StockSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f, %f, %f\n", 
+                pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover,
+                pData->high_limit, pData->low_limit);
             //json j;
             //TiQuoteFormater::FormatSnapshot(pData, j);
             //std::cout << j << std::endl;
