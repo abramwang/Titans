@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <mutex>
 #include <vector>
+#include <glog/logging.h>
 
 #include "ti_hx_quote_client.h"
 #include "ti_quote_cache.h"
@@ -120,7 +121,7 @@ public:
 public:
     virtual void OnTradingDayRtn(const unsigned int day, const char* exchangeName){
         printf("[OnTradingDayRtn] %d, %s\n", day, exchangeName);
-
+        //return;
         if(m_sub_symbol_vec.size() > 0){
             char* codeList[m_sub_symbol_vec.size()];
             for (int i = 0; i < m_sub_symbol_vec.size(); i++)
@@ -166,8 +167,8 @@ public:
         //m_mutex.lock();
         if ((pData->time - m_cout_time_snap) > 5000)
         {
-            printf("[OnL2StockSnapshotRtn] %s, %s, %d, %f, %ld, %f\n", 
-                pData->symbol, pData->time_str, pData->time, pData->last, pData->acc_volume, pData->acc_turnover);
+            printf("[OnL2StockSnapshotRtn] %s, %s, %d, %f, %ld, %f, %f, %f\n", 
+                pData->symbol, pData->time_str, pData->time, pData->last, pData->acc_volume, pData->acc_turnover, pData->high_limit, pData->low_limit);
             /*
             json j;
             TiQuoteFormater::FormatSnapshot(pData, j);
@@ -229,8 +230,11 @@ public:
 
 };
 
-int main()
+int main(int argc, char* argv[])
 {
+	FLAGS_log_dir = "./log/";
+    google::InitGoogleLogging(argv[0]);
+
     Callback* cb = new Callback();
 
     TiHxQuoteClient api("./config.ini", cb);
@@ -241,6 +245,7 @@ int main()
     while (1)
     {
         usleep(1000000);
+        //continue;
         std::time_t currentTime = std::time(nullptr);
         std::tm* localTime = std::localtime(&currentTime);
         if (localTime->tm_hour > 16 )

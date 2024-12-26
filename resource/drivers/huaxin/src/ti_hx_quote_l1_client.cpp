@@ -3,6 +3,7 @@
 #include <glog/logging.h>
 #include <string.h>
 #include "ti_encoding_tool.h"
+#include "ti_quote_formater.h"
 #include "ti_hx_quote_l1_client.h"
 #include "ti_quote_struct.h"
 #include "datetime.h"
@@ -69,14 +70,124 @@ void TiHxQuoteL1Client::OnRspUserLogin(
     if(m_cb){
         m_cb->OnTradingDayRtn(m_trading_day, "L1");
     }
-    //LOG(INFO) << "[OnRspUserLogin] ErrorID: "<< pRspInfo->ErrorID << " ex_str: " << ex_str << " ErrorMsg: " << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg);
+    LOG(INFO) << "[OnRspUserLogin] ErrorID: "<< pRspInfo->ErrorID << " ErrorMsg: " << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg);
 };
 
 void TiHxQuoteL1Client::OnRspSubMarketData(
     TORALEV1API::CTORATstpSpecificSecurityField *pSpecificSecurity,
-    TORALEV1API::CTORATstpRspInfoField *pRspInfo, 
-    int nRequestID, bool bIsLast)
+    TORALEV1API::CTORATstpRspInfoField *pRspInfo)
 {
-    std::cout << "[OnRspSubMarketData] ErrorID: "<< pRspInfo->ErrorID << " ErrorMsg: " << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg);
+    std::cout << "[OnRspSubMarketData] SecurityID: "<< pSpecificSecurity->SecurityID << " ExchangeID: " << pSpecificSecurity->ExchangeID;
+    std::cout << " ErrorID: "<< pRspInfo->ErrorID << " ErrorMsg: " << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg) << std::endl;
     LOG(INFO) << "[OnRspSubMarketData] ErrorID: "<< pRspInfo->ErrorID << " ErrorMsg: " << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg);
+};
+
+void TiHxQuoteL1Client::OnRtnMarketData(TORALEV1API::CTORATstpMarketDataField *pMarketDataField)
+{
+    memset(&m_snapStockCash, 0, sizeof(TiQuoteSnapshotStockField));
+
+    strcpy(m_snapStockCash.symbol, pMarketDataField->SecurityID);
+    m_snapStockCash.date            = m_trading_day;
+    
+    if(pMarketDataField->ExchangeID == '1'){
+        strcpy(m_snapStockCash.exchange, "SH");
+    }
+    if(pMarketDataField->ExchangeID == '2'){
+        strcpy(m_snapStockCash.exchange, "SZ");
+    }
+    m_snapStockCash.timestamp = datetime::get_timestamp_ms(pMarketDataField->TradingDay, pMarketDataField->UpdateTime);
+    datetime::get_format_timestamp_ms(m_snapStockCash.timestamp, m_snapStockCash.time_str, TI_TIME_STR_LEN);
+    datetime::get_format_now_time_us(m_snapStockCash.recv_time_str, TI_TIME_STR_LEN);
+    m_snapStockCash.recv_timestamp  = datetime::get_now_timestamp_ms();
+
+    m_snapStockCash.last             = pMarketDataField->LastPrice;
+    m_snapStockCash.pre_close        = pMarketDataField->PreClosePrice;
+    m_snapStockCash.open             = pMarketDataField->OpenPrice;
+    m_snapStockCash.high             = pMarketDataField->HighestPrice;
+    m_snapStockCash.low              = pMarketDataField->LowestPrice;
+    m_snapStockCash.high_limit       = pMarketDataField->UpperLimitPrice;
+    m_snapStockCash.low_limit        = pMarketDataField->LowerLimitPrice;
+    m_snapStockCash.acc_volume       = pMarketDataField->Volume;
+    m_snapStockCash.acc_turnover     = pMarketDataField->Turnover;
+    m_snapStockCash.iopv             = pMarketDataField->IOPV;
+    //ask
+    m_snapStockCash.ask_price[0]     = pMarketDataField->AskPrice1;
+    m_snapStockCash.ask_price[1]     = pMarketDataField->AskPrice2;
+    m_snapStockCash.ask_price[2]     = pMarketDataField->AskPrice3;
+    m_snapStockCash.ask_price[3]     = pMarketDataField->AskPrice4;
+    m_snapStockCash.ask_price[4]     = pMarketDataField->AskPrice5;
+
+    m_snapStockCash.ask_volume[0]    = pMarketDataField->AskVolume1;
+    m_snapStockCash.ask_volume[1]    = pMarketDataField->AskVolume2;
+    m_snapStockCash.ask_volume[2]    = pMarketDataField->AskVolume3;
+    m_snapStockCash.ask_volume[3]    = pMarketDataField->AskVolume4;
+    m_snapStockCash.ask_volume[4]    = pMarketDataField->AskVolume5;
+
+    //bid
+    m_snapStockCash.bid_price[0]     = pMarketDataField->BidPrice1;
+    m_snapStockCash.bid_price[1]     = pMarketDataField->BidPrice2;
+    m_snapStockCash.bid_price[2]     = pMarketDataField->BidPrice3;
+    m_snapStockCash.bid_price[3]     = pMarketDataField->BidPrice4;
+    m_snapStockCash.bid_price[4]     = pMarketDataField->BidPrice5;
+
+    m_snapStockCash.bid_volume[0]    = pMarketDataField->BidVolume1;
+    m_snapStockCash.bid_volume[1]    = pMarketDataField->BidVolume2;
+    m_snapStockCash.bid_volume[2]    = pMarketDataField->BidVolume3;
+    m_snapStockCash.bid_volume[3]    = pMarketDataField->BidVolume4;
+    m_snapStockCash.bid_volume[4]    = pMarketDataField->BidVolume5;
+
+    /*
+    json j;
+    TiQuoteFormater::FormatSnapshot(&m_snapStockCash, j);
+
+    std::cout << "[OnRtnMarketData JSON] " << j.dump() << std::endl;
+    */
+
+    TiQuoteSnapshotStockField* pSnap = GetStockSnapshot(m_snapStockCash.symbol, m_snapStockCash.exchange);
+    if(pSnap){
+        memcpy(pSnap, &m_snapStockCash, sizeof(TiQuoteSnapshotStockField));
+    }else{
+        m_snapshot_map[TiQuoteTools::GetSymbolID(m_snapStockCash.exchange, m_snapStockCash.symbol)] = std::make_unique<TiQuoteSnapshotStockField>(m_snapStockCash);
+    }
+
+    /*
+    if(m_cb){
+        m_cb->OnL2StockSnapshotRtn(&m_snapStockCash);
+    }
+    */
+};
+
+void TiHxQuoteL1Client::subData(const char* exchangeName, char* codeList[], size_t len)
+{
+    int ret = 0;
+    if(!strcmp(exchangeName, "SH")){
+        ret = m_api->SubscribeMarketData(codeList, len, TORALEV1API::TORA_TSTP_EXD_SSE);
+        //ret = m_api->SubscribeSimplifyMarketData(codeList, len, TORALEV1API::TORA_TSTP_EXD_SSE);
+        printf("SubscribeMarketData exchange[%s], ret[%d]\n", exchangeName, ret);
+        if (ret != 0)
+        {
+            printf("SubscribeMarketData fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+        }
+    }
+
+    if(!strcmp(exchangeName, "SZ")){
+        ret = m_api->SubscribeMarketData(codeList, len, TORALEV1API::TORA_TSTP_EXD_SZSE);
+        //ret = m_api->SubscribeSimplifyMarketData(codeList, len, TORALEV1API::TORA_TSTP_EXD_SSE);
+        printf("SubscribeMarketData exchange[%s], ret[%d]\n", exchangeName, ret);
+        if (ret != 0)
+        {
+            printf("SubscribeMarketData fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+        }
+    }
+};
+
+TiQuoteSnapshotStockField* TiHxQuoteL1Client::GetStockSnapshot(const char* symbol, const char* exchange)
+{
+    int64_t id = TiQuoteTools::GetSymbolID(exchange, symbol);
+    auto it = m_snapshot_map.find(id);
+    if (it != m_snapshot_map.end())
+    {
+        return it->second.get();
+    }
+    return nullptr;
 };

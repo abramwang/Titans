@@ -220,13 +220,23 @@ void TiHxQuoteClient::OnRtnMarketData(CTORATstpLev2MarketDataField *pDepthMarket
     datetime::get_format_now_time_us(m_snapStockCash.recv_time_str, TI_TIME_STR_LEN);
     m_snapStockCash.recv_timestamp  = datetime::get_now_timestamp_ms();
 
+    TiQuoteSnapshotStockField* pL1Snap = m_l1_client->GetStockSnapshot(m_snapStockCash.symbol, m_snapStockCash.exchange);
+
     m_snapStockCash.last             = pDepthMarketData->LastPrice;
     m_snapStockCash.pre_close        = pDepthMarketData->PreClosePrice;
     m_snapStockCash.open             = pDepthMarketData->OpenPrice;
     m_snapStockCash.high             = pDepthMarketData->HighestPrice;
     m_snapStockCash.low              = pDepthMarketData->LowestPrice;
     m_snapStockCash.high_limit       = pDepthMarketData->UpperLimitPrice;
+    if (!m_snapStockCash.high_limit && pL1Snap)
+    {
+        m_snapStockCash.high_limit = pL1Snap->high_limit;
+    }
     m_snapStockCash.low_limit        = pDepthMarketData->LowerLimitPrice;
+    if (!m_snapStockCash.low_limit && pL1Snap)
+    {
+        m_snapStockCash.low_limit = pL1Snap->low_limit;
+    }
     m_snapStockCash.volume           = 0;
     m_snapStockCash.turnover         = 0;
     m_snapStockCash.acc_volume       = pDepthMarketData->TotalVolumeTrade;
@@ -533,7 +543,6 @@ void TiHxQuoteClient::connect(){
         m_l1_client = new TiHxQuoteL1Client(m_cb,
             m_config->szL1Host.c_str(),
             m_config->szProductInfo.c_str(), m_config->szAccount.c_str(), m_config->szPass.c_str());
-        return;
     }
 
     if(m_config->bIsMulticast && !m_multicast_api){
@@ -569,6 +578,10 @@ void TiHxQuoteClient::connect(){
 
 void TiHxQuoteClient::subData(const char* exchangeName, char* codeList[], size_t len){
     int ret = 0;
+
+    if(m_l1_client){
+        m_l1_client->subData(exchangeName, codeList, len);
+    }
 
     if(m_multicast_api)
     {
