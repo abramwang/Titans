@@ -2,16 +2,20 @@
 #define TI_HX_QUOTE_CLIENT_H
 
 #include <string>
-#include "TORATstpLev2MdApi.h"
+#include "TORATstpXMdApi.h"     //level 1 api
+#include "TORATstpLev2MdApi.h"  //level 2 api
 #include "ti_quote_callback.h"
+#include "ti_hx_quote_l1_client.h"
 
 using namespace TORALEV2API;
 
-class TiHxQuoteClient: public CTORATstpLev2MdSpi
+class TiHxQuoteClient: public CTORATstpLev2MdSpi, TORALEV1API::CTORATstpXMdSpi
 {
 public:
     typedef struct ConfigInfo
     {
+        std::string szL1Host;        //level 1 host
+
         std::string szL2ShHost;
         std::string szL2SzHost;
 
@@ -33,6 +37,9 @@ public:
 private:
     int nReqId;
     ConfigInfo* m_config;
+    
+    TiHxQuoteL1Client* m_l1_client;
+
     CTORATstpLev2MdApi *m_multicast_api;
     LoginStatus* m_multicast_status;
     CTORATstpLev2MdApi *m_sh_api;
@@ -51,6 +58,9 @@ public:
     TiHxQuoteClient(std::string configPath, TiQuoteCallback* userCb);
     ~TiHxQuoteClient();
 
+
+
+public:
     virtual void OnFrontConnected();
 
     virtual void OnRspUserLogin(
@@ -93,4 +103,3 @@ public:
 };
 
 #endif
-

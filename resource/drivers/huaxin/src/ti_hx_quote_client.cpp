@@ -13,6 +13,8 @@ TiHxQuoteClient::TiHxQuoteClient(std::string configPath, TiQuoteCallback* userCb
 {
     m_config = NULL;
 
+    m_l1_client = NULL;
+
     m_multicast_api = NULL;
     m_multicast_status = NULL;
 
@@ -167,7 +169,7 @@ void TiHxQuoteClient::OnRspUserLogin(
         m_cb->OnTradingDayRtn(m_trading_day, ex_str);
     }
 
-    LOG(INFO) << "[OnRspUserLogin] ErrorID: "<< pRspInfo->ErrorID << " ex_str: " << ex_str << " ErrorMsg: " << pRspInfo->ErrorMsg;
+    LOG(INFO) << "[OnRspUserLogin] ErrorID: "<< pRspInfo->ErrorID << " ex_str: " << ex_str << " ErrorMsg: " << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg);
 };
 
 void TiHxQuoteClient::OnRspSubMarketData(
@@ -495,6 +497,8 @@ int TiHxQuoteClient::loadConfig(std::string iniFileName){
     _iniFile.load(iniFileName);
 
     m_config = new ConfigInfo();
+    m_config->szL1Host              = string(_iniFile["ti_hx_quote_client"]["l1_host"]);
+
     m_config->szL2ShHost            = string(_iniFile["ti_hx_quote_client"]["l2_sh_host"]);
     m_config->szL2SzHost            = string(_iniFile["ti_hx_quote_client"]["l2_sz_host"]);
 
@@ -506,10 +510,6 @@ int TiHxQuoteClient::loadConfig(std::string iniFileName){
     m_config->szAccount             = string(_iniFile["ti_hx_quote_client"]["account"]);
     m_config->szPass                = string(_iniFile["ti_hx_quote_client"]["pass"]);
 
-    std::cout << "bIsMulticast: " << m_config->bIsMulticast << std::endl;
-    std::cout << "szL2Multicast: " << m_config->szL2Multicast << std::endl;
-    std::cout << "szL2MulticastInterface: " << m_config->szL2MulticastInterface << std::endl;
-    
     if( (m_config->szL2ShHost.empty() && 
         m_config->szL2SzHost.empty()) |
         m_config->szAccount.empty() |
@@ -527,6 +527,13 @@ void TiHxQuoteClient::connect(){
     if(!m_config){
         LOG(INFO) << "[loadConfig] Do not have config info";
         return ;
+    }
+
+    if(!m_config->szL1Host.empty() && !m_l1_client){
+        m_l1_client = new TiHxQuoteL1Client(m_cb,
+            m_config->szL1Host.c_str(),
+            m_config->szProductInfo.c_str(), m_config->szAccount.c_str(), m_config->szPass.c_str());
+        return;
     }
 
     if(m_config->bIsMulticast && !m_multicast_api){
