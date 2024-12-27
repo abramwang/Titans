@@ -1,0 +1,3298 @@
+<html>
+  <head>
+	  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>i5ting_ztree_toc:东方财富证券极速行情系统行情API开发手册</title>
+		<link href="toc/style/github-bf51422f4bb36427d391e4b75a1daa083c2d840e.css" media="all" rel="stylesheet" type="text/css"/>
+		<link href="toc/style/github2-d731afd4f624c99a4b19ad69f3083cd6d02b81d5.css" media="all" rel="stylesheet" type="text/css"/>
+		<link href="toc/css/zTreeStyle/zTreeStyle.css" media="all" rel="stylesheet" type="text/css"/>
+	  <style>
+		pre {
+		    counter-reset: line-numbering;
+		    border: solid 1px #d9d9d9;
+		    border-radius: 0;
+		    background: #fff;
+		    padding: 0;
+		    line-height: 23px;
+		    margin-bottom: 30px;
+		    white-space: pre;
+		    overflow-x: auto;
+		    word-break: inherit;
+		    word-wrap: inherit;
+		}
+
+		pre a::before {
+		  content: counter(line-numbering);
+		  counter-increment: line-numbering;
+		  padding-right: 1em; /* space after numbers */
+		  width: 25px;
+		  text-align: right;
+		  opacity: 0.7;
+		  display: inline-block;
+		  color: #aaa;
+		  background: #eee;
+		  margin-right: 16px;
+		  padding: 2px 10px;
+		  font-size: 13px;
+		  -webkit-touch-callout: none;
+		  -webkit-user-select: none;
+		  -khtml-user-select: none;
+		  -moz-user-select: none;
+		  -ms-user-select: none;
+		  user-select: none;
+		}
+
+		pre a:first-of-type::before {
+		  padding-top: 10px;
+		}
+
+		pre a:last-of-type::before {
+		  padding-bottom: 10px;
+		}
+
+		pre a:only-of-type::before {
+		  padding: 10px;
+		}
+
+		.highlight { background-color: #ffffcc } /* RIGHT */
+		</style>
+  </head>
+  <body>
+	  <div>
+				<div style='width:25%;'>
+						<ul id="tree" class="ztree" style='width:100%'>
+
+						</ul>
+				</div>
+        <div id='readme' style='width:70%;margin-left:20%;'>
+          	<article class='markdown-body'>
+            	<font size="6"><strong>东方财富证券极速行情系统行情API开发手册(Ver2.19.0)</strong></font>
+
+<font size="6">文档说明</font>
+
+<table><tbody>
+    <tr>
+        <th>日期</th><th>api 版本</th><th>修订摘要</th>
+    </tr>
+    <tr>
+        <td>2023.03.03</td><td>2.16.0</td><td>API初版</td>
+    </tr>
+    <tr>
+        <td>2023.05.22</td><td>2.17.0</td><td>API支持北交所股转相关数据</td>
+    </tr>
+    <tr>
+        <td>2023.07.07</td><td>2.18.0</td><td>API修复接口类型，修复版本号问题</td>
+    </tr>
+    <tr>
+        <td>2024.04.12</td><td>2.19.0</td><td>完善接口说明，Create接口拼写错误修复</td>
+    </tr>
+</table>
+
+<font size="6">前言</font>
+
+<p>本接口规范用以指导开发通过 EMTAPI 对接的方式访问东财快速行情系统，获取指数、现货的相关数据。</p>
+<p>本接口规范描述内容包括可开展的业务、必要的运行指导以及详细的数据交换格式</p>
+<h1 id="emtquoteapi-">EMTQuoteAPI介绍</h1>
+<p>本部分主要介绍极速行情系统的接口，包括：</p>
+<ul>
+<li>EMTQuoteAPI简介。</li>
+<li>EMTQuoteAPI运行模式。</li>
+<li>EMTQuoteAPI编程接口</li>
+</ul>
+<h2 id="emtquoteapi-">EMTQuoteAPI简介</h2>
+<h3 id="-">背景</h3>
+<p>&emsp;&emsp;为实现客户快速交易中获得行情，东方财富证券推出了极速行情系统。客户端系统调用 EMTQuoteAPI 即可完成与极速行情系统的对接，接收到极速行情系统的行情后 EMTQuoteAPI 将回调（Callback）客户端系统。</p>
+<h3 id="-">简介</h3>
+<p>&emsp;&emsp;EMTQuoteAPI是一个基于C++的类库，通过使用和扩展类库提供的接口来实现全部的行情功能，支持指数、现货快照相关数据。支持静态数据，最新快照，最新价等数据。</p>
+<p>&emsp;&emsp;该类库包含以下文件：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">文件路径</th>
+<th style="text-align:left">文件名</th>
+<th style="text-align:left">文件描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">demo</td>
+<td style="text-align:left">CMakeLists.txt</td>
+<td style="text-align:left">示例编译文件</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">config.ini</td>
+<td style="text-align:left">配置文件</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">Main.cpp</td>
+<td style="text-align:left">示例主函数</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">my_quote_spi.cpp</td>
+<td style="text-align:left">示例接口方法封装</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">my_quote_spi.h</td>
+<td style="text-align:left">示例接口方法头文件</td>
+</tr>
+<tr>
+<td style="text-align:left">doc</td>
+<td style="text-align:left">API开发手册</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">include</td>
+<td style="text-align:left">emt_api_data_type.h</td>
+<td style="text-align:left">定义兼容数据基本类型</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">quote_api.h</td>
+<td style="text-align:left">定义行情相关接口</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">emt_quote_struct.h</td>
+<td style="text-align:left">定义L1行情相关数据结构</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">sze_hpf_define.h</td>
+<td style="text-align:left">定义L2 深市相关数据结构（L1用户暂不支持使用）</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">sse_hpf_define.h</td>
+<td style="text-align:left">定义L2 沪市相关数据结构（L1用户暂不支持使用）</td>
+</tr>
+<tr>
+<td style="text-align:left">lib/windows/x64</td>
+<td style="text-align:left">emt_quote_api.dll</td>
+<td style="text-align:left">Windows行情接口动态链接库</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">emt_quote_api.lib</td>
+<td style="text-align:left">Windows行情接口导入库文件</td>
+</tr>
+<tr>
+<td style="text-align:left">linux</td>
+<td style="text-align:left">libemt_quote_api.so</td>
+<td style="text-align:left">Linux行情接口动态链接库</td>
+</tr>
+</tbody>
+</table>
+<p>&emsp;&emsp;客户系统在开发过程中需注意<font color=red>&quot;当前版本不开放的业务&quot;</font>，同时在每个功能描述中的具体描述。</p>
+<h3 id="-">发行的平台</h3>
+<p>目前发布了以下操作系统平台的版本：</p>
+<ul>
+<li>Intel X86/Windows10：包括.h文件、.dll文件和.lib文件。</li>
+<li>Intel Linux：包括.h文件和.so文件。</li>
+</ul>
+<p>如果需要其他操作系统版本，请联系行情专线。</p>
+<h2 id="-">运行模式</h2>
+<h3 id="-">工作线程</h3>
+<p>​    QuoteApi使用TCP模式接收行情。客户系统应用程序主要有三个线程，一是应用程序主线程，二是数据接收线程，接收上游服务的行情数据；三是数据处理线程，处理API业务消息以及对应的行情数据回调。</p>
+<p>&emsp;&emsp;QuoteSpi提供的接口回调是由EMTQuoteAPI数据处理线程驱动，通过实现SPI中的接口方法，从极速行情系统收取所需数据。</p>
+<p>&emsp;&emsp;如果重载的客户系统的应用程序的某个回调函数阻塞，则等于阻塞了EMTQuoteAPI工作线程，API与极速行情系统的通信会停止，因此通常应该迅速返回。在QuoteSpi派生类的回调函数中，可以利用将数据放入缓冲区或通过Windows的消息机制来实现迅速返回。</p>
+<h3 id="-">运行流程</h3>
+<p>客户系统和极速行情系统的交互过程分为2个阶段：</p>
+<ul>
+<li>初始化阶段。</li>
+<li>功能调用阶段。</li>
+</ul>
+<h4 id="-">初始化阶段</h4>
+<p>&emsp;&emsp;在初始化阶段，客户系统的程序必须完成如下步骤（具体代码请参考开发实例）：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">顺序</th>
+<th style="text-align:left">客户系统</th>
+<th style="text-align:left">调用方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">1</td>
+<td style="text-align:left">创建一个QuoteApi实例</td>
+<td style="text-align:left">QuoteApi::CreateQuoteApi</td>
+</tr>
+<tr>
+<td style="text-align:left">2</td>
+<td style="text-align:left">产生一个事件处理的实例；（步骤1返回）</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">3</td>
+<td style="text-align:left">注册一个事件处理的实例；</td>
+<td style="text-align:left">QuoteApi::RegisterSpi</td>
+</tr>
+<tr>
+<td style="text-align:left">4</td>
+<td style="text-align:left">登录服务</td>
+<td style="text-align:left">QuoteApi::Login</td>
+</tr>
+<tr>
+<td style="text-align:left">5</td>
+<td style="text-align:left">订阅行情流</td>
+<td style="text-align:left">QuoteApi::SubscribeMarketData</td>
+</tr>
+<tr>
+<td style="text-align:left">6</td>
+<td style="text-align:left">设置开发代码</td>
+<td style="text-align:left">相关业务实现及返回处理 QuoteSpi::OnMarketData</td>
+</tr>
+</tbody>
+</table>
+<p>&emsp;&emsp;<font color=red><em>开发代码由我司人员提供，需客户申请。</em></font></p>
+<h4 id="-">功能调用阶段</h4>
+<p>&emsp;&emsp;在功能调用阶段，客户系统可以任意调用行情接口中的请求方法，如SubscribeMarketData；同时提供回调函数以响应回报数据，如OnDepthMarketData；</p>
+<h3 id="-">时序示例</h3>
+<p>&emsp;&emsp;EMTQuoteAPI提供了两个接口，分别为QuoteApi和QuoteSpi。</p>
+<p>&emsp;&emsp;客户系统可以通过QuoteApi发出操作请求，通过继承QuoteSpi并重载回调函数来处理极速行情系统的回复或响应。</p>
+<h4 id="-">查询流程时序</h4>
+<p>&emsp;&emsp;各种查询功能，是通过不同的请求功能方法实现的，但大体流程基本相似。</p>
+<p>&emsp;&emsp;查询多条数据，会分多次返回，返回参数中的 is_last 作为标记是否为最后一条</p>
+<h3 id="-">连接方式</h3>
+<h4 id="-">单账户登录</h4>
+<p>&emsp;&emsp;目前一个QuoteApi的示例，仅第一次成功登录有效。</p>
+<p>&emsp;&emsp;API中登录Login()接口为同步的，返回后，可以视为已经登录成功。</p>
+<p>&emsp;&emsp;API支持断线重连功能，并且支持恢复订阅记录</p>
+<h4 id="demo-">demo示例</h4>
+<pre><code class="lang-cpp">#include &lt;thread&gt;
+#include &lt;iostream&gt;
+
+#include &quot;emt_api_data_type.h&quot;
+#include &quot;inicpp.h&quot;
+#include &quot;quote_api.h&quot;
+#include &quot;my_quote_spi.h&quot;
+
+using namespace EMQ::API;
+
+int main()
+{
+    ini::IniFile cfg;
+    cfg.load(&quot;config.ini&quot;);
+    std::string gateway_ip =cfg[&quot;API&quot;][&quot;gatewayIp&quot;].as&lt;std::string&gt;(); 
+    uint16_t gateway_port =cfg[&quot;API&quot;][&quot;gatewayPort&quot;].as&lt;uint16_t&gt;(); 
+    std::string username =cfg[&quot;API&quot;][&quot;username&quot;].as&lt;std::string&gt;(); 
+    std::string password =cfg[&quot;API&quot;][&quot;password&quot;].as&lt;std::string&gt;(); 
+    uint32_t channel =cfg[&quot;Rebuild&quot;][&quot;chno&quot;].as&lt;uint32_t&gt;(); 
+    uint64_t seq_beg =cfg[&quot;Rebuild&quot;][&quot;begSeq&quot;].as&lt;uint64_t&gt;(); 
+    uint64_t seq_end =cfg[&quot;Rebuild&quot;][&quot;endSeq&quot;].as&lt;uint64_t&gt;(); 
+
+    //创建API实例
+    QuoteApi* api = QuoteApi::CreatQuoteApi(&quot;./logs&quot;, EMQ_LOG_LEVEL::EMQ_LOG_LEVEL_DEBUG, EMQ_LOG_LEVEL::EMQ_LOG_LEVEL_DEBUG);
+
+    //注册自定义实现的spi
+    QuoteSpi* spi = new MyQuoteSpi();
+    api-&gt;RegisterSpi(spi);
+
+    //登陆行情服务器
+    api-&gt;Login(gateway_ip, gateway_port, username, password);
+
+    char* securityCodesSz[] = { (char*)&quot;300059&quot;,(char*)&quot;300033&quot; };
+
+    //订阅数据
+    api-&gt;SubscribeMarketData(securityCodesSz, 2, EMQ_EXCHANGE_SZ);
+
+    //api退出
+    //api-&gt;logout();
+        int num = 0;
+    while (num &lt; 100000000000)
+    {
+        num += 1;
+        // 主线程不停
+        std::this_thread::sleep_for(std::chrono::seconds(3));
+    }
+
+    return 0;
+}
+
+</code></pre>
+<h1 id="api-">API公共接口</h1>
+<h2 id="-">业务支持索引</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">方法</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><a href="#CreateQuoteApi">CreateQuoteApi</a></td>
+<td style="text-align:left">创建一个Quote API接口类实例</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#login">Login</a></td>
+<td style="text-align:left">用户登录请求</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#logout">Logout</a></td>
+<td style="text-align:left">登出请求</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#registerspi">RegisterSpi</a></td>
+<td style="text-align:left">注册回调接口</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#setbuffersize">SetBuffer</a></td>
+<td style="text-align:left">设置连接时的接收缓冲区大小</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#SetThreadAffinity">SetThreadAffinity</a></td>
+<td style="text-align:left">设置系统接收线程和处理线程的cpu id (Windows下无效)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="api-">API接口描述</h2>
+<h3 id="-a-id-createquoteapi-createquoteapi-a-"><a id="CreateQuoteApi">CreateQuoteApi </a></h3>
+<pre><code class="lang-cpp">/**
+ * @brief  创建API接口类实例
+ * 
+ * @param  log_path                   生成日志文件的路径
+ * @param  log_file_level             文件日志的日志级别  
+ * @param  log_console_level          控制台日志的日志级别 0 - trace, 1 - debug, 2 - info, 3 -warn, 4 - error, 5 - FATAL, 6 - OFF 
+ * @return                            EMT API类的实例
+ */
+static QuoteApi* CreateQuoteApi(const char* log_path, EMQ_LOG_LEVEL log_file_level, EMQ_LOG_LEVEL log_console_level);
+</code></pre>
+<h3 id="-a-id-logout-login-a-"><a id="logout">Login</a></h3>
+<pre><code class="lang-cpp">/**
+* @brief  发送登录消息到网关服务器
+* 
+* @attention                          此函数为同步阻塞模式，不需要异步等待登录成功，当函数返回即可进行后续操作，此api只能有一个连接
+* @param  ip                          网关IP地址
+* @param  port                        网关端口号
+* @param  user                        登录用户账号
+* @param  pwd                         登录用户密码
+* @return                             登录是否成功  登录是否成功，&quot;0&quot;表示登录成功，&quot;-1&quot;表示连接服务器出错，&quot;-2&quot;表示登录链接被打断失败，可能存在发送接收消息，或处理消息失败，可以尝试重新登录。&quot;-3&quot;表示登录失败，可能未发送正确的登陆消息格式或者鉴权失败。    
+*/
+virtual int32_t Login(const char* ip, const uint16_t port, const char* user, const char* pwd) = 0;
+
+</code></pre>
+<h3 id="-a-id-logout-logout-a-"><a id="logout">Logout</a></h3>
+<pre><code class="lang-cpp">/**
+ * @brief  发送登出消息到网关服务器，释放资源
+ * 
+ * @attention                         此函数为同步阻塞模式，不需要异步等待登录成功，当函数返回即可进行后续操作
+ */
+virtual void Logout() = 0;
+</code></pre>
+<h3 id="-a-id-registerspi-registerspi-a-"><a id="registerspi">RegisterSpi</a></h3>
+<pre><code class="lang-cpp">/**
+* @brief  注册回调接口类spi实例
+* 
+* @param  quote_spi                   派生自回调接口类的实例，请在登录之前完成设定
+*/
+virtual void RegisterSpi(QuoteSpi* quote_spi) = 0;
+</code></pre>
+<h3 id="-a-id-setbuffersize-setbuffer-a-"><a id="setbuffersize">SetBuffer</a></h3>
+<pre><code class="lang-cpp">/**
+*   设置缓冲区大小
+*   @attention                        设置api内部消息缓存区大小,登录前设置生效
+*   @param buffer_size                缓存区大小，单位MB
+*   @return                           &quot;0&quot;表示设置成功，非&quot;0&quot;表示输入无效启用默认值
+*/
+virtual int32_t SetBuffer(size_t buffer_size) = 0;
+
+</code></pre>
+<h3 id="-a-id-setthreadaffinity-setthreadaffinity-a-"><a id="SetThreadAffinity">SetThreadAffinity</a></h3>
+<pre><code class="lang-cpp">/**
+ * @brief  设置系统线程绑定的cpu id
+ * 
+ * @attention                         此函数可不调用,调用需要在登录前调用。id填写 -1 则操作系统自由分配，不进行绑核。
+ * @param  recv_cpu_no                接收线程绑定cpu id号 例如绑定cpu 0，可以设置0，绑定cpu 2，可以设置2，建议绑定后面的cpu
+ * @param  process_cpu_no             处理线程绑定cpu id号
+ * @return
+ */
+virtual void SetThreadAffinity(int32_t recv_cpu_no = -1,int32_t process_cpu_no = -1) = 0;
+
+</code></pre>
+<h1 id="api-">API业务接口</h1>
+<h2 id="-">业务支持索引</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">方法API</th>
+<th style="text-align:left">回调SPI</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><a href="#subscribeallindexdata">SubscribeAllIndexData</a></td>
+<td style="text-align:left"><a href="#onsubscribeallindexdata">onSubscribeAllIndexData</a><br/><a href="#onindexdata">OnIndexData</a></td>
+<td>订阅全市场指数快照行情</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#unsubscribeallindexdata">UnSubscribeAllIndexData</a></td>
+<td style="text-align:left"><a href="#onunsubscribeallindexdata">onUnSubscribeAllIndexData</a></td>
+<td>取消订阅全市场指数快照行情</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#subscribeindexdata">SubscribeIndexData</a></td>
+<td style="text-align:left"><a href="#onsubindexdata">onSubIndexData</a><br/><a href="#onindexdata">OnIndexData</a></td>
+<td>订阅指数快照行情</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#unsubscribeindexdata">UnSubscribeIndexData</a></td>
+<td style="text-align:left"><a href="#onunsubindexdata">onUnSubIndexData</a></td>
+<td>取消订阅指数快照行情</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#subscribeallmarketdata">SubscribeAllMarketData</a></td>
+<td style="text-align:left"><a href="#onsubscribeallmarketdata">onSubscribeAllMarketData</a><br/><a href="#ondepthmarketdata">OnDepthMarketData</a></td>
+<td>订阅全市场合约快照行情</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#unsubscribeallmarketdata">UnSubscribeAllMarketData</a></td>
+<td style="text-align:left"><a href="#onunsubscribeallmarketdata">onUnSubscribeAllMarketData</a></td>
+<td>退订全市场合约快照行情</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#subscribemarketdata">SubscribeMarketData</a></td>
+<td style="text-align:left"><a href="#onsubmarketdata">onSubMarketData</a><br/><a href="#ondepthmarketdata">OnDepthMarketData</a></td>
+<td>订阅快照行情，包括股票，基金，债券，权证和质押式回购</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#unsubscribemarketdata">UnSubscribeMarketData</a></td>
+<td style="text-align:left"><a href="#onunsubmarketdata">onUnSubMarketData</a></td>
+<td>取消订阅快照行情，包括股票，基金，债券，权证和质押式回购</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#queryalltickers">QueryAllTickers</a></td>
+<td style="text-align:left"><a href="#onqueryalltickers">onQueryAllTickers</a></td>
+<td>获取所有合约的部分静态信息，包括沪深市场所有合约的部分静态信息</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#queryalltickersfullinfo">QueryAllTickersFullInfo</a></td>
+<td style="text-align:left"><a href="#onqueryalltickersfullinfo">OnQueryAllTickersFullInfo</a><br/><a href="#OnQueryHkStaticInfo">OnQueryHkStaticInfo</a><br/><a href="#OnQueryBJGZStaticInfo">OnQueryBJGZStaticInfo</a></td>
+<td>获取所有合约的完整静态信息，包括全市场所有合约的完整静态信息</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#querylatestinfo">QueryLatestInfo</a></td>
+<td style="text-align:left"><a href="#onquerylatestindexdata">OnQueryLatestIndexData</a> <br/><a href="#onquerylatestmarketdata">OnQueryLatestMarketData</a></td>
+<td>获取最新快照信息</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#queryminhistoryinfo">QueryTickersPriceInfo</a></td>
+<td style="text-align:left"><a href="#onquerytickerspriceinfo">onQueryTickersPriceInfo</a></td>
+<td>获取最新价</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#RebuildSzData">RebuildSzData</a></td>
+<td style="text-align:left"><a href="#OnRebuildSzData">OnRebuildSzData</a></td>
+<td>获取重建回补深市逐笔数据（L1用户不提供此功能）</td>
+</tr>
+</tbody>
+</table>
+<h2 id="api-">API接口描述</h2>
+<h3 id="-a-id-subscribeallindexdata-subscribeallindexdata-a-"><a id="subscribeallindexdata">SubscribeAllIndexData</a></h3>
+<pre><code class="lang-cpp">/**
+*   订阅全市场指数快照行情
+*   @attention                      需要与取消订阅全市场指数行情接口配套使用
+*   @param exchange_id              表示当前订阅的市场，EMQ_EXCHANGE_SH表示为上海全市场，EMQ_EXCHANGE_SZ表示为深圳全市场,EMQ_EXCHANGE_SHHK表示为沪市港股通，EMQ_EXCHANGE_SZHK表示为深市港股通，EMQ_EXCHANGE_BJGZK表示北交所股转市场
+*   @return                         订阅全市场指数快照行情接口调用是否成功，&quot;0&quot;表示接口调用成功，非&quot;0&quot;表示接口调用出错
+*/
+virtual int SubscribeAllIndexData(EMQ_EXCHANGE_TYPE exchange_id = EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_UNKNOWN) = 0;
+</code></pre>
+<h3 id="-a-id-unsubscribeallindexdata-unsubscribeallindexdata-a-"><a id="unsubscribeallindexdata">UnSubscribeAllIndexData</a></h3>
+<pre><code class="lang-cpp">/**
+*   取消订阅全市场指数快照行情
+*   @attention                      需要与订阅全市场指数行情接口配套使用
+*   @param exchange_id              表示当前取消订阅的市场，EMQ_EXCHANGE_SH表示为上海全市场，EMQ_EXCHANGE_SZ表示为深圳全市场,EMQ_EXCHANGE_SHHK表示为沪市港股通，EMQ_EXCHANGE_SZHK表示为深市港股通，EMQ_EXCHANGE_BJGZK表示北交所股转市场
+*   @return                         取消订阅全市场指数快照行情接口调用是否成功，&quot;0&quot;表示接口调用成功，非&quot;0&quot;表示接口调用出错
+*/
+virtual int UnSubscribeAllIndexData(EMQ_EXCHANGE_TYPE exchange_id = EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_UNKNOWN) = 0;
+</code></pre>
+<h3 id="-a-id-subscribeindexdata-subscribeindexdata-a-"><a id="subscribeindexdata">SubscribeIndexData</a></h3>
+<pre><code class="lang-cpp">/**
+*   订阅指数快照行情
+*   @attention                      可一次性订阅同一证券交易所的多个指数，无论用户因为何种问题需要重新登录行情服务器，都需要重新订阅
+*   @param tickers                  指数代码数组，注意指数代码必须以&quot;\0&quot;结尾，不包括空格
+*   @param count                    需要订阅行情的指数个数
+*   @param exchange_id              交易所代码，EMQ_EXCHANGE_SH表示为上海全市场，EMQ_EXCHANGE_SZ表示为深圳全市场,EMQ_EXCHANGE_SHHK表示为沪市港股通，EMQ_EXCHANGE_SZHK表示为深市港股通，EMQ_EXCHANGE_BJGZK表示北交所股转市场
+*   @return                         订阅接口调用是否成功，&quot;0&quot;表示接口调用成功，非&quot;0&quot;表示接口调用出错
+*/
+virtual int SubscribeIndexData(char* tickers[], int count, EMQ_EXCHANGE_TYPE exchange_id = EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_UNKNOWN) = 0;
+</code></pre>
+<h3 id="-a-id-unsubscribeindexdata-unsubscribeindexdata-a-"><a id="unsubscribeindexdata">UnSubscribeIndexData</a></h3>
+<pre><code class="lang-cpp">/**
+*   取消订阅指数快照行情
+*   @attention                      可一次性取消订阅同一证券交易所的多个指数，无论用户因为何种问题需要重新登录行情服务器，都需要重新订阅
+*   @param tickers                  指数代码数组，注意指数代码必须以&quot;\0&quot;结尾，不包括空格
+*   @param count                    需要订阅行情的指数个数
+*   @param exchange_id              交易所代码，EMQ_EXCHANGE_SH表示为上海全市场，EMQ_EXCHANGE_SZ表示为深圳全市场,EMQ_EXCHANGE_SHHK表示为沪市港股通，EMQ_EXCHANGE_SZHK表示为深市港股通，EMQ_EXCHANGE_BJGZK表示北交所股转市场
+*   @return                         取消订阅接口调用是否成功，&quot;0&quot;表示接口调用成功，非&quot;0&quot;表示接口调用出错
+*/
+virtual int UnSubscribeIndexData(char* tickers[], int count, EMQ_EXCHANGE_TYPE exchange_id = EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_UNKNOWN) = 0;
+</code></pre>
+<h3 id="-a-id-subscribeallmarketdata-subscribeallmarketdata-a-"><a id="subscribeallmarketdata">SubscribeAllMarketData</a></h3>
+<pre><code class="lang-cpp">/**
+*   订阅全市场合约快照行情
+*   @attention                      需要与全市场退订行情接口配套使用
+*   @param exchange_id              表示当前全订阅的市场，EMQ_EXCHANGE_SH表示为上海全市场，EMQ_EXCHANGE_SZ表示为深圳全市场,EMQ_EXCHANGE_SHHK表示为沪市港股通，EMQ_EXCHANGE_SZHK表示为深市港股通，EMQ_EXCHANGE_BJGZK表示北交所股转市场
+*   @return                         订阅全市场行情接口调用是否成功，&quot;0&quot;表示接口调用成功，非&quot;0&quot;表示接口调用出错
+*/
+virtual int SubscribeAllMarketData(EMQ_EXCHANGE_TYPE exchange_id = EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_UNKNOWN) = 0;
+</code></pre>
+<h3 id="-a-id-unsubscribeallmarketdata-unsubscribeallmarketdata-a-"><a id="unsubscribeallmarketdata">UnSubscribeAllMarketData</a></h3>
+<pre><code class="lang-cpp">/**
+*   退订全市场合约快照行情
+*   @attention                      需要与全市场订阅行情接口配套使用
+*   @param exchange_id              表示当前全订阅的市场，EMQ_EXCHANGE_SH表示为上海全市场，EMQ_EXCHANGE_SZ表示为深圳全市场,EMQ_EXCHANGE_SHHK表示为沪市港股通，EMQ_EXCHANGE_SZHK表示为深市港股通，EMQ_EXCHANGE_BJGZK表示北交所股转市场
+*   @return                         退订全市场行情接口调用是否成功，&quot;0&quot;表示接口调用成功，非&quot;0&quot;表示接口调用出错
+*/
+virtual int UnSubscribeAllMarketData(EMQ_EXCHANGE_TYPE exchange_id = EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_UNKNOWN) = 0;
+</code></pre>
+<h3 id="-a-id-subscribemarketdata-subscribemarketdata-a-"><a id="subscribemarketdata">SubscribeMarketData</a></h3>
+<pre><code class="lang-cpp">/**
+*   订阅快照行情，包括股票，基金，债券，权证和质押式回购,沪深港股通
+*   @attention                      可一次性订阅同一证券交易所的多个合约，无论用户因为何种问题需要重新登录行情服务器，都需要重新订阅
+*   @param tickers                  合约代码数组，注意合约代码必须以&quot;\0&quot;结尾，不包括空格
+*   @param count                    需要订阅行情的合约个数
+*   @param exchange_id              交易所代码，EMQ_EXCHANGE_SH表示为上海全市场，EMQ_EXCHANGE_SZ表示为深圳全市场,EMQ_EXCHANGE_SHHK表示为沪市港股通，EMQ_EXCHANGE_SZHK表示为深市港股通，EMQ_EXCHANGE_BJGZK表示北交所股转市场
+*   @return                         订阅接口调用是否成功，&quot;0&quot;表示接口调用成功，非&quot;0&quot;表示接口调用出错
+*/
+virtual int SubscribeMarketData(char* tickers[], int count, EMQ_EXCHANGE_TYPE exchange_id = EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_UNKNOWN) = 0;
+</code></pre>
+<h3 id="-a-id-unsubscribemarketdata-unsubscribemarketdata-a-"><a id="unsubscribemarketdata">UnSubscribeMarketData</a></h3>
+<pre><code class="lang-cpp">/**
+*   取消订阅快照行情，包括股票，基金，债券，权证和质押式回购，沪深港股通
+*   @attention                      可一次性取消订阅同一证券交易所的多个合约，无论用户因为何种问题需要重新登录行情服务器，都需要重新订阅
+*   @param tickers                  合约代码数组，注意合约代码必须以&quot;\0&quot;结尾，不包括空格
+*   @param count                    需要订阅行情的合约个数
+*   @param exchange_id              交易所代码，EMQ_EXCHANGE_SH表示为上海全市场，EMQ_EXCHANGE_SZ表示为深圳全市场,EMQ_EXCHANGE_SHHK表示为沪市港股通，EMQ_EXCHANGE_SZHK表示为深市港股通，EMQ_EXCHANGE_BJGZK表示北交所股转市场
+*   @return                         取消订阅接口调用是否成功，&quot;0&quot;表示接口调用成功，非&quot;0&quot;表示接口调用出错
+*/
+virtual int UnSubscribeMarketData(char* tickers[], int count, EMQ_EXCHANGE_TYPE exchange_id = EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_UNKNOWN) = 0;
+</code></pre>
+<h3 id="-a-id-queryalltickers-queryalltickers-a-"><a id="queryalltickers">QueryAllTickers</a></h3>
+<pre><code class="lang-cpp">/**
+*   获取所有合约的部分静态信息，包括全市场所有合约的部分静态信息
+*   @param exchange_id              交易所代码，EMQ_EXCHANGE_SH表示为上海全市场，EMQ_EXCHANGE_SZ表示为深圳全市场
+*   @return                         发送查询请求是否成功，&quot;0&quot;表示发送查询请求成功，非&quot;0&quot;表示发送查询请求不成功
+*/
+virtual int QueryAllTickers(EMQ_EXCHANGE_TYPE exchange_id = EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_UNKNOWN) = 0;
+</code></pre>
+<h3 id="-a-id-queryalltickersfullinfo-queryalltickersfullinfo-a-"><a id="queryalltickersfullinfo">QueryAllTickersFullInfo</a></h3>
+<pre><code class="lang-cpp">/**
+*   获取所有合约的完整静态信息，包括全市场所有合约的完整静态信息 
+*   @param exchange_id              交易所代码，EMQ_EXCHANGE_SH表示为上海全市场，EMQ_EXCHANGE_SZ表示为深圳全市场,EMQ_EXCHANGE_SHHK表示为沪市港股通，EMQ_EXCHANGE_SZHK表示为深市港股通，EMQ_EXCHANGE_BJGZK表示北交所股转市场
+*   @return                         发送查询请求是否成功，&quot;0&quot;表示发送查询请求成功，非&quot;0&quot;表示发送查询请求不成功
+*/
+virtual int QueryAllTickersFullInfo(EMQ_EXCHANGE_TYPE exchange_id = EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_UNKNOWN) = 0;
+</code></pre>
+<h3 id="-a-id-querylatestinfo-querylatestinfo-a-"><a id="querylatestinfo">QueryLatestInfo</a></h3>
+<pre><code class="lang-cpp">/**
+*   获取最新快照信息
+*    @param tickers                  合约ID数组，注意合约代码必须以&#39;\0&#39;结尾，不包含空格
+*    @param count                    合约个数，为0表示查询交易所所有合约
+*    @param ticker_type              合约类型
+*   @param exchange_id               交易所代码，EMQ_EXCHANGE_SH表示为上海全市场，EMQ_EXCHANGE_SZ表示为深圳全市场,EMQ_EXCHANGE_SHHK表示为沪市港股通，EMQ_EXCHANGE_SZHK表示为深市港股通，EMQ_EXCHANGE_BJGZK表示北交所股转市场
+*   @return                          发送查询请求是否成功，&quot;0&quot;表示发送查询请求成功，非&quot;0&quot;表示发送查询请求不成功
+*/
+virtual int QueryLatestInfo(char* tickers[], int count, EMQ_TICKER_TYPE ticker_type, EMQ_EXCHANGE_TYPE exchange_id) = 0;
+</code></pre>
+<h3 id="-a-id-querytickerspriceinfo-querytickerspriceinfo-a-"><a id="querytickerspriceinfo">QueryTickersPriceInfo</a></h3>
+<pre><code class="lang-cpp">/**
+* 获取最新价
+* @param tickers                      合约ID数组，注意合约代码必须以&#39;\0&#39;结尾，不包含空格
+* @param count                        合约个数，为0表示查询交易所所有合约
+* @param exchange_id                  交易所代码，EMQ_EXCHANGE_SH表示为上海全市场，EMQ_EXCHANGE_SZ表示为深圳全市场,EMQ_EXCHANGE_SHHK表示为沪市港股通，EMQ_EXCHANGE_SZHK表示为深市港股通，EMQ_EXCHANGE_BJGZK表示北交所股转市场
+* @return                             发送查询请求是否成功，&quot;0&quot;表示发送查询请求成功，非&quot;0&quot;表示发送查询请求不成功
+*/
+virtual int QueryTickersPriceInfo(char* tickers[], int count, EMQ_EXCHANGE_TYPE exchange_id) = 0;
+</code></pre>
+<h3 id="-a-id-rebuildszdata-rebuildszdata-a-"><a id="RebuildSzData">RebuildSzData</a></h3>
+<pre><code class="lang-cpp">/**
+* @brief  查询回补深市逐笔数据
+* 
+* @attention                          此接口对L1用户不提供服务
+* @param  chno                        回补数据通道号
+* @param  beg_seq                     回补数据起始序号
+* @param  end_seq                     回补数据结束序号
+* @param  request_id                  保留字段，填写大于等于0的随机值
+* @return                             请求是否成功 &quot;0&quot;表示请求成功，&quot;-2&quot;表示请求链接被打断失败,发送回补消息失败，可以尝试重新请求 &quot;-3&quot;表示权限校验失败
+*/
+virtual int32_t RebuildSzData(const uint32_t chno, const uint64_t beg_seq, const uint64_t end_seq, const uint64_t request_id) = 0;
+</code></pre>
+<h1 id="spi-">SPI接口</h1>
+<h2 id="-">业务支持索引</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">方法</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><a href="#onerror">OnError</a></td>
+<td style="text-align:left">错误应答</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#onindexdata">OnIndexData</a></td>
+<td style="text-align:left">指数行情通知</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#ondepthmarketdata">OnDepthMarketData</a></td>
+<td style="text-align:left">L1快照行情通知</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#onsubscribeallindexdata">OnSubscribeAllIndexData</a></td>
+<td style="text-align:left">订阅全市场的指数行情应答</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#onunsubscribeallindexdata">OnUnSubscribeAllIndexData</a></td>
+<td style="text-align:left">退订全市场的指数行情应答</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#onsubindexdata">OnSubIndexData</a></td>
+<td style="text-align:left">订阅指数行情应答</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#onunsubindexdata">OnUnSubIndexData</a></td>
+<td style="text-align:left">退订指数行情应答</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#onsubscribeallmarketdata">OnSubscribeAllMarketData</a></td>
+<td style="text-align:left">订阅全市场股票快照行情应答</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#onunsubscribeallmarketdata">OnUnSubscribeAllMarketData</a></td>
+<td style="text-align:left">退订全市场的股票快照行情应答</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#onsubmarketdata">OnSubMarketData</a></td>
+<td style="text-align:left">订阅快照行情应答，包括股票，基金，债券，权证和质押式回购</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#onunsubmarketdata">OnUnSubMarketData</a></td>
+<td style="text-align:left">退订快照行情应答，包括股票，基金，债券，权证和质押式回购</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#onqueryalltickers">OnQueryAllTickers</a></td>
+<td style="text-align:left">查询全市场合约部分静态信息的应答</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#onqueryalltickersfullinfo">OnQueryAllTickersFullInfo</a></td>
+<td style="text-align:left">查询全市场合约完整静态信息的应答</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#onquerylatestindexdata">OnQueryLatestIndexData</a></td>
+<td style="text-align:left">查询合约最新指数的应答</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#onquerylatestmarketdata">OnQueryLatestMarketData</a></td>
+<td style="text-align:left">查询合约最新现货快照的应答</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#onquerytickerspriceinfo">OnQueryTickersPriceInfo</a></td>
+<td style="text-align:left">查询最新价的应答</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#OnQueryHkStaticInfo">OnQueryHkStaticInfo</a></td>
+<td style="text-align:left">查询港股基础静态信息响应</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#OnQueryBJGZStaticInfo">OnQueryBJGZStaticInfo</a></td>
+<td style="text-align:left">查询股转基础静态信息响应</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#OnRebuildSzData">OnRebuildSzData</a></td>
+<td style="text-align:left">查询重建回补深市逐笔数据应答</td>
+</tr>
+</tbody>
+</table>
+<h2 id="spi-">SPI接口描述</h2>
+<h3 id="-a-id-onerror-onerror-a-"><a id="onerror">OnError</a></h3>
+<pre><code class="lang-cpp">/**
+ *   错误应答
+ *   @attention                    此函数只有在服务器发生错误时才会调用，一般无需用户处理
+ *   @param error_info             当服务器响应发生错误时的具体错误内容
+ */
+virtual void OnError(const EMTRspInfoStruct* error_info) {};
+</code></pre>
+<h3 id="-a-id-onheartbeat-onheartbeat-a-"><a id="onheartbeat">OnHeartBeat</a></h3>
+<pre><code class="lang-cpp">/**
+*   心跳应答
+*   @attention                     服务端会向客户端定时发送心跳消息，来检测客户端是否在线
+*   @return                        该函数返回为void
+*/
+virtual void OnHeartBeat() = 0;
+</code></pre>
+<h3 id="-a-id-onindexdata-onindexdata-a-"><a id="onindexdata">OnIndexData</a></h3>
+<pre><code class="lang-cpp">/**
+*   指数行情通知
+*   @attention                    需要快速返回，否则阻塞后续消息，导致延时，当阻塞严重时，会触发断线
+*   @param index_data             指数行情数据，只有指数行情数据相关字段
+*/
+virtual void OnIndexData(EMTIndexDataStruct* index_data) = 0;
+</code></pre>
+<h3 id="-a-id-ondepthmarketdata-ondepthmarketdata-a-"><a id="ondepthmarketdata">OnDepthMarketData</a></h3>
+<pre><code class="lang-cpp">/**
+*   深度行情通知，包含买一卖一队列
+*   @attention                    需要快速返回，否则会堵塞后续消息，当堵塞严重时，会触发断线
+*   @param market_data            行情数据
+*   @param bid1_qty               买一队列数据
+*   @param bid1_count             买一队列的有效委托笔数
+*   @param max_bid1_count         买一队列总委托笔数
+*   @param ask1_qty               卖一队列数据
+*   @param ask1_count             卖一队列的有效委托笔数
+*   @param max_ask1_count         卖一队列总委托笔数
+*/
+virtual void OnDepthMarketData(EMTMarketDataStruct* market_data, int64_t bid1_qty[], int32_t bid1_count, int32_t max_bid1_count, int64_t ask1_qty[], int32_t ask1_count, int32_t max_ask1_count) = 0;
+</code></pre>
+<h3 id="-a-id-onsubscribeallindexdata-onsubscribeallindexdata-a-"><a id="onsubscribeallindexdata">OnSubscribeAllIndexData</a></h3>
+<pre><code class="lang-cpp">/**
+*   订阅全市场的指数行情应答
+*   @attention                    需要快速返回
+*   @param exchange_id            表示当前全部订阅的市场，EMQ_EXCHANGE_SH表示为上海全市场，EMQ_EXCHANGE_SZ表示为深圳全市场,EMQ_EXCHANGE_SHHK表示为沪市港股通，EMQ_EXCHANGE_SZHK表示为深市港股通，EMQ_EXCHANGE_BJGZK表示北交所股转市场
+*    @param error_info            订阅合约时发生错误时返回的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+*/
+virtual void OnSubscribeAllIndexData(EMQ_EXCHANGE_TYPE exchange_id, EMTRspInfoStruct* error_info) = 0;
+</code></pre>
+<h3 id="-a-id-onunsubscribeallindexdata-onunsubscribeallindexdata-a-"><a id="onunsubscribeallindexdata">OnUnSubscribeAllIndexData</a></h3>
+<pre><code class="lang-cpp">/**
+*   退订全市场的指数行情应答
+*   @attention                    需要快速返回
+*   @param exchange_id            表示当前全部退订的市场，EMQ_EXCHANGE_SH表示为上海全市场，EMQ_EXCHANGE_SZ表示为深圳全市场,EMQ_EXCHANGE_SHHK表示为沪市港股通，EMQ_EXCHANGE_SZHK表示为深市港股通，EMQ_EXCHANGE_BJGZK表示北交所股转市场
+*    @param error_info            取消订阅合约时发生错误时返回的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+*/
+virtual void OnUnSubscribeAllIndexData(EMQ_EXCHANGE_TYPE exchange_id, EMTRspInfoStruct* error_info) = 0;
+</code></pre>
+<h3 id="-a-id-onsubindexdata-onsubindexdata-a-"><a id="onsubindexdata">OnSubIndexData</a></h3>
+<pre><code class="lang-cpp">/**
+*   订阅指数行情应答
+*   @attention                    每条订阅的合约对应一条订阅应答，需要快速返回，否则会阻塞后续消息，当阻塞严重时，会触发断线
+*   @param ticker                 表示当前全阅的市场，EMQ_EXCHANGE_SH表示为上海全市场，EMQ_EXCHANGE_SZ表示为深圳全市场,EMQ_EXCHANGE_SHHK表示为沪市港股通，EMQ_EXCHANGE_SZHK表示为深市港股通，EMQ_EXCHANGE_BJGZK表示北交所股转市场
+*   @param error_info             订阅的合约编号代码
+*    @param is_last               是否此次订阅的最后一个应答，当为最后一个的时候为true，如果为false，表示还有其他后续消息响应
+*/
+virtual void OnSubIndexData(EMTSpecificTickerStruct* ticker, EMTRspInfoStruct* error_info, bool is_last) = 0;
+</code></pre>
+<h3 id="-a-id-onunsubindexdata-onunsubindexdata-a-"><a id="onunsubindexdata">OnUnSubIndexData</a></h3>
+<pre><code class="lang-cpp">/**
+*   退订指数行情应答
+*   @attention                    每条订阅的合约对应一条退订应答，需要快速返回，否则会阻塞后续消息，当阻塞严重时，会触发断线
+*   @param ticker                 订阅的合约编号代码，EMQ_EXCHANGE_SH表示为上海全市场，EMQ_EXCHANGE_SZ表示为深圳全市场,EMQ_EXCHANGE_SHHK表示为沪市港股通，EMQ_EXCHANGE_SZHK表示为深市港股通，EMQ_EXCHANGE_BJGZK表示北交所股转市场
+*   @param error_info             取消订阅合约发生错误时的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+*    @param is_last               是否此次取消订阅的最后一个应答，当为最后一个的时候为true，如果为false，表示还有其他后续消息响应
+*/
+virtual void OnUnSubIndexData(EMTSpecificTickerStruct* ticker, EMTRspInfoStruct* error_info, bool is_last) = 0;
+</code></pre>
+<h3 id="-a-id-onsubscribeallmarketdata-onsubscribeallmarketdata-a-"><a id="onsubscribeallmarketdata">OnSubscribeAllMarketData</a></h3>
+<pre><code class="lang-cpp">/**
+*   订阅全市场股票快照行情应答
+*   @attention                    需要快速返回 
+*   @param exchange_id            表示当前全订阅的市场，EMQ_EXCHANGE_SH表示为上海全市场，EMQ_EXCHANGE_SZ表示为深圳全市场,EMQ_EXCHANGE_SHHK表示为沪市港股通，EMQ_EXCHANGE_SZHK表示为深市港股通，EMQ_EXCHANGE_BJGZK表示北交所股转市场
+*    @param error_info            当error_info为空，或者error_info.error_id为0时，表明没有错误
+*/
+virtual void OnSubscribeAllMarketData(EMQ_EXCHANGE_TYPE exchange_id, EMTRspInfoStruct* error_info) = 0;
+</code></pre>
+<h3 id="-a-id-onunsubscribeallmarketdata-onunsubscribeallmarketdata-a-"><a id="onunsubscribeallmarketdata">OnUnSubscribeAllMarketData</a></h3>
+<pre><code class="lang-cpp">/**
+*   退订全市场的股票快照行情应答
+*   @attention                    需要快速返回
+*   @param exchange_id            表示当前全退订的市场，EMQ_EXCHANGE_SH表示为上海全市场，EMQ_EXCHANGE_SZ表示为深圳全市场,EMQ_EXCHANGE_SHHK表示为沪市港股通，EMQ_EXCHANGE_SZHK表示为深市港股通，EMQ_EXCHANGE_BJGZK表示北交所股转市场
+*    @param error_info            取消订阅合约时发生错误时返回的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+*/
+virtual void OnUnSubscribeAllMarketData(EMQ_EXCHANGE_TYPE exchange_id, EMTRspInfoStruct* error_info) = 0;
+</code></pre>
+<h3 id="-a-id-onsubmarketdata-onsubmarketdata-a-"><a id="onsubmarketdata">OnSubMarketData</a></h3>
+<pre><code class="lang-cpp">/**
+*   订阅快照行情应答，包括股票，基金，债券，权证和质押式回购 沪市港股通 深市港股通，股转数据
+*   @attention                    每条订阅的合约对应一条订阅应答，需要快速返回，否则会阻塞后续消息，当阻塞严重时，会触发断线
+*   @param ticker                 表示当前全阅的市场，EMQ_EXCHANGE_SH表示为上海全市场，EMQ_EXCHANGE_SZ表示为深圳全市场,EMQ_EXCHANGE_SHHK表示为沪市港股通，EMQ_EXCHANGE_SZHK表示为深市港股通，EMQ_EXCHANGE_BJGZK表示北交所股转市场
+*   @param error_info             订阅合约时发生错误时返回的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+*    @param is_last               是否此次订阅的最后一个应答，当为最后一个的时候为true，如果为false，表示还有其他后续消息响应
+*/
+virtual void OnSubMarketData(EMTSpecificTickerStruct* ticker, EMTRspInfoStruct* error_info, bool is_last) = 0;
+</code></pre>
+<h3 id="-a-id-onunsubmarketdata-onunsubmarketdata-a-"><a id="onunsubmarketdata">OnUnSubMarketData</a></h3>
+<pre><code class="lang-cpp">/**
+*   退订快照行情应答，包括股票，基金，债券，权证和质押式回购 沪市港股通 深市港股通
+*   @attention                    每条订阅的合约对应一条订阅应答，需要快速返回，否则会阻塞后续消息，当阻塞严重时，会触发断线
+*   @param ticker                 订阅的合约编号代码
+*   @param error_info             取消订阅合约发生错误时的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+*    @param is_last               是否此次取消订阅的最后一个应答，当为最后一个的时候为true，如果为false，表示还有其他后续消息响应
+*/
+virtual void OnUnSubMarketData(EMTSpecificTickerStruct* ticker, EMTRspInfoStruct* error_info, bool is_last) = 0;
+</code></pre>
+<h3 id="-a-id-onqueryalltickers-onqueryalltickers-a-"><a id="onqueryalltickers">OnQueryAllTickers</a></h3>
+<pre><code class="lang-cpp">/**
+*   查询全市场合约部分静态信息的应答
+*   @attention                    需要使用合约部分静态信息结构体EMTQuoteStaticInfo，用户自行传入一个空的结构体
+*   @param qsi                    合约部分静态信息结构体
+*   @param error_info             请求发生错误时的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+*   @param is_last                是否此次请求的最后一个应答，当为最后一个的时候为true，如果为false，表示还有其他后续消息响应
+*   @return                       该函数返回为void
+*/
+virtual void OnQueryAllTickers(EMTQuoteStaticInfo* qsi, EMTRspInfoStruct* error_info, bool is_last) = 0;
+</code></pre>
+<h3 id="-a-id-onqueryalltickersfullinfo-onqueryalltickersfullinfo-a-"><a id="onqueryalltickersfullinfo">OnQueryAllTickersFullInfo</a></h3>
+<pre><code class="lang-cpp">/**
+*   查询全市场合约完整静态信息的应答
+*   @attention                    需要使用合约完整静态信息结构体EMTQutoFullInfo，用户自行传入一个空的结构体
+*   @param qfi                    合约完整静态信息结构体
+*   @param error_info             请求发生错误时的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+*   @param is_last                是否此次请求的最后一个应答，当为最后一个的时候为true，如果为false，表示还有其他后续消息响应
+*   @return                       该函数返回为void
+*/
+virtual void OnQueryAllTickersFullInfo(EMTQuoteFullInfo* qfi, EMTRspInfoStruct* error_info, bool is_last) = 0;
+</code></pre>
+<h3 id="-a-id-onquerylatestindexdata-onquerylatestindexdata-a-"><a id="onquerylatestindexdata">OnQueryLatestIndexData</a></h3>
+<pre><code class="lang-cpp">/**
+*   查询合约最新指数的应答
+*   @attention                    需要使用最新数据结构体EMTIndexDataStruct
+*   @param index_data             最新指数数据
+*   @param error_info             请求发生错误时的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+*   @param is_last                是否此次请求的最后一个应答，当为最后一个的时候为true，如果为false，表示还有其他后续消息响应
+*   @return                       该函数返回为void
+*/
+virtual void OnQueryLatestIndexData(EMTIndexDataStruct* index_data, EMTRspInfoStruct* error_info, bool is_last) = 0;
+</code></pre>
+<h3 id="-a-id-onquerylatestmarketdata-onquerylatestmarketdata-a-"><a id="onquerylatestmarketdata">OnQueryLatestMarketData</a></h3>
+<pre><code class="lang-cpp">/**
+*   查询合约最新现货快照的应答
+*   @attention                    需要使用最新数据结构体EMTMarketDataStruct
+*   @param market_data            最新现货快照数据
+*   @param error_info             请求发生错误时的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+*   @param is_last                是否此次请求的最后一个应答，当为最后一个的时候为true，如果为false，表示还有其他后续消息响应
+*   @return                       该函数返回为void
+*/
+virtual void OnQueryLatestMarketData(EMTMarketDataStruct* market_data, EMTRspInfoStruct* error_info, bool is_last) = 0;
+</code></pre>
+<h3 id="-a-id-onquerytickerspriceinfo-onquerytickerspriceinfo-a-"><a id="onquerytickerspriceinfo">OnQueryTickersPriceInfo</a></h3>
+<pre><code class="lang-cpp">/**
+* 查询最新价
+* @attention        
+* @param price_info               价格信息
+* @param error_info               请求发生错误时的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+* @param is_last                  是否此次请求的最后一个应答，当为最后一个的时候为true，如果为false，表示还有其他后续消息响应
+* @return                         该函数返回为void
+*/
+virtual void OnQueryTickersPriceInfo(EMTTickerPriceInfo* price_info, EMTRspInfoStruct* error_info, bool is_last) = 0;
+</code></pre>
+<h3 id="-a-id-onqueryhkstaticinfo-onqueryhkstaticinfo-a-"><a id="OnQueryHkStaticInfo">OnQueryHkStaticInfo</a></h3>
+<pre><code class="lang-cpp">/**
+* @brief  查询港股静态信息
+* @attention                     需要使用港股静态信息结构体EMTHKStaticInfo                    
+* @param  static_info            港股静态信息数据
+* @param  error_info             订阅合约发生错误时的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+* @param  is_last                是否此次退订的最后一个应答，当为最后一个的时候为true，如果为false，表示还有其他后续消息响应
+*/
+virtual void OnQueryHkStaticInfo(EMTHKStaticInfo* static_info, EMTRspInfoStruct* error_info, bool is_last) {};
+</code></pre>
+<h3 id="-a-id-onquerybjgzstaticinfo-onquerybjgzstaticinfo-a-"><a id="OnQueryBJGZStaticInfo">OnQueryBJGZStaticInfo</a></h3>
+<pre><code class="lang-cpp">/**
+* @brief  查询股转静态信息
+* @attention                     需要使用港股静态信息结构体EMTBJGZStaticInfo
+* @param  static_info            港股静态信息数据
+* @param  error_info             订阅合约发生错误时的错误信息，当error_info为空，或者error_info.error_id为0时，表明没有错误
+* @param  is_last                是否此次退订的最后一个应答，当为最后一个的时候为true，如果为false，表示还有其他后续消息响应
+*/
+virtual void OnQueryBJGZStaticInfo(EMTBJGZStaticInfo* static_info, EMTRspInfoStruct* error_info, bool is_last) {};
+</code></pre>
+<h3 id="-a-id-onrebuildszdata-onrebuildszdata-a-"><a id="OnRebuildSzData">OnRebuildSzData</a></h3>
+<pre><code class="lang-cpp">/**
+ * @brief  查询重建回补深市逐笔数据应答
+ * 
+ * @param  rebuild_data           重建数据响应信息
+ * @param  error_info             错误信息，服务器响应发生错误的具体错误内容
+ * @param  is_last                是否此次查询的最后一个应答，当为最后一个的时候为true，如果为false，表示还有其他后续消息响应
+ */
+virtual void OnRebuildSzData(const EMTRebuildRespData* rebuild_data, const EMTRspInfoStruct* error_info, const bool is_last) {};
+
+</code></pre>
+<h1 id="-">参数结构体</h1>
+<h2 id="-">参数结构体索引</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">方法</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><a href="#emtspecifictickerstruct">EMTSpecificTickerStruct</a></td>
+<td style="text-align:left">指定的合约</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#emtrspinfostruct">EMTRspInfoStruct</a></td>
+<td style="text-align:left">响应信息</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#emtindexdatastruct">EMTIndexDataStruct</a></td>
+<td style="text-align:left">指数行情结构体</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#emtmarketdatafundexdata">EMTMarketDataFundExData</a></td>
+<td style="text-align:left">基金额外数据结构体</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#emtmarketdatabondexdata">EMTMarketDataBondExData</a></td>
+<td style="text-align:left">债券额外数据结构体</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#emtmarketdatawarrantexdata">EMTMarketDataWarrantExData</a></td>
+<td style="text-align:left">权证额外数据</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#emtmarketdataoptionexdata">EMTMarketDataOptionExData</a></td>
+<td style="text-align:left">期权额外数据</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#EMTMarketDataHkExData">EMTMarketDataHkExData</a></td>
+<td style="text-align:left">港股通额外数据</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#EMTMarketDataBJGZExData">EMTMarketDataBJGZExData</a></td>
+<td style="text-align:left">北交所股转额外数据</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#emtmarketdatastruct">EMTMarketDataStruct</a></td>
+<td style="text-align:left">快照行情结构体</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#emtquotestaticinfo">EMTQuoteStaticInfo</a></td>
+<td style="text-align:left">股票行情静态信息</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#emtquotefullinfo">EMTQuoteFullInfo</a></td>
+<td style="text-align:left">股票行情全量静态信息</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#emtmarketdatafullstruct">EMTMarketDataFullStruct</a></td>
+<td style="text-align:left">现货快照</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#EMTHKStaticInfo">EMTHKStaticInfo</a></td>
+<td style="text-align:left">港股基础静态信息</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#EMTBJGZStaticInfo">EMTBJGZStaticInfo</a></td>
+<td style="text-align:left">北交所股转静态信息</td>
+</tr>
+</tbody>
+</table>
+<h2 id="-">参数结构体描述</h2>
+<h3 id="-a-id-emtspecifictickerstruct-emtspecifictickerstruct-a-"><a id="emtspecifictickerstruct">EMTSpecificTickerStruct</a></h3>
+<pre><code class="lang-cpp">/// 指定的合约
+using EMTSpecificTickerStruct = struct _EMTSpecificTickerStruct
+{
+    /// 交易所代码 
+    EMQ_EXCHANGE_TYPE exchange_id;
+    /// 合约代码（不包含交易所信息）例如&quot;600000&quot;，不带空格，以&#39;\0&#39;结尾 
+    char ticker[EMQ_TICKER_LEN];
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">标识</th>
+<th style="text-align:left">类型及长度</th>
+<th style="text-align:left">交易市场</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">exchange_id</td>
+<td style="text-align:left"><a href="#emt_exchange_type">EMQ_EXCHANGE_TYPE</a></td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">交易所代码</td>
+</tr>
+<tr>
+<td style="text-align:left">ticker</td>
+<td style="text-align:left">char[16]</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">合约代码（不包含交易所信息）例如&quot;600000&quot;，不带空格，以&#39;\0&#39;结尾</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-a-id-emtrspinfostruct-emtrspinfostruct-a-"><a id="emtrspinfostruct">EMTRspInfoStruct</a></h3>
+<pre><code class="lang-cpp">using EMTRspInfoStruct = struct _EMTRspInfoStruct
+{
+    /// 错误代码
+    int32_t error_id;
+    /// 错误信息
+    char    error_msg[EMQ_ERR_MSG_LEN];
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">标识</th>
+<th style="text-align:left">类型及长度</th>
+<th style="text-align:left">交易市场</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">error_id</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">错误代码</td>
+</tr>
+<tr>
+<td style="text-align:left">error_msg</td>
+<td style="text-align:left">char[124]</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">错误信息</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-a-id-emtindexdatastruct-emtindexdatastruct-a-"><a id="emtindexdatastruct">EMTIndexDataStruct</a></h3>
+<pre><code class="lang-cpp">/// 指数行情结构体
+using EMTIndexDataStruct = struct _EMTIndexDataStruct
+{
+    /// 交易所代码
+    EMQ_EXCHANGE_TYPE exchange_id;
+    /// 合约代码(不包含交易所信息)，不带空格，以&quot;\0&quot;结尾
+    char ticker[EMQ_TICKER_LEN];
+    /// 行情时间，格式为YYYYMMDDHHMMSSssss
+    int64_t data_time;
+    /// 昨日收盘价
+    double pre_close_price;
+    /// 今日开盘价
+    double open_price;
+    /// 最新价
+    double last_price;
+    /// 最高价
+    double high_price;
+    /// 最低价
+    double low_price;
+    /// 数量，为总成交量(单位股，与交易所一致)
+    int64_t qty;
+    /// 成交金额，为总成交金额(单位元，与交易所一致)
+    double turnover;
+
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">标识</th>
+<th style="text-align:left">类型及长度</th>
+<th style="text-align:left">交易市场</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">exchange_id</td>
+<td style="text-align:left"><a href="#emt_exchange_type">EMQ_EXCHANGE_TYPE</a></td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">交易所代码</td>
+</tr>
+<tr>
+<td style="text-align:left">ticker</td>
+<td style="text-align:left">char[16]</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">合约代码(不包含交易所信息)，不带空格，以&quot;\0&quot;结尾</td>
+</tr>
+<tr>
+<td style="text-align:left">data_time</td>
+<td style="text-align:left">int64_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">行情时间，格式为YYYYMMDDHHMMSSssss</td>
+</tr>
+<tr>
+<td style="text-align:left">pre_close_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">昨日收盘价</td>
+</tr>
+<tr>
+<td style="text-align:left">open_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">今日开盘价</td>
+</tr>
+<tr>
+<td style="text-align:left">last_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">最新价</td>
+</tr>
+<tr>
+<td style="text-align:left">high_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">最高价</td>
+</tr>
+<tr>
+<td style="text-align:left">low_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">最低价</td>
+</tr>
+<tr>
+<td style="text-align:left">qty</td>
+<td style="text-align:left">int64_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">数量，为总成交量(单位股，与交易所一致)</td>
+</tr>
+<tr>
+<td style="text-align:left">turnover</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">成交金额，为总成交金额(单位元，与交易所一致)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-a-id-emtmarketdatafundexdata-emtmarketdatafundexdata-a-"><a id="emtmarketdatafundexdata">EMTMarketDataFundExData</a></h3>
+<pre><code class="lang-cpp">/// 基金额外数据结构体
+using EMTMarketDataFundExData = struct _EMTMarketDataFundExData
+{
+    /// 基金实时参考净值(SH,SZ) 
+    double iopv;
+    /// ETF申购笔数(SH)    
+    int32_t etf_buy_count;
+    /// ETF赎回笔数(SH)
+    int32_t etf_sell_count;
+    /// ETF申购数量(SH)    
+    double etf_buy_qty;
+    /// ETF申购金额(SH)
+    double etf_buy_money;
+    /// ETF赎回数量(SH)
+    double etf_sell_qty;
+    /// ETF赎回金额(SH)
+    double etf_sell_money;
+    /// 基金T-1日净值(SZ) 
+    double pre_iopv;
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">标识</th>
+<th style="text-align:left">类型及长度</th>
+<th style="text-align:left">交易市场</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">iopv</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">基金实时参考净值(SH,SZ)</td>
+</tr>
+<tr>
+<td style="text-align:left">etf_buy_count</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">ETF申购笔数(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">etf_sell_count</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">ETF赎回笔数(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">etf_buy_qty</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">ETF申购数量(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">etf_buy_money</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">ETF申购金额(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">etf_sell_qty</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">ETF赎回数量(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">etf_sell_money</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">ETF赎回金额(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">pre_iopv</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SZ</td>
+<td style="text-align:left">基金T-1日净值(SZ)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-a-id-emtmarketdatabondexdata-emtmarketdatabondexdata-a-"><a id="emtmarketdatabondexdata">EMTMarketDataBondExData</a></h3>
+<pre><code class="lang-cpp">/// 债券额外数据结构体
+using EMTMarketDataBondExData = struct _EMTMarketDataBondExData
+{
+    /// 债券加权平均委买价格(SH)
+    double ma_bond_bid_price;
+    /// 债券加权平均委卖价格(SH)
+    double ma_bond_ask_price;
+    /// 债券到期收益率(SH)
+    double yield_to_maturity;
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">标识</th>
+<th style="text-align:left">类型及长度</th>
+<th style="text-align:left">交易市场</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">ma_bond_bid_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">债券加权平均委买价格(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">ma_bond_ask_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">债券加权平均委卖价格(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">yield_to_maturity</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">债券到期收益率(SH)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-a-id-emtmarketdatawarrantexdata-emtmarketdatawarrantexdata-a-"><a id="emtmarketdatawarrantexdata">EMTMarketDataWarrantExData</a></h3>
+<pre><code class="lang-cpp">/// 权证额外数据
+using EMTMarketDataWarrantExData = struct _EMTMarketDataWarrantExData
+{
+    /// 权证执行的总数量(SH)
+    double total_warrant_exec_qty;
+    /// 权证跌停价格（元）(SH)
+    double warrant_lower_price;
+    /// 权证涨停价格（元）(SH)
+    double warrant_upper_price;
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">标识</th>
+<th style="text-align:left">类型及长度</th>
+<th style="text-align:left">交易市场</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">total_warrant_exec_qty</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">权证执行的总数量(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">warrant_lower_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">权证跌停价格（元）(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">warrant_upper_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">权证涨停价格（元）(SH)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-a-id-emtmarketdataoptionexdata-emtmarketdataoptionexdata-a-"><a id="emtmarketdataoptionexdata">EMTMarketDataOptionExData</a></h3>
+<pre><code class="lang-cpp">/// 期权额外数据
+using EMTMarketDataOptionExData = struct _EMTMarketDataOptionExData
+{
+    /// 波段性中断参考价(SH、SZ)
+    double auction_price;
+    /// 波段性中断集合竞价虚拟匹配量(SH、SZ)
+    int64_t auction_qty;
+    /// 最近询价时间(SH)
+    int64_t last_enquiry_time;
+
+    // 期权数据
+    /// 昨日持仓量(张)(目前未填写)
+    int64_t pre_total_long_positon;
+    /// 持仓量(张)(目前未填写)
+    int64_t total_long_positon;
+    /// 昨日结算价(目前未填写)
+    double pre_settl_price;
+    /// 今日结算价(目前未填写)
+    double settl_price;
+};
+
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">标识</th>
+<th style="text-align:left">类型及长度</th>
+<th style="text-align:left">交易市场</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">auction_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH SZ</td>
+<td style="text-align:left">波段性中断参考价</td>
+</tr>
+<tr>
+<td style="text-align:left">auction_qty</td>
+<td style="text-align:left">int64_t</td>
+<td style="text-align:left">SH SZ</td>
+<td style="text-align:left">波段性中断集合竞价虚拟匹配量</td>
+</tr>
+<tr>
+<td style="text-align:left">last_enquiry_time</td>
+<td style="text-align:left">int64_t</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">最近询价时间(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">pre_total_long_positon</td>
+<td style="text-align:left">int64_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">昨日持仓量(张)(目前未填写)</td>
+</tr>
+<tr>
+<td style="text-align:left">total_long_positon</td>
+<td style="text-align:left">int64_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">持仓量(张)(目前未填写)</td>
+</tr>
+<tr>
+<td style="text-align:left">pre_settl_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">昨日结算价(目前未填写)</td>
+</tr>
+<tr>
+<td style="text-align:left">settl_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">今日结算价(目前未填写)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-a-id-emtmarketdatahkexdata-emtmarketdatahkexdata-a-"><a id="EMTMarketDataHkExData">EMTMarketDataHkExData</a></h3>
+<pre><code class="lang-cpp">///港股通额外扩展数据
+using EMTMarketDataHkExData = struct _EMTMarketDataHkExData
+{
+
+    ///参考价
+    double refer_price;
+
+
+    ///按盘价
+    double nominal_price;
+
+    ///买盘上限价
+    double buyside_up_limit_price;
+
+    ///买盘下限价
+    double buyside_low_limit_price;
+
+    ///卖盘上限价
+    double sellside_up_limit_price;
+
+    ///卖盘下限价
+    double sellside_low_limit_price;
+
+    ///冷静期开始时间  HHmmssSSS
+    int32_t complex_event_start_time;
+
+    ///冷静期结束时间 HHmmssSSS
+    int32_t complex_event_end_time;
+
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">标识</th>
+<th style="text-align:left">类型及长度</th>
+<th style="text-align:left">交易市场</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">referPrice</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SHHK/SZHK</td>
+<td style="text-align:left">参考价</td>
+</tr>
+<tr>
+<td style="text-align:left">nominalPrice</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SHHK/SZHK</td>
+<td style="text-align:left">按盘价</td>
+</tr>
+<tr>
+<td style="text-align:left">buySideUpLimitPrice</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SHHK/SZHK</td>
+<td style="text-align:left">买盘上限价</td>
+</tr>
+<tr>
+<td style="text-align:left">buySideLowLimitPrice</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SHHK/SZHK</td>
+<td style="text-align:left">买盘下限价</td>
+</tr>
+<tr>
+<td style="text-align:left">sellSideUpLimitPrice</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SHHK/SZHK</td>
+<td style="text-align:left">卖盘上限价</td>
+</tr>
+<tr>
+<td style="text-align:left">sellSideLowLimitPrice</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SHHK/SZHK</td>
+<td style="text-align:left">卖盘下限价</td>
+</tr>
+<tr>
+<td style="text-align:left">complexEventStartTime</td>
+<td style="text-align:left">int32</td>
+<td style="text-align:left">SHHK/SZHK</td>
+<td style="text-align:left">冷静期开始时间</td>
+</tr>
+<tr>
+<td style="text-align:left">complexEventEndTime</td>
+<td style="text-align:left">int32</td>
+<td style="text-align:left">SHHK/SZHK</td>
+<td style="text-align:left">冷静期结束时间</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-a-id-emtmarketdatabjgzexdata-emtmarketdatabjgzexdata-a-"><a id="EMTMarketDataBJGZExData">EMTMarketDataBJGZExData</a></h3>
+<pre><code class="lang-cpp">/// 北交所股转额外扩展数据
+using EMTMarketDataBJGZExData = struct _EMTMarketDataBJGZExData
+{
+    ///静态市盈率
+    double LYR;
+
+    ///动态市盈率
+    double TTM;
+
+    ///价格升跌一 较昨日收盘价涨跌
+    double price_change1;
+
+    ///价格涨跌二 较上一笔成交涨跌
+    double price_change2;
+
+    ///合约持仓量
+    long open_interest;
+
+    ///第一位 char 交易状态‘N’表示正常状态；‘Y’ 表示首日挂牌/上市；‘D’表示新增股票交易；‘I’表示询价；‘F’表示申购
+    ///第二位 char 证券级别 ‘T’表示对应证券是挂牌/上市公司股票；‘B’表示对应证券是两网公司及退市公司股票；‘O’表示对应证券是仅提供行权功能的期权；‘P’表示对应证券是持有人数存在 200 人限制的证券;(优先股)‘R’表示对应证券是其他类型的业务；
+    ///   ‘F’表示是发行业务;’C’表示对应证券是提供协议转让的可转换公司债券。
+    ///第三位 char 交易类型  ‘T’表示协议交易方式； * ‘M’表示做市交易方式；‘B’表示集合竞价+连续竞价交易方式； * ‘C’表示集合竞价交易方式；‘P’表示发行方式，‘O’表示其他类型。
+    ///第四位 char  * 停牌标志  * ‘F’表示正常交易；‘T’表示停牌，不接受申报；‘H’表示停牌，接受申报。
+    ///第五位 char ‘0’-基础层，‘1’-创新层，‘2’-北交所。对于优先股、可转债、指数等无市场层级的，本字段填空格。(预留)
+    char ticker_relevant_info[8];
+};
+
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">标识</th>
+<th style="text-align:left">类型及长度</th>
+<th style="text-align:left">交易市场</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">LYR;</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">静态市盈率</td>
+</tr>
+<tr>
+<td style="text-align:left">TTM</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">动态市盈率</td>
+</tr>
+<tr>
+<td style="text-align:left">price_change1</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">价格升跌一 较昨日收盘价涨跌</td>
+</tr>
+<tr>
+<td style="text-align:left">price_change2</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">价格升跌二 较上一笔成交涨跌</td>
+</tr>
+<tr>
+<td style="text-align:left">open_interest</td>
+<td style="text-align:left">long</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">合约持仓量</td>
+</tr>
+<tr>
+<td style="text-align:left">ticker_relevant_info</td>
+<td style="text-align:left">char[8]</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">合约相关信息</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-a-id-emtmarketdatastruct-emtmarketdatastruct-a-"><a id="emtmarketdatastruct">EMTMarketDataStruct</a></h3>
+<pre><code class="lang-cpp">/// 快照行情结构体
+using EMTMarketDataStruct = struct _EMTMarketDataStruct
+{
+    /// 交易所代码
+    EMQ_EXCHANGE_TYPE exchange_id;
+    /// 合约代码(不包含交易所信息)，不带空格。以&quot;\0&quot;结尾
+    char ticker[EMQ_TICKER_LEN];
+
+    // 价格
+    /// 最新价
+    double last_price;
+    /// 昨日收盘价
+    double pre_close_price;
+    /// 今开盘价
+    double open_price;
+    /// 最高价
+    double high_price;
+    /// 最低价
+    double low_price;
+    /// 今收盘价(SH)
+    double close_price;
+
+    // 涨跌停
+    /// 涨停价(SZ)
+    double upper_limit_price;
+    /// 跌停价(SZ)
+    double lower_limit_price;
+    /// 行情时间，格式为YYYYMMDDHHMMSSssss
+    int64_t data_time;
+
+    // 量额数据
+    /// 数量，为总成交量(单位股，与交易所一致)
+    int64_t qty;
+    /// 成交金额，为总成交金额(单位元，与交易所一致)
+    double turnover;
+    /// 当日均价=(turnover/qty)    
+    double avg_price;
+
+    // 买卖盘
+    /// 十档申买价
+    double bid[10];
+    /// 十档申卖价
+    double ask[10];
+    /// 十档申买量
+    int64_t bid_qty[10];
+    /// 十档申卖量
+    int64_t ask_qty[10];
+
+    /// 成交笔数
+    int64_t trades_count;
+    /// 当前交易状态说明(SH)
+    char ticker_status[8];
+
+    /// 委托买入总量(SH,SZ)
+    int64_t total_bid_qty;
+    /// 委托卖出总量(SH,SZ)
+    int64_t total_ask_qty;
+    /// 加权平均委买价格(SH,SZ)
+    double ma_bid_price;
+    /// 加权平均委卖价格(SH,SZ)
+    double ma_ask_price;
+
+    /// 买入撤单笔数(SH)
+    int32_t cancel_buy_count;
+    /// 卖出撤单笔数(SH)
+    int32_t cancel_sell_count;
+    /// 买入撤单数量(SH)
+    double cancel_buy_qty;
+    /// 卖出撤单数量(SH)
+    double cancel_sell_qty;
+    /// 买入撤单金额(SH)
+    double cancel_buy_money;
+    /// 卖出撤单金额(SH)
+    double cancel_sell_money;
+    /// 买入总笔数(SH)
+    int64_t total_buy_count;
+    /// 卖出总笔数(SH) 
+    int64_t total_sell_count;
+    /// 买入委托成交最大等待时间(SH)
+    int32_t duration_after_buy;
+    /// 卖出委托成交最大等待时间(SH)
+    int32_t duration_after_sell;
+    /// 买方委托价位数(SH) 
+    int32_t num_bid_orders;
+    /// 卖方委托价位数(SH)
+    int32_t num_ask_orders;
+    ///  额外数据联合体
+    union {
+        /// 债券额外数据
+        EMTMarketDataBondExData bond;
+        /// 基金额外数据
+        EMTMarketDataFundExData fund;
+        /// 权证额外数据
+        EMTMarketDataWarrantExData warrant;
+        /// 期权额外数据
+        EMTMarketDataOptionExData opt;
+        /// 港股额外数据
+        EMTMarketDataHkExData hk;
+        /// 北交所股转额外数据
+        EMTMarketDataBJGZExData bjgz;
+    };
+    /// 证券类别；1：股票,基金,债券,权证,质押式回购；2：期权；决定了union是哪种数据类型
+    EMQ_TICKER_TYPE data_type;
+
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">标识</th>
+<th style="text-align:left">类型及长度</th>
+<th style="text-align:left">交易市场</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">exchange_id</td>
+<td style="text-align:left"><a href="#emt_exchange_type">EMQ_EXCHANGE_TYPE</a></td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">交易所代码</td>
+</tr>
+<tr>
+<td style="text-align:left">ticker</td>
+<td style="text-align:left">char[16]</td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">合约代码(不包含交易所信息)，不带空格。以&quot;\0&quot;结尾</td>
+</tr>
+<tr>
+<td style="text-align:left">last_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">最新价</td>
+</tr>
+<tr>
+<td style="text-align:left">pre_close_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">昨日收盘价</td>
+</tr>
+<tr>
+<td style="text-align:left">open_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">今开盘价</td>
+</tr>
+<tr>
+<td style="text-align:left">high_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">最高价</td>
+</tr>
+<tr>
+<td style="text-align:left">low_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">最低价</td>
+</tr>
+<tr>
+<td style="text-align:left">close_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">今收盘价(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">upper_limit_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SZ</td>
+<td style="text-align:left">涨停价(SZ)</td>
+</tr>
+<tr>
+<td style="text-align:left">lower_limit_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SZ</td>
+<td style="text-align:left">跌停价(SZ)</td>
+</tr>
+<tr>
+<td style="text-align:left">data_time</td>
+<td style="text-align:left">int64_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">行情时间，格式为YYYYMMDDHHMMSSssss</td>
+</tr>
+<tr>
+<td style="text-align:left">qty</td>
+<td style="text-align:left">int64_t</td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">数量，为总成交量(单位股，与交易所一致)</td>
+</tr>
+<tr>
+<td style="text-align:left">turnover</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">成交金额，为总成交金额(单位元，与交易所一致)</td>
+</tr>
+<tr>
+<td style="text-align:left">avg_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">当日均价=(turnover/qty)</td>
+</tr>
+<tr>
+<td style="text-align:left">bid</td>
+<td style="text-align:left">double[10]</td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">十档申买价</td>
+</tr>
+<tr>
+<td style="text-align:left">ask</td>
+<td style="text-align:left">double[10]</td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">十档申卖价</td>
+</tr>
+<tr>
+<td style="text-align:left">bid_qty</td>
+<td style="text-align:left">int64_t[10]</td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">十档申买量</td>
+</tr>
+<tr>
+<td style="text-align:left">ask_qty</td>
+<td style="text-align:left">int64_t[10]</td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">十档申卖量</td>
+</tr>
+<tr>
+<td style="text-align:left">trades_count</td>
+<td style="text-align:left">int64_t</td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">成交笔数</td>
+</tr>
+<tr>
+<td style="text-align:left">ticker_status</td>
+<td style="text-align:left">char[8]</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">当前交易状态说明(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">total_bid_qty</td>
+<td style="text-align:left">int64_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">委托买入总量(SH,SZ)</td>
+</tr>
+<tr>
+<td style="text-align:left">total_ask_qty</td>
+<td style="text-align:left">int64_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">委托卖出总量(SH,SZ)</td>
+</tr>
+<tr>
+<td style="text-align:left">ma_bid_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">加权平均委买价格(SH,SZ)</td>
+</tr>
+<tr>
+<td style="text-align:left">ma_ask_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">加权平均委卖价格(SH,SZ)</td>
+</tr>
+<tr>
+<td style="text-align:left">cancel_buy_count</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">买入撤单笔数(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">cancel_sell_count</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">卖出撤单笔数(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">cancel_buy_qty</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">买入撤单数量(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">cancel_sell_qty</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">卖出撤单数量(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">cancel_buy_money</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">买入撤单金额(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">cancel_sell_money</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">卖出撤单金额(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">total_buy_count</td>
+<td style="text-align:left">int64_t</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">买入总笔数(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">total_sell_count</td>
+<td style="text-align:left">int64_t</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">卖出总笔数(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">duration_after_buy</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">买入委托成交最大等待时间(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">duration_after_sell</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">卖出委托成交最大等待时间(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">num_bid_orders</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">买方委托价位数(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">num_ask_orders</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH</td>
+<td style="text-align:left">卖方委托价位数(SH)</td>
+</tr>
+<tr>
+<td style="text-align:left">bond</td>
+<td style="text-align:left"><a href="#emtmarketdatabondexdata">EMTMarketDataBondExData</a></td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">债券额外数据</td>
+</tr>
+<tr>
+<td style="text-align:left">fund</td>
+<td style="text-align:left"><a href="#emtmarketdatafundexdata">EMTMarketDataFundExData</a></td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">基金额外数据</td>
+</tr>
+<tr>
+<td style="text-align:left">warrant</td>
+<td style="text-align:left"><a href="#emtmarketdatawarrantexdata">EMTMarketDataWarrantExData</a></td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">权证额外数据</td>
+</tr>
+<tr>
+<td style="text-align:left">opt</td>
+<td style="text-align:left"><a href="#emtmarketdataoptionexdata">EMTMarketDataOptionExData</a></td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">期权额外数据</td>
+</tr>
+<tr>
+<td style="text-align:left">hk</td>
+<td style="text-align:left"><a href="#EMTMarketDataHkExData">EMTMarketDataHkExData</a></td>
+<td style="text-align:left">SZHK/SZHK</td>
+<td style="text-align:left">港股通额外数据</td>
+</tr>
+<tr>
+<td style="text-align:left">bjgz</td>
+<td style="text-align:left"><a href="#EMTMarketDataBJGZExData">EMTMarketDataBJGZExData</a></td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">股转额外数据</td>
+</tr>
+<tr>
+<td style="text-align:left">data_type</td>
+<td style="text-align:left"><a href="#emt_ticker_type">EMQ_TICKER_TYPE</a></td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">证券类别：决定了union是哪种数据类型</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-a-id-emtquotestaticinfo-emtquotestaticinfo-a-"><a id="emtquotestaticinfo">EMTQuoteStaticInfo</a></h3>
+<pre><code class="lang-cpp">/// 股票行情静态信息
+using EMTQuoteStaticInfo = struct _EMTQuoteStaticInfo {
+    /// 交易所代码
+    EMQ_EXCHANGE_TYPE exchange_id;
+    /// 合约代码（不包含交易所信息），不带空格，以&#39;\0&#39;结尾
+    char ticker[EMQ_TICKER_LEN];
+    /// 合约名称
+    char ticker_name[EMQ_TICKER_NAME_LEN];
+    /// 合约类型
+    EMQ_TICKER_TYPE ticker_type;
+    /// 昨收盘 
+    double  pre_close_price;
+    /// 涨停板价
+    double  upper_limit_price;
+    /// 跌停板价
+    double  lower_limit_price;
+    /// 最小变动价位
+    double  price_tick;
+    /// 合约最小交易量(买)
+    int32_t  buy_qty_unit;
+    /// 合约最小交易量(卖) 
+    int32_t sell_qty_unit;
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">标识</th>
+<th style="text-align:left">类型及长度</th>
+<th style="text-align:left">交易市场</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">ticker</td>
+<td style="text-align:left">char[16]</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">合约代码（不包含交易所信息），不带空格，以&#39;\0&#39;结尾</td>
+</tr>
+<tr>
+<td style="text-align:left">ticker_name</td>
+<td style="text-align:left">char[64]</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">合约名称</td>
+</tr>
+<tr>
+<td style="text-align:left">ticker_type</td>
+<td style="text-align:left"><a href="#emt_ticker_type">EMQ_TICKER_TYPE</a></td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">合约类型</td>
+</tr>
+<tr>
+<td style="text-align:left">pre_close_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">昨收盘</td>
+</tr>
+<tr>
+<td style="text-align:left">upper_limit_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">涨停板价</td>
+</tr>
+<tr>
+<td style="text-align:left">lower_limit_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">跌停板价</td>
+</tr>
+<tr>
+<td style="text-align:left">price_tick</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">最小变动价位</td>
+</tr>
+<tr>
+<td style="text-align:left">buy_qty_unit</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">合约最小交易量(买)</td>
+</tr>
+<tr>
+<td style="text-align:left">sell_qty_unit</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">合约最小交易量(卖)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-a-id-emtquotefullinfo-emtquotefullinfo-a-"><a id="emtquotefullinfo">EMTQuoteFullInfo</a></h3>
+<pre><code class="lang-cpp">/// 股票行情全量静态信息
+using EMTQuoteFullInfo = struct _EMTQuoteFullInfo {
+    /// 交易所代码 
+    EMQ_EXCHANGE_TYPE exchange_id;
+    /// 证券代码
+    char ticker[EMQ_TICKER_LEN];
+    /// 证券名称
+    char ticker_name[EMQ_TICKER_NAME_LEN];
+    /// 合约详细类型
+    EMQ_SECURITY_TYPE security_type;
+    /// 合约适当性类别
+    EMQ_QUALIFICATION_TYPE ticker_qualification_class;
+    /// 是否注册制(仅适用创业板股票，创新企业股票及存托凭证)
+    bool is_registration;
+    /// 是否具有协议控制架构(仅适用创业板股票，创新企业股票及存托凭证)
+    bool is_VIE;
+    /// 是否尚未盈利(仅适用创业板股票，创新企业股票及存托凭证)
+    bool is_noprofit;
+    /// 是否存在投票权差异(仅适用创业板股票，创新企业股票及存托凭证)
+    bool is_weighted_voting_rights;
+    /// 是否有涨跌幅限制(注：不提供具体幅度，可通过涨跌停价和昨收价来计算幅度)
+    bool is_have_price_limit;
+    /// 涨停价（仅在有涨跌幅限制时有效）
+    double upper_limit_price;
+    /// 跌停价（仅在有涨跌幅限制时有效）
+    double lower_limit_price;
+    /// 昨收价
+    double pre_close_price;
+    /// 价格最小变动价位
+    double price_tick;
+    /// 限价买委托数量上限
+    int32_t bid_qty_upper_limit;
+    /// 限价买委托数量下限
+    int32_t bid_qty_lower_limit;
+    /// 限价买数量单位
+    int32_t bid_qty_unit;
+    /// 限价卖委托数量上限
+    int32_t ask_qty_upper_limit;
+    /// 限价卖委托数量下限
+    int32_t ask_qty_lower_limit;
+    /// 限价卖数量单位
+    int32_t ask_qty_unit;
+    /// 市价买委托数量上限
+    int32_t market_bid_qty_upper_limit;
+    /// 市价买委托数量下限 
+    int32_t market_bid_qty_lower_limit;
+    /// 市价买数量单位
+    int32_t market_bid_qty_unit;
+    /// 市价卖委托数量上限
+    int32_t market_ask_qty_upper_limit;
+    /// 市价卖委托数量下限
+    int32_t market_ask_qty_lower_limit;
+    /// 市价卖数量单位
+    int32_t market_ask_qty_unit;
+    /// 保留字段
+    uint64_t unknown[4];
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">标识</th>
+<th style="text-align:left">类型及长度</th>
+<th style="text-align:left">交易市场</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">ticker</td>
+<td style="text-align:left">char[16]</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">证券代码</td>
+</tr>
+<tr>
+<td style="text-align:left">ticker_name</td>
+<td style="text-align:left">char[64]</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">证券名称</td>
+</tr>
+<tr>
+<td style="text-align:left">security_type</td>
+<td style="text-align:left"><a href="#emt_security_type">EMQ_SECURITY_TYPE</a></td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">合约详细类型</td>
+</tr>
+<tr>
+<td style="text-align:left">ticker_qualification_class</td>
+<td style="text-align:left"><a href="#emt_qualification_type">EMQ_QUALIFICATION_TYPE</a></td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">合约适当性类别</td>
+</tr>
+<tr>
+<td style="text-align:left">is_registration</td>
+<td style="text-align:left">bool</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">是否注册制(仅适用创业板股票，创新企业股票及存托凭证)</td>
+</tr>
+<tr>
+<td style="text-align:left">is_VIE</td>
+<td style="text-align:left">bool</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">是否具有协议控制架构(仅适用创业板股票，创新企业股票及存托凭证)</td>
+</tr>
+<tr>
+<td style="text-align:left">is_noprofit</td>
+<td style="text-align:left">bool</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">是否尚未盈利(仅适用创业板股票，创新企业股票及存托凭证)</td>
+</tr>
+<tr>
+<td style="text-align:left">is_weighted_voting_rights</td>
+<td style="text-align:left">bool</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">是否存在投票权差异(仅适用创业板股票，创新企业股票及存托凭证)</td>
+</tr>
+<tr>
+<td style="text-align:left">is_have_price_limit</td>
+<td style="text-align:left">bool</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">是否有涨跌幅限制(注：不提供具体幅度，可通过涨跌停价和昨收价来计算幅度)</td>
+</tr>
+<tr>
+<td style="text-align:left">upper_limit_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">涨停价（仅在有涨跌幅限制时有效）</td>
+</tr>
+<tr>
+<td style="text-align:left">lower_limit_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">跌停价（仅在有涨跌幅限制时有效）</td>
+</tr>
+<tr>
+<td style="text-align:left">pre_close_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">昨收价</td>
+</tr>
+<tr>
+<td style="text-align:left">price_tick</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">价格最小变动价位</td>
+</tr>
+<tr>
+<td style="text-align:left">bid_qty_upper_limit</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">限价买委托数量上限</td>
+</tr>
+<tr>
+<td style="text-align:left">bid_qty_lower_limit</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">限价买委托数量下限</td>
+</tr>
+<tr>
+<td style="text-align:left">bid_qty_unit</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">限价买数量单位</td>
+</tr>
+<tr>
+<td style="text-align:left">ask_qty_upper_limit</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">限价卖委托数量上限</td>
+</tr>
+<tr>
+<td style="text-align:left">ask_qty_lower_limit</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">限价卖委托数量下限</td>
+</tr>
+<tr>
+<td style="text-align:left">ask_qty_unit</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">限价卖数量单位</td>
+</tr>
+<tr>
+<td style="text-align:left">market_bid_qty_upper_limit</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">市价买委托数量上限</td>
+</tr>
+<tr>
+<td style="text-align:left">market_bid_qty_lower_limit</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">市价买委托数量下限</td>
+</tr>
+<tr>
+<td style="text-align:left">market_bid_qty_unit</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">市价买数量单位</td>
+</tr>
+<tr>
+<td style="text-align:left">market_ask_qty_upper_limit</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">市价卖委托数量上限</td>
+</tr>
+<tr>
+<td style="text-align:left">market_ask_qty_lower_limit</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">市价卖委托数量下限</td>
+</tr>
+<tr>
+<td style="text-align:left">market_ask_qty_unit</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">市价卖数量单位</td>
+</tr>
+<tr>
+<td style="text-align:left">unknown</td>
+<td style="text-align:left">uint64_t[4]</td>
+<td style="text-align:left">SH、SZ</td>
+<td style="text-align:left">保留字段</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-a-id-emtmarketdatafullstruct-emtmarketdatafullstruct-a-"><a id="emtmarketdatafullstruct">EMTMarketDataFullStruct</a></h3>
+<pre><code class="lang-cpp">/// 现货快照
+typedef struct _EMTMarketDataFullStruct
+{
+    /// 现货快照
+    EMTMarketDataStruct marketData;                                        
+    /// 买一档委托总笔数
+    uint32_t max_bid1_count;                                            
+    /// 买一档委托数
+    uint32_t bid1_count;                                                
+    /// 买一档委托详情
+    int64_t bid1_qty[50];                                                
+    /// 卖一档委托总笔数
+    uint32_t max_ask1_count;                                            
+    /// 卖一档委托数
+    uint32_t ask1_count;                                                
+    /// 卖一档委托详情
+    int64_t ask1_qty[50];                                                
+}EMTMarketDataFullStruct;
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">标识</th>
+<th style="text-align:left">类型及长度</th>
+<th style="text-align:left">交易市场</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">marketData</td>
+<td style="text-align:left"><a href="#emtmarketdatastruct">EMTMarketDataStruct</a></td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">现货快照</td>
+</tr>
+<tr>
+<td style="text-align:left">max_bid1_count</td>
+<td style="text-align:left">uint32_t</td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">买一档委托总笔数</td>
+</tr>
+<tr>
+<td style="text-align:left">bid1_count</td>
+<td style="text-align:left">uint32_t</td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">买一档委托数</td>
+</tr>
+<tr>
+<td style="text-align:left">bid1_qty</td>
+<td style="text-align:left">int64_t[50]</td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">买一档委托详情</td>
+</tr>
+<tr>
+<td style="text-align:left">max_ask1_count</td>
+<td style="text-align:left">uint32_t</td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">卖一档委托总笔数</td>
+</tr>
+<tr>
+<td style="text-align:left">ask1_count</td>
+<td style="text-align:left">uint32_t</td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">卖一档委托数</td>
+</tr>
+<tr>
+<td style="text-align:left">ask1_qty</td>
+<td style="text-align:left">int64_t[50]</td>
+<td style="text-align:left">ALL</td>
+<td style="text-align:left">卖一档委托详情</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-a-id-emthkstaticinfo-emthkstaticinfo-a-"><a id="EMTHKStaticInfo">EMTHKStaticInfo</a></h3>
+<pre><code class="lang-cpp">/// 港股静态信息数据
+using EMTHKStaticInfo = struct _EMTHKStaticInfo
+{
+
+    /// 交易所代码
+    EMQ_EXCHANGE_TYPE exchange_type;
+
+    /// 证券类型
+    EMQ_TICKER_TYPE ticker_type;
+
+    /// 合约代码（不包含交易所信息），不带空格，以&#39;\0&#39;结尾
+    char ticker[EMQ_HK_TICKER_LEN];
+
+    /// ISIN 代码
+    char isin_ticker[EMQ_TICKER_LEN];
+
+    /// 英文证券名简称
+    char short_form_ticke_en[EMQ_TICKER_LEN];
+
+    /// 市场种类 
+    //MAIN- 主板 GEM-创业板
+    //ETS-扩充交易证券 NASD-Nasdaq AMX 市场
+    char market_type[4];
+
+    /// 证券类别
+    ///BOND    Bond 债券
+    ///BWRT    Basket Warrant 一篮子权证
+    ///EQTY    Equity  股本
+    ///TRST    Trust  信托
+    ///WRNT    Warrant  权证
+    char symbol_type[4];
+
+
+    /// 辅助证券代码  权证的正股代码
+    char assist_symbol[5];
+
+    /// 货币种类
+    ///港币：HKD； 美元：USD；人民币：CNY；澳币：AUD；加币：CAD ; 日圆：JPY;新加坡币：SGD ; 英镑 : GBP ; 欧元：EUR
+    char currency_type[3];
+
+    /// 货币单位
+    ///货币单位表示前收盘价格字段的单位，当货币单位取值为 0 时，前收盘价格=前收盘价格字段取值×10 的 0 次幂，当货币单位取值为 1 时，前收盘价格=前收盘价格字段取值×10 的 1 次幂，依次类推。
+    char currency_unit;
+
+    /// 面值货币种类 港币：HKD； 美元：USD；人民币：CNY
+    char currency_denomination_type[3];
+
+    /// 保留字段
+    char reserved1[4];
+
+    /// 上市日期 YYYYMMDD
+    char issueDate[8];
+
+    /// 买卖单位
+    ///整手数
+    ///买卖申报数量必须是该字段的整数倍。
+    int32_t round_lot;
+
+    /// 保留字段
+    char reserved2[4];
+
+    /// 面值 股票面值 单位：元
+    double denomination;
+
+    /// 利息  对于债券填写交收日利息 仅针对利息通过 CCASS 系统来结算的债券
+    double interest;
+
+    /// 前收盘价 当日除权（息）后收盘价格
+    double pre_close_price;
+
+    ///  保留字段
+    char reserverd3[16];
+
+    ///第一位有效Y表示停牌 N表示非停牌
+    ///第二位有效 Y表示参与市场波动调节机制 N表示不参与
+    ///第三位有效 Y表示参与收市竞价交易时段 N表示不参与
+    ///第四位有效 Y表示参与开市前时段优化 N表示不参与
+    ///第五至六位有效 价差代码,不足两位左补零。
+    ///第七至八位有效 市场波动调节机制类别
+    char text[64];
+
+    ///中文证券简称 GBK编码
+    char ticker_name_zh[64];
+
+    ///英文证券全称
+    char ticker_name_en[64];
+
+};
+
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">标识</th>
+<th style="text-align:left">类型及长度</th>
+<th style="text-align:left">交易市场</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">exchange_type</td>
+<td style="text-align:left"><a href="#emt_exchange_type">EMQ_EXCHANGE_TYPE</a></td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">交易所代码</td>
+</tr>
+<tr>
+<td style="text-align:left">ticker_type</td>
+<td style="text-align:left"><a href="#emt_ticker_type">EMQ_TICKER_TYPE</a></td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">证券类型</td>
+</tr>
+<tr>
+<td style="text-align:left">ticker</td>
+<td style="text-align:left">char[8];</td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">合约代码（不包含交易所信息），不带空格，以&#39;\0&#39;结尾</td>
+</tr>
+<tr>
+<td style="text-align:left">isin_ticker</td>
+<td style="text-align:left">char[16]</td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">ISIN 代码</td>
+</tr>
+<tr>
+<td style="text-align:left">short_form_ticke_en</td>
+<td style="text-align:left">char[16]</td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">英文证券名简称</td>
+</tr>
+<tr>
+<td style="text-align:left">market_type</td>
+<td style="text-align:left">char[4]</td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">市场种类 MAIN- 主板 GEM-创业板   //ETS-扩充交易证券  NASD-Nasdaq AMX 市场</td>
+</tr>
+<tr>
+<td style="text-align:left">symbol_type</td>
+<td style="text-align:left">char[4]</td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">证券类别<br/>BOND    Bond 债券<br/> BWRT    Basket Warrant 一篮子权证<br/> EQTY    Equity  股本<br/> TRST    Trust  信托<br/> WRNT    Warrant  权证</td>
+</tr>
+<tr>
+<td style="text-align:left">assist_symbol</td>
+<td style="text-align:left">char[5]</td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">辅助证券代码  权证的正股代码</td>
+</tr>
+<tr>
+<td style="text-align:left">currency_type</td>
+<td style="text-align:left">char[3]</td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">货币种类  港币：HKD； 美元：USD；人民币：CNY；澳币：AUD；加币：CAD ; 日圆：JPY;新加坡币：SGD ; 英镑 : GBP ; 欧元：EUR</td>
+</tr>
+<tr>
+<td style="text-align:left">currency_unit</td>
+<td style="text-align:left">char</td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">货币单位</td>
+</tr>
+<tr>
+<td style="text-align:left">currency_denomination_type</td>
+<td style="text-align:left">char[3]</td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">面值货币种类 港币：HKD； 美元：USD；人民币：CNY</td>
+</tr>
+<tr>
+<td style="text-align:left">reserved1</td>
+<td style="text-align:left">char[4]</td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">保留字段</td>
+</tr>
+<tr>
+<td style="text-align:left">issueDate</td>
+<td style="text-align:left">char[8]</td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">上市日期 YYYYMMDD</td>
+</tr>
+<tr>
+<td style="text-align:left">round_lot</td>
+<td style="text-align:left">int32_t</td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">买卖单位   //整手数限价买委托数量上限  //买卖申报数量必须是该字段的整数倍。限价买委托数量下限</td>
+</tr>
+<tr>
+<td style="text-align:left">reserved2</td>
+<td style="text-align:left">char[4]</td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">保留字段</td>
+</tr>
+<tr>
+<td style="text-align:left">denomination</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">面值 股票面值 单位：元</td>
+</tr>
+<tr>
+<td style="text-align:left">interest</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">利息  对于债券填写交收日利息 仅针对利息通过 CCASS 系统来结算的债券</td>
+</tr>
+<tr>
+<td style="text-align:left">pre_close_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">前收盘价 当日除权（息）后收盘价格</td>
+</tr>
+<tr>
+<td style="text-align:left">reserverd3</td>
+<td style="text-align:left">char[16]</td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">保留字段</td>
+</tr>
+<tr>
+<td style="text-align:left">text</td>
+<td style="text-align:left">char[64]</td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">备注</td>
+</tr>
+<tr>
+<td style="text-align:left">ticker_name_zh</td>
+<td style="text-align:left">char[64]</td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">中文证券简称 GBK编码</td>
+</tr>
+<tr>
+<td style="text-align:left">ticker_name_en</td>
+<td style="text-align:left">char[64]</td>
+<td style="text-align:left">SHHK、SZHK</td>
+<td style="text-align:left">英文证券全称</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-a-id-emtbjgzstaticinfo-emtbjgzstaticinfo-a-"><a id="EMTBJGZStaticInfo">EMTBJGZStaticInfo</a></h3>
+<pre><code class="lang-cpp">/// 股转静态信息数据
+using EMTBJGZStaticInfo = struct _EMTBJGZStaticInfo
+{
+    /// 交易所代码
+    EMQ_EXCHANGE_TYPE exchange_type;
+    /// 证券类型
+    EMQ_TICKER_TYPE ticker_type;
+    /// 合约代码（不包含交易所信息），不带空格，以&#39;\0&#39;结尾
+    char ticker[8];
+    ///char[8] 证券简称 GBK
+    char ticker_name[8];
+    /// char[6]  行业种类 
+    /// 对于股票：左边第一位为字母，表示门类；左边第二、三位为数字，表示大类；其他位为空。
+    /// 具体定义请参见中国证监会颁布的《上市公司行业分类指引》
+    char industry_type[6];
+    /// char[2] 货币种类
+    /// ‘00’人民币，‘02’美元
+    char currency_type[2];
+    /// double 面值
+    /// 对于股票，每股面值为 1元；对于可转债，每张面值为 100 元
+    double denomination;
+    /// int64 总股本
+    int64_t total_share_capital;
+    /// int64 非限售股本
+    int64_t nonrestricted_share_capital;
+    /// double 上年每股收益
+      /// 对于股票，存放上年每股利润
+    double last_year_eps;
+    ///  double 今年每股收益  预留
+    double this_year_eps;
+    /// double 经手费率
+    /// 为全国股转公司及北交所本身收取或向投资者代收的交易费用费率，该费率仅为参考，实际费率以相关收费管理规定为准
+    double transaction_rate;
+    /// double 印花税率
+    double stamp_duty_rate;
+    /// double 过户费率
+    double transfer_rate;
+    /// int32 挂牌日期 CCYYMMDD
+    int32_t list_date;
+    /// int32  起息日 CCYYMMDD
+    /// 对于优先股和可转债，该字段存放其起息日；对于要约业务，该字段存放其要约开始日期；对于发行业务，该字段存放其询价开始日期
+    int32_t start_date;
+    /// int32 到期日 CCYYMMDD
+    /// 对于要约业务，该字段存放其要约结束日期；对于发行业务，该字段存放其询价结束日期
+    int32_t end_date;
+    /// int32  每笔限量 申报数量上限
+    int32_t declare_upper_limit;
+    /// int32 买数量单位
+    int32_t buy_quantity_unit;
+    /// int32 卖数量单位
+    int32_t sell_quantity_unit;
+    /// int32 最小申报数量
+    /// 存放除做市商外其他投资者在正常交易时段的每笔最小申报数量
+    int32_t min_declare_count;
+    /// int32 限价参数类型
+    /// 0 表示 限价参数的值为价格；1 为比例数
+    int32_t param_type;
+    /// double 价格挡位
+    /// 申报价格的最小变动单位，例如 0.01 元 RMB。
+    double tick_size;
+    /// double 首笔交易限价参数
+    /// 具体参考北交所接口文档
+    double first_trade_limit_price_param;
+    /// double 后续交易限价参数
+    /// 具体参考北交所接口文档
+    double sub_trade_limit_price_param;
+    /// double 涨停价格
+    /// 为申报有效价格范围的价格上限，如果 =99999.99（币种为人民币）或 99999.999（币种为美元），则相应的证券没有涨幅限制。对于要约业务，存放其收购/回购价格
+    double upper_limit_price;
+    /// double 跌停价格
+    /// 为申报有效价格范围的价格下限 如果=0.000，则相应的证券没有跌幅限制。对于要约业务，存放其收购/回购价格
+    double lower_limit_price;
+    /// double 折合比例
+    /// 对于优先股，该字段存放其票面股息率（%）；对于可转债，该字段存放票面利率（%）。
+    double conv_ratio;
+    /// char 成分股标志 预留
+    char constituent_stock_flag;
+    /// char 交易状态
+    /// ‘N’表示正常状态；‘Y’表示首日挂牌/上市；‘D’表示新增股票交易；‘I’表示询价；‘F’表示申购
+    char trade_status;
+    /// char 证券级别
+    /// ‘T’表示对应证券是挂牌/上市公司股票；‘B’表示对应证券是两网公司及退市公司股票；
+    /// ‘O’表示对应证券是仅提供行权功能的期权；‘P’表示对应证券是持有人数存在 200 人限制的证券;(优先股)
+    /// ‘R’表示对应证券是其他类型的业务；
+    /// ‘F’表示是发行业务;’C’表示对应证券是提供协议转让的可转换公司债券。
+    char symbol_type;
+    ///  char 交易类型
+    /// ‘T’表示协议交易方式；
+    /// ‘M’表示做市交易方式；‘B’表示集合竞价+连续竞价交易方式；
+    /// ‘C’表示集合竞价交易方式；‘P’表示发行方式，‘O’表示其他类型。
+    char trade_type;
+    /// char 停牌标志
+    /// ‘F’表示正常交易；‘T’表示停牌，不接受申报；‘H’表示停牌，接受申报。
+    char suspend_flag;
+    ///  char 除权除息标志 
+    /// ‘N’表示正常状态；‘E’表示除权；‘D’表示除息；‘A’表示除权除息。
+    char ex_divide_flag;
+    /// char 网络投票标志 预留
+    char network_note_flag;
+    /// char 市场层级
+    /// ‘0’-基础层，‘1’-创新层，‘2’-北交所。对于优先股、可转债、指数等无市场层级的，本字段填空格。(预留字段)
+    char market_level;
+    ///  char[2] 交易场所 预留
+    char trading_ring[2];
+    /// char 是否为融资标的 (预留字段)
+    /// ‘Y’-是，‘N’-否
+    char is_financing;
+    /// char 是否为融券标的 (预留字段)
+    /// ‘Y’-是，‘N’-否
+    char is_securities_loan;
+    /// char 是否当日可融资 (预留字段)
+    /// ‘Y’-是，‘N’-否
+    char is_financing_today;
+    /// char 是否当日可融券 (预留字段)
+    /// ‘Y’-是，‘N’-否
+    char is_securities_loan_today;
+    /// 预留字段
+    char reserved[2];
+    /// int32 交易单位 申报数量的单位
+    int32_t trade_unit;
+    /// char[4] 其他业务状态
+    /// 详见北交所NQXX接口文档
+    char other_status[4];
+
+    /// int32 做市商数量
+    /// 对于有做市商提供做市服务的证券揭示其做市商数量，对于没有做市商提供做市服务的证券该字段的值默认为 0
+    int32_t market_maker_count;
+    /// int32
+    /// 记录更新时间 HHMMSS
+    int32_t update_time;
+    /// double 大宗交易价格上限 预留
+    double block_trade_upper_limit_price;
+    /// double 大宗交易价格下限 预留
+    double block_trade_lower_limit_price;
+
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">标识</th>
+<th style="text-align:left">类型及长度</th>
+<th style="text-align:left">交易市场</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">exchange_type</td>
+<td style="text-align:left"><a href="#emt_exchange_type">EMQ_EXCHANGE_TYPE</a></td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">交易所代码</td>
+</tr>
+<tr>
+<td style="text-align:left">ticker_type</td>
+<td style="text-align:left"><a href="#emt_ticker_type">EMQ_TICKER_TYPE</a></td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">证券类型</td>
+</tr>
+<tr>
+<td style="text-align:left">ticker</td>
+<td style="text-align:left">char[8];</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">合约代码（不包含交易所信息），不带空格，以&#39;\0&#39;结尾</td>
+</tr>
+<tr>
+<td style="text-align:left">ticker_name</td>
+<td style="text-align:left">char[8]</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">证券简称 GBK</td>
+</tr>
+<tr>
+<td style="text-align:left">industry_type</td>
+<td style="text-align:left">char[6]</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">行业种类</td>
+</tr>
+<tr>
+<td style="text-align:left">currency_type</td>
+<td style="text-align:left">char[2]</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">货币种类</td>
+</tr>
+<tr>
+<td style="text-align:left">denomination</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">面值</td>
+</tr>
+<tr>
+<td style="text-align:left">total_share_capital</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">总股本</td>
+</tr>
+<tr>
+<td style="text-align:left">nonrestricted_share_capital</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">非限售股本</td>
+</tr>
+<tr>
+<td style="text-align:left">last_year_eps</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">上年每股收益</td>
+</tr>
+<tr>
+<td style="text-align:left">this_year_eps</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">今年每股收益（预留）</td>
+</tr>
+<tr>
+<td style="text-align:left">transaction_rate</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">经手费率</td>
+</tr>
+<tr>
+<td style="text-align:left">stamp_duty_rate</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">印花税率</td>
+</tr>
+<tr>
+<td style="text-align:left">transfer_rate</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">过户费率</td>
+</tr>
+<tr>
+<td style="text-align:left">list_date</td>
+<td style="text-align:left">int32</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">挂牌日期 CCYYMMDD</td>
+</tr>
+<tr>
+<td style="text-align:left">start_date</td>
+<td style="text-align:left">int32</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">起息日 CCYYMMDD</td>
+</tr>
+<tr>
+<td style="text-align:left">end_date</td>
+<td style="text-align:left">int32</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">到期日 CCYYMMDD</td>
+</tr>
+<tr>
+<td style="text-align:left">declare_upper_limit</td>
+<td style="text-align:left">int32</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">每笔限量 申报数量上限</td>
+</tr>
+<tr>
+<td style="text-align:left">buy_quantity_unit</td>
+<td style="text-align:left">int32</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">买数量单位</td>
+</tr>
+<tr>
+<td style="text-align:left">sell_quantity_unit</td>
+<td style="text-align:left">int32</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">卖数量单位</td>
+</tr>
+<tr>
+<td style="text-align:left">min_declare_count</td>
+<td style="text-align:left">int32</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">最小申报数量</td>
+</tr>
+<tr>
+<td style="text-align:left">param_type</td>
+<td style="text-align:left">int32</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">限价参数类型</td>
+</tr>
+<tr>
+<td style="text-align:left">tick_size</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">价格挡位</td>
+</tr>
+<tr>
+<td style="text-align:left">first_trade_limit_price_param</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">首笔交易限价参数</td>
+</tr>
+<tr>
+<td style="text-align:left">sub_trade_limit_price_param</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">后续交易限价参数</td>
+</tr>
+<tr>
+<td style="text-align:left">upper_limit_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">涨停价格</td>
+</tr>
+<tr>
+<td style="text-align:left">lower_limit_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">跌停价格</td>
+</tr>
+<tr>
+<td style="text-align:left">conv_ratio</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">折合比例</td>
+</tr>
+<tr>
+<td style="text-align:left">constituent_stock_flag;</td>
+<td style="text-align:left">char</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">成分股标志（预留）</td>
+</tr>
+<tr>
+<td style="text-align:left">trade_status</td>
+<td style="text-align:left">char</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">交易状态</td>
+</tr>
+<tr>
+<td style="text-align:left">symbol_type</td>
+<td style="text-align:left">char</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">证券类型</td>
+</tr>
+<tr>
+<td style="text-align:left">trade_type</td>
+<td style="text-align:left">char</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">交易类型</td>
+</tr>
+<tr>
+<td style="text-align:left">suspend_flag</td>
+<td style="text-align:left">char</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">停牌标志</td>
+</tr>
+<tr>
+<td style="text-align:left">ex_divide_flag</td>
+<td style="text-align:left">char</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">除息除权标志</td>
+</tr>
+<tr>
+<td style="text-align:left">network_note_flag</td>
+<td style="text-align:left">char</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">网络投票标志 （预留）</td>
+</tr>
+<tr>
+<td style="text-align:left">market_level</td>
+<td style="text-align:left">char</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">市场层级 （预留）</td>
+</tr>
+<tr>
+<td style="text-align:left">trading_ring</td>
+<td style="text-align:left">char[2]</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">交易场所（预留）</td>
+</tr>
+<tr>
+<td style="text-align:left">is_financing</td>
+<td style="text-align:left">char</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">是否为融资标的 (预留)</td>
+</tr>
+<tr>
+<td style="text-align:left">is_securities_loan</td>
+<td style="text-align:left">char</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">是否为融券标的 (预留)</td>
+</tr>
+<tr>
+<td style="text-align:left">is_financing_today</td>
+<td style="text-align:left">char</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">是否当日可融资 (预留)</td>
+</tr>
+<tr>
+<td style="text-align:left">is_securities_loan_today</td>
+<td style="text-align:left">char</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">是否当日可融券 (预留)</td>
+</tr>
+<tr>
+<td style="text-align:left">reserved</td>
+<td style="text-align:left">char[2]</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">预留字段</td>
+</tr>
+<tr>
+<td style="text-align:left">trade_unit</td>
+<td style="text-align:left">int32</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">交易单位</td>
+</tr>
+<tr>
+<td style="text-align:left">other_status</td>
+<td style="text-align:left">char[4]</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">其他业务状态</td>
+</tr>
+<tr>
+<td style="text-align:left">market_maker_count</td>
+<td style="text-align:left">int32</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">做市商数量</td>
+</tr>
+<tr>
+<td style="text-align:left">update_time</td>
+<td style="text-align:left">int32</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">记录更新时间 HHMMSS</td>
+</tr>
+<tr>
+<td style="text-align:left">block_trade_upper_limit_price</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">大宗交易价格上限 （预留）</td>
+</tr>
+<tr>
+<td style="text-align:left">block_trade_lower_limit_price;</td>
+<td style="text-align:left">double</td>
+<td style="text-align:left">BJGZ</td>
+<td style="text-align:left">大宗交易价格下限 （预留）</td>
+</tr>
+</tbody>
+</table>
+<h1 id="-">附录</h1>
+<h2 id="-">字典定义</h2>
+<h3 id="-a-id-emt_ticker_type-emq_ticker_type-a-"><a id="emt_ticker_type">证券类别-EMQ_TICKER_TYPE</a></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">枚举</th>
+<th style="text-align:left">取值</th>
+<th style="text-align:left">定义说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">EMQ_TICKER_TYPE_STOCK</td>
+<td style="text-align:left">0</td>
+<td style="text-align:left">普通股票</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_TICKER_TYPE_INDEX</td>
+<td style="text-align:left">1</td>
+<td style="text-align:left">指数</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_TICKER_TYPE_FUND</td>
+<td style="text-align:left">2</td>
+<td style="text-align:left">基金</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_TICKER_TYPE_BOND</td>
+<td style="text-align:left">3</td>
+<td style="text-align:left">债券</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_TICKER_TYPE_OPTION</td>
+<td style="text-align:left">4</td>
+<td style="text-align:left">期权</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_TICKER_TYPE_TECH_STOCK</td>
+<td style="text-align:left">5</td>
+<td style="text-align:left">科创板股票（上海）</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_TICKER_TYPE_REPURCHASE</td>
+<td style="text-align:left">6</td>
+<td style="text-align:left">质押式回购</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_TICKER_TYPE_WARRANT</td>
+<td style="text-align:left">7</td>
+<td style="text-align:left">权证</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_TICKER_TYPE_HK_STOCK</td>
+<td style="text-align:left">8</td>
+<td style="text-align:left">港股通</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_TICKER_TYPE_BJGZ</td>
+<td style="text-align:left">9</td>
+<td style="text-align:left">北交所股转</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_TICKER_TYPE_UNKNOWN</td>
+<td style="text-align:left">100</td>
+<td style="text-align:left">未知类型</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-a-id-emt_exchange_type-emq_exchange_type-a-"><a id="emt_exchange_type">交易所类型-EMQ_EXCHANGE_TYPE</a></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">枚举</th>
+<th style="text-align:left">取值</th>
+<th style="text-align:left">定义说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">EMQ_EXCHANGE_SH</td>
+<td style="text-align:left">1</td>
+<td style="text-align:left">上证</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_EXCHANGE_SZ</td>
+<td style="text-align:left">2</td>
+<td style="text-align:left">深证</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_EXCHANGE_SHHK</td>
+<td style="text-align:left">3</td>
+<td style="text-align:left">沪市港股通</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_EXCHANGE_SZHK</td>
+<td style="text-align:left">4</td>
+<td style="text-align:left">深市港股通</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_EXCHANGE_BJGZ</td>
+<td style="text-align:left">5</td>
+<td style="text-align:left">北交所股转行情</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_EXCHANGE_UNKNOWN</td>
+<td style="text-align:left">100</td>
+<td style="text-align:left">不存在的交易所类型</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-a-id-emt_qualification_type-emq_qualification_type-a-"><a id="emt_qualification_type">合约适当性类别-EMQ_QUALIFICATION_TYPE</a></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">枚举</th>
+<th style="text-align:left">取值</th>
+<th style="text-align:left">定义说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">EMQ_QUALIFICATION_PUBLIC</td>
+<td style="text-align:left">0</td>
+<td style="text-align:left">公众投资者，合格投资者与机构投资者均可</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_QUALIFICATION_COMMON</td>
+<td style="text-align:left">1</td>
+<td style="text-align:left">仅合格投资者与公众投资者</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_QUALIFICATION_ORGANIZATION</td>
+<td style="text-align:left">2</td>
+<td style="text-align:left">仅限机构投资者</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_QUALIFICATION_UNKNOWN</td>
+<td style="text-align:left">3</td>
+<td style="text-align:left">未知，期权等可能为此种类型</td>
+</tr>
+</tbody>
+</table>
+<h3 id="-a-id-emt_security_type-emq_security_type-a-"><a id="emt_security_type">证券适当性枚举类型-EMQ_SECURITY_TYPE</a></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">枚举</th>
+<th style="text-align:left">取值</th>
+<th style="text-align:left">定义说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_MAIN_BOARD</td>
+<td style="text-align:left">0</td>
+<td style="text-align:left">主板股票</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_SECOND_BOARD</td>
+<td style="text-align:left">1</td>
+<td style="text-align:left">中小板股票</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_STARTUP_BOARD</td>
+<td style="text-align:left">2</td>
+<td style="text-align:left">创业板股票</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_INDEX</td>
+<td style="text-align:left">3</td>
+<td style="text-align:left">指数</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_TECH_BOARD</td>
+<td style="text-align:left">4</td>
+<td style="text-align:left">科创板股票(上海)</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_STATE_BOND</td>
+<td style="text-align:left">5</td>
+<td style="text-align:left">国债</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_ENTERPRICE_BOND</td>
+<td style="text-align:left">6</td>
+<td style="text-align:left">企业债</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_COMPANEY_BOND</td>
+<td style="text-align:left">7</td>
+<td style="text-align:left">公司债</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_CONVERTABLE_BOND</td>
+<td style="text-align:left">8</td>
+<td style="text-align:left">转换债券</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_NATIONAL_BOND_REVERSE_REPO</td>
+<td style="text-align:left">12</td>
+<td style="text-align:left">国债逆回购</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_ETF_SINGLE_MARKET_STOCK</td>
+<td style="text-align:left">14</td>
+<td style="text-align:left">本市场股票</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_ETF_INTER_MARKET_STOCK</td>
+<td style="text-align:left">15</td>
+<td style="text-align:left">跨市场股票</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_ETF_SINGLE_MARKET_BOND</td>
+<td style="text-align:left">17</td>
+<td style="text-align:left">本市场实物债券</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_ETF_GOLD</td>
+<td style="text-align:left">19</td>
+<td style="text-align:left">黄金</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_STRUCTURED_FUND_CHILD</td>
+<td style="text-align:left">24</td>
+<td style="text-align:left">分级基金子基金</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_SZSE_RECREATION_FUND</td>
+<td style="text-align:left">26</td>
+<td style="text-align:left">深交所仅申赎基金</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_STOCK_OPTION</td>
+<td style="text-align:left">29</td>
+<td style="text-align:left">个股期权</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_ETF_OPTION</td>
+<td style="text-align:left">30</td>
+<td style="text-align:left">ETF期权</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_ALLOTMENT</td>
+<td style="text-align:left">100</td>
+<td style="text-align:left">配股</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_MONETARY_FUND_SHCR</td>
+<td style="text-align:left">110</td>
+<td style="text-align:left">上交所申赎型货币基金</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_MONETARY_FUND_SHTR</td>
+<td style="text-align:left">111</td>
+<td style="text-align:left">上交所交易型货币基金</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_MONETARY_FUND_SZ</td>
+<td style="text-align:left">112</td>
+<td style="text-align:left">深交所货币基金</td>
+</tr>
+<tr>
+<td style="text-align:left">EMQ_SECURITY_OTHERS</td>
+<td style="text-align:left">255</td>
+<td style="text-align:left">其他</td>
+</tr>
+</tbody>
+</table>
+
+          	</article>
+        </div>
+		</div>
+  </body>
+</html>
+<script type="text/javascript" src="toc/js/jquery-1.4.4.min.js"></script>
+<script type="text/javascript" src="toc/js/jquery.ztree.all-3.5.min.js"></script>
+<script type="text/javascript" src="toc/js/ztree_toc.js"></script>
+<script type="text/javascript" src="toc_conf.js"></script>
+
+<SCRIPT type="text/javascript" >
+<!--
+$(document).ready(function(){
+    var css_conf = eval(markdown_panel_style);
+    $('#readme').css(css_conf)
+    
+    var conf = eval(jquery_ztree_toc_opts);
+		$('#tree').ztree_toc(conf);
+});
+//-->
+</SCRIPT>

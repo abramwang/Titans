@@ -1,0 +1,3692 @@
+<html>
+  <head>
+	  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>i5ting_ztree_toc:</title>
+		<link href="toc/style/github-bf51422f4bb36427d391e4b75a1daa083c2d840e.css" media="all" rel="stylesheet" type="text/css"/>
+		<link href="toc/style/github2-d731afd4f624c99a4b19ad69f3083cd6d02b81d5.css" media="all" rel="stylesheet" type="text/css"/>
+		<link href="toc/css/zTreeStyle/zTreeStyle.css" media="all" rel="stylesheet" type="text/css"/>
+	  <style>
+		pre {
+		    counter-reset: line-numbering;
+		    border: solid 1px #d9d9d9;
+		    border-radius: 0;
+		    background: #fff;
+		    padding: 0;
+		    line-height: 23px;
+		    margin-bottom: 30px;
+		    white-space: pre;
+		    overflow-x: auto;
+		    word-break: inherit;
+		    word-wrap: inherit;
+		}
+
+		pre a::before {
+		  content: counter(line-numbering);
+		  counter-increment: line-numbering;
+		  padding-right: 1em; /* space after numbers */
+		  width: 25px;
+		  text-align: right;
+		  opacity: 0.7;
+		  display: inline-block;
+		  color: #aaa;
+		  background: #eee;
+		  margin-right: 16px;
+		  padding: 2px 10px;
+		  font-size: 13px;
+		  -webkit-touch-callout: none;
+		  -webkit-user-select: none;
+		  -khtml-user-select: none;
+		  -moz-user-select: none;
+		  -ms-user-select: none;
+		  user-select: none;
+		}
+
+		pre a:first-of-type::before {
+		  padding-top: 10px;
+		}
+
+		pre a:last-of-type::before {
+		  padding-bottom: 10px;
+		}
+
+		pre a:only-of-type::before {
+		  padding: 10px;
+		}
+
+		.highlight { background-color: #ffffcc } /* RIGHT */
+		</style>
+  </head>
+  <body>
+	  <div>
+				<div style='width:25%;'>
+						<ul id="tree" class="ztree" style='width:100%'>
+
+						</ul>
+				</div>
+        <div id='readme' style='width:70%;margin-left:20%;'>
+          	<article class='markdown-body'>
+            	<font size="6"><strong>东方财富证券极速行情系统Lv2行情API开发手册(Ver2.22.0)</strong></font><br>
+
+
+
+<font size="6">文档说明</font>
+
+<p><table><tbody>
+    <tr>
+        <th>日期</th><th>api 版本</th><th>修订摘要</th>
+    </tr>
+    <tr>
+        <td>2024.09.25</td><td>2.22.0</td><td>API初版</td>
+    </tr>
+</table></p>
+<font size="6">前言</font>
+
+<p>本接口规范用以指导开发通过 EMQAPILv2对接的方式访问东财快速行情系统，获取指数、现货的相关数据。</p>
+<p>本接口规范描述内容包括可开展的业务、必要的运行指导以及详细的数据交换格式</p>
+<h1 id="1-emqapilv2-">1. EMQAPILv2介绍</h1>
+<p>本部分主要介绍极速行情系统的接口，包括：</p>
+<ul>
+<li>EMQAPILv2简介。</li>
+<li>EMQAPILv2运行模式。</li>
+<li>EMQAPILv2编程接口</li>
+</ul>
+<h2 id="1-1-emqapilv2-">1.1. EMQAPILv2简介</h2>
+<h3 id="1-1-1-">1.1.1. 背景</h3>
+<p> 为帮助客户实现快速交易并获取实时行情，东方财富证券推出了极速行情系统。客户端系统只需调用 EMQAPILv2，即可与极速行情系统进行对接。在接收到极速行情系统的行情数据后，EMQAPILv2 将主动回调客户端系统。</p>
+<h3 id="1-1-2-">1.1.2. 简介</h3>
+<p>&emsp;&emsp;EMQAPILv2 是一个基于C++的类库，通过使用和扩展类库提供的接口来实现全部的行情功能，支持指数、现货快照相关数据。支持最新快照，逐笔行情等数据。</p>
+<p>&emsp;&emsp;该类库包含以下文件：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">文件路径</th>
+<th style="text-align:left">文件名</th>
+<th style="text-align:left">文件描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">demo</td>
+<td style="text-align:left">CMakeLists.txt</td>
+<td style="text-align:left">示例编译文件</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">src/main.cpp</td>
+<td style="text-align:left">示例主函数</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">src/quote_demo_lv2.cpp</td>
+<td style="text-align:left">示例接口方法封装</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">src/quote_demo_lv2.h</td>
+<td style="text-align:left">示例接口方法头文件</td>
+</tr>
+<tr>
+<td style="text-align:left">doc</td>
+<td style="text-align:left">东方财富证券极速行情系统行情API Lv2开发手册</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">include</td>
+<td style="text-align:left">quote_api_lv2.h</td>
+<td style="text-align:left">定义行情相关接口</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">quote_struct_lv2.h</td>
+<td style="text-align:left">定义L2行情相关数据结构</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">quote_sze_define.h</td>
+<td style="text-align:left">定义L2 深市相关数据结构</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">quote_sse_define.h</td>
+<td style="text-align:left">定义L2 沪市相关数据结构</td>
+</tr>
+<tr>
+<td style="text-align:left">lib</td>
+<td style="text-align:left">libemt_quote_api_lv2.so</td>
+<td style="text-align:left">Linux行情接口动态链接库</td>
+</tr>
+</tbody>
+</table>
+<h3 id="1-1-3-">1.1.3. 发行的平台</h3>
+<p>目前发布了以下操作系统平台的版本：</p>
+<ul>
+<li>Intel Linux：包括.h文件和.so文件。</li>
+</ul>
+<p>如果需要其他操作系统版本，请联系行情专线。</p>
+<h2 id="1-2-">1.2. 运行模式</h2>
+<h3 id="1-2-1-">1.2.1. 工作线程</h3>
+<p>​        EMQAPILv2 使用 UDP 模式接收行情。客户系统应用程序根据配置的行情类别创建多个线程，即应用程序主线程与 n 个数据处理线程（负责接收上游服务的行情数据并处理相应的回调）。</p>
+<p>​        EMQAPILv2 提供的接口回调由数据处理线程驱动。通过实现 SPI 中的接口方法，客户系统能够从极速行情系统接收所需数据。</p>
+<h3 id="1-2-2-">1.2.2. 运行流程</h3>
+<p>客户系统和极速行情系统的交互过程分为2个阶段：</p>
+<ul>
+<li>初始化阶段。</li>
+<li>功能调用阶段。</li>
+</ul>
+<h4 id="1-2-2-1-">1.2.2.1. 初始化阶段</h4>
+<p>&emsp;&emsp;在初始化阶段，客户系统的程序必须完成如下步骤（具体代码请参考开发实例）：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">顺序</th>
+<th style="text-align:left">客户系统</th>
+<th style="text-align:left">调用方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">1</td>
+<td style="text-align:left">创建一个QuoteApi实例</td>
+<td style="text-align:left">QuoteApiLv2::CreateQuoteApiLv2</td>
+</tr>
+<tr>
+<td style="text-align:left">2</td>
+<td style="text-align:left">产生一个事件处理的实例；（步骤1返回）</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">3</td>
+<td style="text-align:left">注册一个事件处理的实例；</td>
+<td style="text-align:left">QuoteApiLv2::RegisterSpi</td>
+</tr>
+<tr>
+<td style="text-align:left">4</td>
+<td style="text-align:left">登录服务</td>
+<td style="text-align:left">QuoteApiLv2::Login</td>
+</tr>
+<tr>
+<td style="text-align:left">5</td>
+<td style="text-align:left">配置需要接收的行情流</td>
+<td style="text-align:left">QuoteApiLv2::SetChannelConfig</td>
+</tr>
+<tr>
+<td style="text-align:left">6</td>
+<td style="text-align:left">启动工作线程</td>
+<td style="text-align:left">QuoteApiLv2::Start()</td>
+</tr>
+<tr>
+<td style="text-align:left">6</td>
+<td style="text-align:left">设置开发代码</td>
+<td style="text-align:left">相关业务回调函数实现</td>
+</tr>
+</tbody>
+</table>
+<p>&emsp;&emsp;<font color=red><em>开发代码由我司人员提供，需客户申请。</em></font></p>
+<h3 id="1-2-3-">1.2.3. 时序示例</h3>
+<p>&emsp;&emsp;EMQAPILv2 提供了两个接口，分别为QuoteApiLv2和QuoteSpiLv2。</p>
+<p>&emsp;&emsp;客户系统可以通过QuoteApiLv2发出操作请求，通过继承QuoteSpiLv2并重载回调函数来处理极速行情系统的回复或响应。</p>
+<h3 id="1-2-4-">1.2.4. 连接方式</h3>
+<h4 id="1-2-4-1-">1.2.4.1. 单账户登录</h4>
+<p>&emsp;&emsp;目前一个QuoteApi的示例，仅第一次成功登录有效。</p>
+<p>&emsp;&emsp;API中登录Login()接口为同步的，返回值判断为0后，可以视为已经登录成功。</p>
+<h1 id="2-api-">2. API公共接口</h1>
+<h2 id="2-1-">2.1. 业务支持索引</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">方法</th>
+<th style="text-align:left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><a href="#createquoteapilv2">CreateQuoteApiLv2</a></td>
+<td style="text-align:left">创建一个Quote API接口类实例</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#login">Login</a></td>
+<td style="text-align:left">用户登录请求</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#registerspi">RegisterSpi</a></td>
+<td style="text-align:left">注册回调接口</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#SetChannelConfig">SetChannelConfig</a></td>
+<td style="text-align:left">设置通道接收配置</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#Start">Start</a></td>
+<td style="text-align:left">行情接收启动接口</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#Stop">Stop</a></td>
+<td style="text-align:left">行情接收停止接口</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#Release">Release</a></td>
+<td style="text-align:left">关闭接口，释放资源</td>
+</tr>
+<tr>
+<td style="text-align:left"><a href="#GetApiVersion">GetApiVersion</a></td>
+<td style="text-align:left">获取版本信息</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2-2-api-">2.2. API接口描述</h2>
+<h3 id="2-2-1-a-id-createquoteapilv2-createquoteapilv2-a-">2.2.1. <a id="createquoteapilv2">CreateQuoteApiLv2</a></h3>
+<pre><code class="lang-cpp">/**
+ * @brief  创建API接口类实例
+ * @param  save_file_path             API日志保存路径
+ * @param  log_level                  API日志输出级别
+ *
+ * @return                            EMQ API类的实例
+ */
+static QuoteApiLv2 *CreateQuoteApiLv2(const char *save_file_path, EMQ_LOG_LEVEL log_level = EMQ_LOG_LEVEL_DEBUG);
+</code></pre>
+<h3 id="2-2-2-a-id-login-login-a-">2.2.2. <a id="login">Login</a></h3>
+<pre><code class="lang-cpp">/**
+* @brief  发送登录消息到网关服务器
+* 
+* @attention                          此函数为同步阻塞模式，不需要异步等待登录成功，当函数返回即可进行后续操作，此api只能有一个连接
+* @param  ip                          网关IP地址
+* @param  port                        网关端口号
+* @param  user_name                   登录用户账号
+* @param  user_pwd                    登录用户密码
+* @return                             登录是否成功  登录是否成功，&quot;0&quot;表示登录成功，非“0”登录失败，具体原因可查看本地日志。    
+*/
+virtual int32_t Login(const char *ip, const uint16_t port, const char *user_name, const char *user_pwd) = 0;
+</code></pre>
+<h3 id="2-2-3-a-id-registerspi-registerspi-a-">2.2.3. <a id="registerspi">RegisterSpi</a></h3>
+<pre><code class="lang-cpp">/**
+* @brief  注册回调接口类spi实例
+* 
+* @param  spi                        派生自回调接口类的实例
+*/
+virtual void RegisterSpi(QuoteSpiLv2* spi) = 0;
+</code></pre>
+<h3 id="2-2-4-a-id-setchannelconfig-setchannelconfig-a-">2.2.4. <a id="SetChannelConfig">SetChannelConfig</a></h3>
+<pre><code class="lang-cpp">/**
+* @brief 设置通道接收配置, 同时进行内置系统配置最优检查
+* 
+* @param  config                        行情接收通道配置
+* @param  num                            配置数量
+* @return                               配置是否成功，&quot;0&quot; 表示配置成功，非&quot;0&quot;表示配置失败
+*/
+virtual int32_t SetChannelConfig(EMQConfigLv2 *config, uint32_t num) = 0;
+</code></pre>
+<h3 id="2-2-5-a-id-start-start-a-">2.2.5. <a id="Start">Start</a></h3>
+<pre><code class="lang-cpp">/**
+ * @brief                                  行情接收启动接口
+ * 
+ * @return                                 启动是否成功，&quot;0&quot; 表示启动成功，非&quot;0&quot;表示启动失败
+ */ 
+virtual int32_t Start() = 0;
+</code></pre>
+<h3 id="2-2-6-a-id-stop-stop-a-">2.2.6. <a id="Stop">Stop</a></h3>
+<pre><code class="lang-cpp">/**
+ * @brief                                  行情接收停止接口
+ * 
+ * @return                                 停止是否成功，&quot;0&quot; 表示停止成功，非&quot;0&quot;表示停止失败
+ */ 
+virtual int32_t Stop() = 0;
+</code></pre>
+<h3 id="2-2-7-a-id-release-release-a-">2.2.7. <a id="Release">Release</a></h3>
+<pre><code class="lang-cpp">/**
+ * @brief                                  关闭接口，释放资源
+ */ 
+virtual void Release() = 0;
+</code></pre>
+<h3 id="2-2-8-a-id-getapiversion-getapiversion-a-">2.2.8. <a id="GetApiVersion">GetApiVersion</a></h3>
+<pre><code class="lang-cpp">/**
+ * @brief                                  获取版本信息
+ * 
+ * @return                                 API版本号
+ */ 
+virtual const char *GetApiVersion() = 0;
+</code></pre>
+<h1 id="3-api-">3. API业务接口</h1>
+<h2 id="3-1-">3.1. 业务支持索引</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">方法API</th>
+<th style="text-align:left">回调SPI</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><a href="#GetPacketHardwareRXTs">GetPacketHardwareRXTs</a></td>
+<td style="text-align:left">无</td>
+<td>获取网卡收到行情包的硬件时间戳；仅可在对应的行情SPI回调内调用</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-2-api-">3.2. API接口描述</h2>
+<h3 id="3-2-1-a-id-getpackethardwarerxts-getpackethardwarerxts-a-">3.2.1. <a id="GetPacketHardwareRXTs">GetPacketHardwareRXTs</a></h3>
+<pre><code class="lang-cpp">/**
+ * @brief                                  获取网卡收到行情包的硬件时间戳；仅可在对应的行情SPI回调内调用
+ * 
+ * @return                                 网卡收到行情包的硬件时间戳，单位ns
+ */ 
+virtual uint64_t GetPacketHardwareRXTs(void *packet) = 0;
+</code></pre>
+<h1 id="4-spi-">4. SPI接口</h1>
+<h2 id="4-1-">4.1. 业务支持索引</h2>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#onlv2snapsze">OnLv2SnapSze</a></td>
+<td>深交所快照行情</td>
+</tr>
+<tr>
+<td><a href="#onlv2ticksze">OnLv2TickSze</a></td>
+<td>深交所逐笔合并行情</td>
+</tr>
+<tr>
+<td><a href="#onlv2indexsze">OnLv2IndexSze</a></td>
+<td>深交所指数行情</td>
+</tr>
+<tr>
+<td><a href="#onlv2bondsnapsze">OnLv2BondSnapSze</a></td>
+<td>深交所债券快照行情</td>
+</tr>
+<tr>
+<td><a href="#onlv2bondticksze">OnLv2BondTickSze</a></td>
+<td>深交所债券逐笔合并行情</td>
+</tr>
+<tr>
+<td><a href="#onlv2treesze">OnLv2TreeSze</a></td>
+<td>深交所建树行情</td>
+</tr>
+<tr>
+<td><a href="#onlv2snapsse">OnLv2SnapSse</a></td>
+<td>上交所快照行情</td>
+</tr>
+<tr>
+<td><a href="#onlv2ticksse">OnLv2TickSse</a></td>
+<td>上交所逐笔合并行情</td>
+</tr>
+<tr>
+<td><a href="#onlv2indexsse">OnLv2IndexSse</a></td>
+<td>上交所指数行情</td>
+</tr>
+<tr>
+<td><a href="#onlv2bondsnapsse">OnLv2BondSnapSse</a></td>
+<td>上交所债券快照行情</td>
+</tr>
+<tr>
+<td><a href="#onlv2bondticksse">OnLv2BondTickSse</a></td>
+<td>上交所债券逐笔行情</td>
+</tr>
+<tr>
+<td><a href="#onlv2treesse">OnLv2TreeSse</a></td>
+<td>上交所建树行情</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-2-spi-">4.2. SPI接口描述</h2>
+<h3 id="4-2-1-a-id-onlv2snapsze-onlv2snapsze-a-">4.2.1. <a id="onlv2snapsze">OnLv2SnapSze</a></h3>
+<pre><code class="lang-cpp">/**
+ *   深交所快照行情
+ *   @param snap   深交所快照行情数据
+ */
+virtual void OnLv2SnapSze(EMQSzeSnap *snap) {}
+</code></pre>
+<h3 id="4-2-2-a-id-onlv2ticksze-onlv2ticksze-a-">4.2.2. <a id="onlv2ticksze">OnLv2TickSze</a></h3>
+<pre><code class="lang-cpp">/**
+ *   深交所逐笔合并行情
+ *   @param tick   深交所逐笔合并行情数据
+ */
+virtual void OnLv2TickSze(EMQSzeTick *tick) {}
+</code></pre>
+<h3 id="4-2-3-a-id-onlv2indexsze-onlv2indexsze-a-">4.2.3. <a id="onlv2indexsze">OnLv2IndexSze</a></h3>
+<pre><code class="lang-cpp">/**
+ *   深交所指数行情
+ *   @param idx   深交所指数行情数据
+ */
+virtual void OnLv2IndexSze(EMQSzeIdx *idx) {}
+</code></pre>
+<h3 id="4-2-4-a-id-onlv2bondsnapsze-onlv2bondsnapsze-a-">4.2.4. <a id="onlv2bondsnapsze">OnLv2BondSnapSze</a></h3>
+<pre><code class="lang-cpp">/**
+ *   深交所债券快照行情
+ *   @param bond_snap   深交所债券快照行情数据
+ */
+virtual void OnLv2BondSnapSze(EMQSzeBondSnap *bond_snap) {}
+</code></pre>
+<h3 id="4-2-5-a-id-onlv2bondticksze-onlv2bondticksze-a-">4.2.5. <a id="onlv2bondticksze">OnLv2BondTickSze</a></h3>
+<pre><code class="lang-cpp">/**
+ *   深交所债券逐笔合并行情
+ *   @param bond_tick   深交所债券逐笔合并行情数据
+ */
+virtual void OnLv2BondTickSze(EMQSzeBondTick *bond_tick) {}
+</code></pre>
+<h3 id="4-2-6-a-id-onlv2treesze-onlv2treesze-a-">4.2.6. <a id="onlv2treesze">OnLv2TreeSze</a></h3>
+<pre><code class="lang-cpp">/**
+ *   深交所建树行情
+ *   @param tree   深交所建树行情数据
+ */
+virtual void OnLv2TreeSze(EMQSzeTree *tree) {}
+</code></pre>
+<h3 id="4-2-7-a-id-onlv2snapsse-onlv2snapsse-a-">4.2.7. <a id="onlv2snapsse">OnLv2SnapSse</a></h3>
+<pre><code class="lang-cpp">/**
+ *   上交所快照行情
+ *   @param snap   上交所快照行情数据
+ */
+virtual void OnLv2SnapSse(EMQSseSnap *snap) {}
+</code></pre>
+<h3 id="4-2-8-a-id-onlv2ticksse-onlv2ticksse-a-">4.2.8. <a id="onlv2ticksse">OnLv2TickSse</a></h3>
+<pre><code class="lang-cpp">/**
+ *   上交所逐笔合并行情
+ *   @param tick   上交所逐笔合并行情数据
+ */
+virtual void OnLv2TickSse(EMQSseTick *tick) {}
+</code></pre>
+<h3 id="4-2-9-a-id-onlv2indexsse-onlv2indexsse-a-">4.2.9. <a id="onlv2indexsse">OnLv2IndexSse</a></h3>
+<pre><code class="lang-cpp">/**
+ *   上交所指数行情
+ *   @param idx   上交所指数行情数据
+ */
+virtual void OnLv2IndexSse(EMQSseIdx *idx) {}
+</code></pre>
+<h3 id="4-2-10-a-id-onlv2bondsnapsse-onlv2bondsnapsse-a-">4.2.10. <a id="onlv2bondsnapsse">OnLv2BondSnapSse</a></h3>
+<pre><code class="lang-cpp">/**
+ *   上交所债券快照行情
+ *   @param bond_snap   上交所债券快照行情数据
+ */
+virtual void OnLv2BondSnapSse(EMQSseBondSnap *bond_snap) {}
+</code></pre>
+<h3 id="4-2-11-a-id-onlv2bondticksse-onlv2bondticksse-a-">4.2.11. <a id="onlv2bondticksse">OnLv2BondTickSse</a></h3>
+<pre><code class="lang-cpp">/**
+ *   上交所债券逐笔行情
+ *   @param bond_tick   上交所债券逐笔行情数据
+ */
+virtual void OnLv2BondTickSse(EMQSseBondTick *bond_tick) {}
+</code></pre>
+<h3 id="4-2-12-a-id-onlv2treesse-onlv2treesse-a-">4.2.12. <a id="onlv2treesse">OnLv2TreeSse</a></h3>
+<pre><code class="lang-cpp">/**
+ *   上交所建树行情
+ *   @param tree   上交所建树行情数据
+ */
+virtual void OnLv2TreeSse(EMQSseTree *tree) {}
+</code></pre>
+<h1 id="5-">5. 参数结构体</h1>
+<h2 id="5-1-">5.1. 参数结构体索引</h2>
+<h4 id="5-1-1-">5.1.1. 公共结构体</h4>
+<table>
+<thead>
+<tr>
+<th>结构体</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#EMQConfigLv2">EMQConfigLv2</a></td>
+<td>Lv2行情接收配置</td>
+</tr>
+</tbody>
+</table>
+<h4 id="5-1-1-1-">5.1.1.1. 深交所相关结构体</h4>
+<table>
+<thead>
+<tr>
+<th>结构体</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#emtquoteszepricequantityunit">EMQSzePriceQuantityUnit</a></td>
+<td>深交所快照档位单元</td>
+</tr>
+<tr>
+<td><a href="#emtquoteszeheartbeat">EMQSzeHeartbeat</a></td>
+<td>深交所心跳消息</td>
+</tr>
+<tr>
+<td><a href="#emtquoteszehead">EMQSzeHead</a></td>
+<td>深交所消息协议头</td>
+</tr>
+<tr>
+<td><a href="#emtquoteszesnap">EMQSzeSnap</a></td>
+<td>深交所快照消息</td>
+</tr>
+<tr>
+<td><a href="#emtquoteszeidx">EMQSzeIdx</a></td>
+<td>深交所指数消息</td>
+</tr>
+<tr>
+<td><a href="#emtquoteszetickorder">EMQSzeTickOrder</a></td>
+<td>深交所订单消息</td>
+</tr>
+<tr>
+<td><a href="#emtquoteszetickexe">EMQSzeTickExe</a></td>
+<td>深交所成交消息</td>
+</tr>
+<tr>
+<td><a href="#emtquoteszetick">EMQSzeTick</a></td>
+<td>深交所逐笔消息</td>
+</tr>
+<tr>
+<td><a href="#emtquoteszetree">EMQSzeTree</a></td>
+<td>深交所建树消息</td>
+</tr>
+<tr>
+<td><a href="#emtquoteszebondsnap">EMQSzeBondSnap</a></td>
+<td>深交债券快照消息</td>
+</tr>
+<tr>
+<td><a href="#EMQSzeBondOrder">EMQSzeBondOrder</a></td>
+<td>深交所债券逐笔委托</td>
+</tr>
+<tr>
+<td><a href="#EMQSzeBondExe">EMQSzeBondExe</a></td>
+<td>深交所债券逐笔成交</td>
+</tr>
+<tr>
+<td><a href="#EMQSzeBondTick">EMQSzeBondTick</a></td>
+<td>深交所债券逐笔合并</td>
+</tr>
+</tbody>
+</table>
+<h4 id="5-1-1-2-">5.1.1.2. 上交所相关结构体</h4>
+<table>
+<thead>
+<tr>
+<th>结构体</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#EMQSseL2PriceQuantityUnit">EMQSseL2PriceQuantityUnit</a></td>
+<td>上交所lev2快照档位单元</td>
+</tr>
+<tr>
+<td><a href="#EMQSseL2PriceQuantityUnit">EMQSseHeartbeat</a></td>
+<td>上交所心跳消息</td>
+</tr>
+<tr>
+<td><a href="#EMQSseHead">EMQSseHead</a></td>
+<td>上交所消息协议头</td>
+</tr>
+<tr>
+<td><a href="#EMQSseSnap">EMQSseSnap</a></td>
+<td>上交所lev2快照消息</td>
+</tr>
+<tr>
+<td><a href="#EMQSseIdx">EMQSseIdx</a></td>
+<td>上交所lev2指数消息</td>
+</tr>
+<tr>
+<td><a href="#EMQSseL2TreePriceQuantityUnit">EMQSseL2TreePriceQuantityUnit</a></td>
+<td>上交所lev2建树档位单元</td>
+</tr>
+<tr>
+<td><a href="#EMQSseTree">EMQSseTree</a></td>
+<td>上交所lev2 建树消息</td>
+</tr>
+<tr>
+<td><a href="#EMQSseL2BondPriceQuantityUnit">EMQSseL2BondPriceQuantityUnit</a></td>
+<td>上交所lev2债券快照档位单元</td>
+</tr>
+<tr>
+<td><a href="#EMQSseBondSnap">EMQSseBondSnap</a></td>
+<td>上交所lev2债券快照</td>
+</tr>
+<tr>
+<td><a href="#EMQSseBondTick">EMQSseBondTick</a></td>
+<td>债券逐笔</td>
+</tr>
+<tr>
+<td><a href="#EMQSseTick">EMQSseTick</a></td>
+<td>逐笔合并</td>
+</tr>
+</tbody>
+</table>
+<h2 id="5-2-">5.2. 参数结构体描述</h2>
+<h3 id="5-2-1-a-id-emqconfiglv2-emqconfiglv2-a-">5.2.1. <a id="EMQConfigLv2">EMQConfigLv2</a></h3>
+<pre><code class="lang-cpp">// Lv2行情接收配置
+struct EMQConfigLv2 {
+  bool enable;                 // 是否启用
+  EMQRecvMode mode;            // 接收模式
+  EMQType quote_type;          // 行情类型
+  char eth_name[ETH_NAME_LEN]; // 网卡名
+  char multicast_ip[IP_LEN];   // 组播地址
+  uint16_t multicast_port;     // 组播端口
+  int32_t rx_cpu_id;           // 用于接收的cpu id，-1表示不绑定
+  int32_t handle_cpu_id;       // 用于处理的cpu id，-1表示不绑定
+  int32_t rx_pkt_num;          // 接收内存大小 单位为4MB
+  int32_t spsc_size;           // 缓存队列长度，单位K
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型及长度</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>enable</td>
+<td>bool</td>
+<td>是否启用</td>
+</tr>
+<tr>
+<td>mode</td>
+<td><a href="#EMQRecvMode">EMQRecvMode</a></td>
+<td>接收模式</td>
+</tr>
+<tr>
+<td>quote_type</td>
+<td><a href="#EMQType">EMQType</a></td>
+<td>行情类型</td>
+</tr>
+<tr>
+<td>eth_name</td>
+<td>char[<a href="#ETH_NAME_LEN">ETH_NAME_LEN</a>]</td>
+<td>网卡名</td>
+</tr>
+<tr>
+<td>multicast_ip</td>
+<td>char[<a href="#IP_LEN">IP_LEN</a>]</td>
+<td>组播地址</td>
+</tr>
+<tr>
+<td>multicast_port</td>
+<td>uint16_t</td>
+<td>组播端口</td>
+</tr>
+<tr>
+<td>rx_cpu_id</td>
+<td>int32_t</td>
+<td>用于接收的CPU ID，-1表示不绑定</td>
+</tr>
+<tr>
+<td>handle_cpu_id</td>
+<td>int32_t</td>
+<td>用于处理的CPU ID，-1表示不绑定</td>
+</tr>
+<tr>
+<td>rx_pkt_num</td>
+<td>int32_t</td>
+<td>接收内存大小 单位为4MB</td>
+</tr>
+<tr>
+<td>spsc_size</td>
+<td>int32_t</td>
+<td>缓存队列长度，单位K</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-2-a-id-emtquoteszepricequantityunit-emqszepricequantityunit-a-">5.2.2. <a id="emtquoteszepricequantityunit">EMQSzePriceQuantityUnit</a></h3>
+<pre><code class="lang-cpp">// 深交所快照档位单元
+struct EMQSzePriceQuantityUnit
+{
+    // 限价单和市价单都参与建树,对于建树行情,订单价格取值方法如下表：
+    //  ****************************************************************************************************************
+    //  |订单类型 \ 买卖方向 |                    买（1）          |                           卖（2）                  |
+    //  |     市价（1）      |                    卖一价           |                           买一价                   |
+    //  |     限价（2）      |   如果小于 3 的取为 3，否则取原值   |   如果大于 999999997，取为 999999997，否则取原值   |
+    //  |    本方最优(U）    |                    买一价           |                           卖一价                   |
+    //  *****************************************************************************************************************
+    unsigned int                      m_price;                           // 价格，实际值需要除以 10000
+    unsigned long long                m_quantity;                        // 数量，实际值需要除以 100
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型及长度</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_price</td>
+<td>unsigned int</td>
+<td>价格，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_quantity</td>
+<td>unsigned long long</td>
+<td>数量，实际值需要除以 100</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-3-a-id-emtquoteszeheartbeat-emqszeheartbeat-a-">5.2.3. <a id="emtquoteszeheartbeat">EMQSzeHeartbeat</a></h3>
+<pre><code class="lang-cpp">// 深交所心跳消息
+struct EMQSzeHeartbeat
+{
+    unsigned int                      m_sequence;                        // 行情序号
+    unsigned int                      m_reserved_1;                      // 保留字段
+    unsigned char                     m_message_type;                    // 行情类型
+    unsigned char                     m_reserved_2[7];                   // 保留字段
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型及长度</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_sequence</td>
+<td>unsigned int</td>
+<td>行情序号</td>
+</tr>
+<tr>
+<td>m_reserved_1</td>
+<td>unsigned int</td>
+<td>保留字段</td>
+</tr>
+<tr>
+<td>m_message_type</td>
+<td>unsigned char</td>
+<td>行情类型</td>
+</tr>
+<tr>
+<td>m_reserved_2</td>
+<td>unsigned char[7]</td>
+<td>保留字段</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-4-a-id-emtquoteszehead-emqszehead-a-">5.2.4. <a id="emtquoteszehead">EMQSzeHead</a></h3>
+<pre><code class="lang-cpp">// 深交所消息协议头
+struct EMQSzeHead
+{
+    unsigned int                      m_sequence;                        // 行情序号
+    unsigned int                      m_reserved_1;                      // 保留字段
+    unsigned char                     m_message_type;                    // 行情类型
+    //******************************************************************************************
+    // 0:指数 1:股票 2:基金 3:债券 4:回购 5:权证 6:期货 7:外汇 8:利率 9:期权 10:其他
+    //******************************************************************************************
+    unsigned char                     m_security_type;                   // 证券类型
+    //******************************************************************************************
+    // 当 security_type == 0 时, 恒为0
+    // 当 security_type == 1 时，0：主板 1：中小板 2：创业板 3：B股 4：H股 5：科创版 255:未分类
+    // 当 security_type == 2 时，248：LOF基金 249：ETF基金 255：未分类
+    // 当 security_type == 3 时，248：国债 249：可转债 255：未分类
+    // 当 security_type == 4 时，248：国债回购 255：未分类
+    // 当 security_type == 5/6/7/8/10时，255:没有意义
+    // 当 security_type == 9 时，248：股票期权 249：ETF期权 255：未分类
+    //******************************************************************************************
+    unsigned char                     m_sub_security_type;               // 证券子类型
+    unsigned char                     m_symbol[SZE_SYMBOL_LEN];          // 证券代码
+    unsigned char                     m_exchange_id;                     // 交易所编号
+    unsigned long long                m_quote_update_time;               // 行情更新时间
+    //******************************************************************************************
+    //格式如：YYYYMMDDHHMMSSsss（毫秒）
+    //YYYY=0000-9999, MM=01-12,    DD=01-31, HH=00-23, MM=00-59, SS=00-60(秒)，sss=000-999(毫秒)。
+    //******************************************************************************************
+    unsigned short                    m_channel_num;                     // 频道号
+    unsigned long long                m_sequence_num;                    // 包序号
+    unsigned int                      m_md_stream_id;                    // 行情类别
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型及长度</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_sequence</td>
+<td>unsigned int</td>
+<td>行情序号</td>
+</tr>
+<tr>
+<td>m_reserved_1</td>
+<td>unsigned int</td>
+<td>保留字段</td>
+</tr>
+<tr>
+<td>m_message_type</td>
+<td>unsigned char</td>
+<td>行情类型</td>
+</tr>
+<tr>
+<td>m_security_type</td>
+<td>unsigned char</td>
+<td>证券类型</td>
+</tr>
+<tr>
+<td>m_sub_security_type</td>
+<td>unsigned char</td>
+<td>证券子类型</td>
+</tr>
+<tr>
+<td>m_symbol</td>
+<td>unsigned char[<a href="#SZE_SYMBOL_LEN">SZE_SYMBOL_LEN</a>]</td>
+<td>证券代码</td>
+</tr>
+<tr>
+<td>m_exchange_id</td>
+<td>unsigned char</td>
+<td>交易所编号</td>
+</tr>
+<tr>
+<td>m_quote_update_time</td>
+<td>unsigned long long</td>
+<td>行情更新时间</td>
+</tr>
+<tr>
+<td>m_channel_num</td>
+<td>unsigned short</td>
+<td>频道号</td>
+</tr>
+<tr>
+<td>m_sequence_num</td>
+<td>unsigned long long</td>
+<td>包序号</td>
+</tr>
+<tr>
+<td>m_md_stream_id</td>
+<td>unsigned int</td>
+<td>行情类别</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-5-a-id-emtquoteszesnap-emqszesnap-a-">5.2.5. <a id="emtquoteszesnap">EMQSzeSnap</a></h3>
+<pre><code class="lang-cpp">// 深交所快照消息
+struct EMQSzeSnap
+{
+    EMQSzeSnap()
+    {
+        memset(this, 0, sizeof(EMQSzeSnap));
+    }
+
+    EMQSzeHead                        m_head;                            // 包头
+    unsigned char                     m_trading_status;                  // 交易状态码
+    /******************************************************************************************
+     * | Bit 位    | 返回值 | 交易所值 | 描述                                 |
+     * | --------- | ------ | -------- | ------------------------------------ |
+     * | Bid7-Bid4 | 0      | &#39;S&#39;      | 表示启动(开市前)                     |
+     * |           | 1      | &#39;O&#39;      | 表示开盘集合竞价                     |
+     * |           | 2      | &#39;T&#39;      | 表示连续交易                         |
+     * |           | 3      | &#39;B&#39;      | 表示休市                             |
+     * |           | 4      | &#39;C&#39;      | 表示收盘集合竞价                     |
+     * |           | 5      | &#39;E&#39;      | 表示已闭市                           |
+     * |           | 6      | &#39;H&#39;      | 表示临时停牌                         |
+     * |           | 7      | &#39;A&#39;      | 表示盘后交易                         |
+     * |           | 8      | &#39;V&#39;      | 表示波动性中断                       |
+     * |           | 15     | other    | 表示无意义                           |
+     * | Bit3      | 0      | &#39;0&#39;      | 表示此正常状态                       |
+     * |           | 1      | &#39;1&#39;      | 表示全天停牌                         |
+     * |           | 0      | other    | 表示无意义，当成此产品可正常交易处理 |
+     * | Bit2      | 0      |          | 预留位，值为 0                       |
+     * | Bit1      | 0      |          | 预留位，值为 0                       |
+     * | Bit0      | 0      |          | 预留位，值为 0                       |
+    *******************************************************************************************/
+    unsigned long long                m_total_trade_num;                 // 成交笔数
+    unsigned long long                m_total_quantity;                  // 总成交量，          实际值需要除以 100
+    unsigned long long                m_total_value;                     // 总成交额，          实际值需要除以 1000000
+    unsigned int                      m_pre_close_price;                 // 昨收价，            实际值需要除以 10000
+    unsigned int                      m_last_price;                      // 最新价，            实际值需要除以 10000
+    unsigned int                      m_open_price;                      // 开盘价，            实际值需要除以 10000
+    unsigned int                      m_day_high_price;                  // 最高价，            实际值需要除以 10000
+    unsigned int                      m_day_low_price;                   // 最低价，            实际值需要除以 10000
+    unsigned int                      m_today_close_price;               // 收盘价，            实际值需要除以 10000
+    unsigned int                      m_total_bid_weighted_avg_price;    // 买方挂单均价，      实际值需要除以 10000
+    unsigned long long                m_total_bid_quantity;              // 买总量，            实际值需要除以 100
+    unsigned int                      m_total_ask_weighted_avg_price;    // 卖方挂单均价，      实际值需要除以 10000
+    unsigned long long                m_total_ask_quantity;              // 卖总量，            实际值需要除以 100
+    unsigned int                      m_lpv;                             // 基金 T-1 日净值，   实际值需要除以 10000
+    unsigned int                      m_iopv;                            // 基金实时参考净值，  实际值需要除以 10000
+    unsigned int                      m_upper_limit_price;               // 涨停价，            实际值需要除以 10000
+    unsigned int                      m_low_limit_price;                 // 跌停价，            实际值需要除以 10000
+    unsigned int                      m_open_interest;                   // 合约持仓量，        实际值需要除以 10000
+    EMQSzePriceQuantityUnit      m_bid_unit[SZE_LEV2_DEPTH];        // 买方十档
+    EMQSzePriceQuantityUnit      m_ask_unit[SZE_LEV2_DEPTH];        // 卖方十档
+
+    /// 当 Ask_1_Qty=0 时，TotalAskQty 重置为 0；当 Bid_1_Qty=0 时，TotalBidQty 重置为 0。
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型及长度</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_head</td>
+<td><a href="#EMQSzeHead">EMQSzeHead</a></td>
+<td>包头</td>
+</tr>
+<tr>
+<td>m_trading_status</td>
+<td>unsigned char</td>
+<td>交易状态码</td>
+</tr>
+<tr>
+<td>m_total_trade_num</td>
+<td>unsigned long long</td>
+<td>成交笔数</td>
+</tr>
+<tr>
+<td>m_total_quantity</td>
+<td>unsigned long long</td>
+<td>总成交量，实际值需要除以 100</td>
+</tr>
+<tr>
+<td>m_total_value</td>
+<td>unsigned long long</td>
+<td>总成交额，实际值需要除以 1000000</td>
+</tr>
+<tr>
+<td>m_pre_close_price</td>
+<td>unsigned int</td>
+<td>昨收价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_last_price</td>
+<td>unsigned int</td>
+<td>最新价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_open_price</td>
+<td>unsigned int</td>
+<td>开盘价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_day_high_price</td>
+<td>unsigned int</td>
+<td>最高价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_day_low_price</td>
+<td>unsigned int</td>
+<td>最低价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_today_close_price</td>
+<td>unsigned int</td>
+<td>收盘价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_total_bid_weighted_avg_price</td>
+<td>unsigned int</td>
+<td>买方挂单均价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_total_bid_quantity</td>
+<td>unsigned long long</td>
+<td>买总量，实际值需要除以 100</td>
+</tr>
+<tr>
+<td>m_total_ask_weighted_avg_price</td>
+<td>unsigned int</td>
+<td>卖方挂单均价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_total_ask_quantity</td>
+<td>unsigned long long</td>
+<td>卖总量，实际值需要除以 100</td>
+</tr>
+<tr>
+<td>m_lpv</td>
+<td>unsigned int</td>
+<td>基金 T-1 日净值，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_iopv</td>
+<td>unsigned int</td>
+<td>基金实时参考净值，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_upper_limit_price</td>
+<td>unsigned int</td>
+<td>涨停价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_low_limit_price</td>
+<td>unsigned int</td>
+<td>跌停价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_open_interest</td>
+<td>unsigned int</td>
+<td>合约持仓量，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_bid_unit</td>
+<td><a href="#EMQSzePriceQuantityUnit">EMQSzePriceQuantityUnit</a>[<a href="#SZE_LEV2_DEPTH">SZE_LEV2_DEPTH</a>]</td>
+<td>买方十档</td>
+</tr>
+<tr>
+<td>m_ask_unit</td>
+<td><a href="#EMQSzePriceQuantityUnit">EMQSzePriceQuantityUnit</a>[<a href="#SZE_LEV2_DEPTH">SZE_LEV2_DEPTH</a>]</td>
+<td>卖方十档</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-6-a-id-emtquoteszeidx-emqszeidx-a-">5.2.6. <a id="emtquoteszeidx">EMQSzeIdx</a></h3>
+<pre><code class="lang-cpp">// 深交所指数消息
+struct EMQSzeIdx
+{
+    EMQSzeIdx()
+    {
+        memset(this, 0, sizeof(EMQSzeIdx));
+    }
+
+    EMQSzeHead                   m_head;                            // 包头
+    unsigned long long                m_total_trade_num;                 // 成交笔数
+    unsigned long long                m_total_quantity;                  // 总成交量，  实际值需要除以 100
+    unsigned long long                m_total_value;                     // 总成交额，  实际值需要除以 1000000
+    unsigned int                      m_last_price;                      // 最新价，    实际值需要除以 10000
+    unsigned int                      m_pre_close_price;                 // 昨收价，    实际值需要除以 10000
+    unsigned int                      m_open_price;                      // 开盘价，    实际值需要除以 10000
+    unsigned int                      m_day_high_price;                  // 最高价，    实际值需要除以 10000
+    unsigned int                      m_day_low_price;                   // 最低价，    实际值需要除以 10000
+    unsigned int                      m_today_close_price;               // 收盘价，    实际值需要除以 10000
+    char                              m_reserved[5];                     // 保留字段
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型及长度</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_head</td>
+<td><a href="#EMQSzeHead">EMQSzeHead</a></td>
+<td>包头</td>
+</tr>
+<tr>
+<td>m_total_trade_num</td>
+<td>unsigned long long</td>
+<td>成交笔数</td>
+</tr>
+<tr>
+<td>m_total_quantity</td>
+<td>unsigned long long</td>
+<td>总成交量，  实际值需要除以 100</td>
+</tr>
+<tr>
+<td>m_total_value</td>
+<td>unsigned long long</td>
+<td>总成交额，  实际值需要除以 1000000</td>
+</tr>
+<tr>
+<td>m_last_price</td>
+<td>unsigned int</td>
+<td>最新价，    实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_pre_close_price</td>
+<td>unsigned int</td>
+<td>昨收价，    实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_open_price</td>
+<td>unsigned int</td>
+<td>开盘价，    实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_day_high_price</td>
+<td>unsigned int</td>
+<td>最高价，    实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_day_low_price</td>
+<td>unsigned int</td>
+<td>最低价，    实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_today_close_price</td>
+<td>unsigned int</td>
+<td>收盘价，    实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_reserved</td>
+<td>char [5]</td>
+<td>保留字段</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-7-a-id-emtquoteszetickorder-emqszetickorder-a-">5.2.7. <a id="emtquoteszetickorder">EMQSzeTickOrder</a></h3>
+<pre><code class="lang-cpp">// 深交所订单消息
+struct EMQSzeTickOrder
+{
+    EMQSzeTickOrder()
+    {
+        memset(this, 0, sizeof(EMQSzeTickOrder));
+    }
+
+    EMQSzeHead                   m_head;                            // 包头
+    /// 对逐笔委托价格转换说明如下：
+    //  ****************************************************************************************************************
+    //  |订单类型 \ 买卖方向 |                    买（1）            |                           卖（2）                    |
+    //  |     市价（1）      |                    直接透传           |                           直接透传                   |
+    //  |    本方最优(U）    |                    直接透传           |                           直接透传                   |
+    //  |     限价（2）      |   如果小于 3 的取为 3，否则取原值     |   如果大于 999999997，取为 999999997，否则取原值     |
+    //  *****************************************************************************************************************
+    unsigned int                      m_order_price;                     // 价格，  实际值需要除以 10000
+    unsigned long long                m_order_quantity;                  // 数量，  实际值需要除以 100
+    char                              m_side_flag;                       // 方向，‘1’=买 ‘2’=卖
+    char                              m_order_type;                      // 订单类型
+    //******************************************************************************************
+    // &#39;1&#39;=市价  &#39;2&#39;=限价  &#39;U&#39;=本方最优
+    //******************************************************************************************
+    char                              m_reserved[15];                     // 保留字段
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型及长度</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_head</td>
+<td><a href="#EMQSzeHead">EMQSzeHead</a></td>
+<td>包头</td>
+</tr>
+<tr>
+<td>m_order_price</td>
+<td>unsigned int</td>
+<td>价格，  实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_order_quantity</td>
+<td>unsigned long long</td>
+<td>数量，  实际值需要除以 100</td>
+</tr>
+<tr>
+<td>m_side_flag</td>
+<td>char</td>
+<td>方向，‘1’=买 ‘2’=卖</td>
+</tr>
+<tr>
+<td>m_order_type</td>
+<td>char</td>
+<td>订单类型</td>
+</tr>
+<tr>
+<td>m_reserved</td>
+<td>char[15]</td>
+<td>保留字段</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-8-a-id-emtquoteszetickexe-emqszetickexe-a-">5.2.8. <a id="emtquoteszetickexe">EMQSzeTickExe</a></h3>
+<pre><code class="lang-cpp">// 深交所成交消息
+struct EMQSzeTickExe
+{
+    EMQSzeTickExe()
+    {
+        memset(this, 0, sizeof(EMQSzeTickExe));
+    }
+
+    EMQSzeHead                        m_head;                           // 包头
+    long long                         m_trade_buy_num;                  // 买方包序号
+    long long                         m_trade_sell_num;                 // 卖方包序号
+    unsigned int                      m_trade_price;                    // 价格，   实际值需要除以 10000
+    long long                         m_trade_quantity;                 // 数量，   实际值需要除以 100
+    char                              m_trade_type;                     // 成交类型
+    //******************************************************************************************
+    // &#39;4&#39;=撤销  &#39;F&#39;=成交
+    //******************************************************************************************
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型及长度</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_head</td>
+<td><a href="#EMQSzeHead">EMQSzeHead</a></td>
+<td>包头</td>
+</tr>
+<tr>
+<td>m_trade_buy_num</td>
+<td>long long</td>
+<td>买方包序号</td>
+</tr>
+<tr>
+<td>m_trade_sell_num</td>
+<td>long long</td>
+<td>卖方包序号</td>
+</tr>
+<tr>
+<td>m_trade_price</td>
+<td>unsigned int</td>
+<td>价格，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_trade_quantity</td>
+<td>long long</td>
+<td>数量，实际值需要除以 100</td>
+</tr>
+<tr>
+<td>m_trade_type</td>
+<td>char</td>
+<td>成交类型，&#39;4&#39;=撤销 &#39;F&#39;=成交</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-9-a-id-emtquoteszetick-emqszetick-a-">5.2.9. <a id="emtquoteszetick">EMQSzeTick</a></h3>
+<pre><code class="lang-cpp">// 深交所逐笔消息
+struct EMQSzeTick
+{
+    EMQSzeTickType m_tick_type;
+    union {
+        EMQSzeTickOrder *m_tick_order;
+        EMQSzeTickExe *m_tick_exe;
+    };
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型及长度</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_tick_type</td>
+<td><a href="#EMQSzeTickType">EMQSzeTickType</a></td>
+<td>深交所逐笔消息类型</td>
+</tr>
+<tr>
+<td>m_tick_order</td>
+<td><a href="#EMQSzeTickOrder">EMQSzeTickOrder</a> *</td>
+<td>深交所订单消息</td>
+</tr>
+<tr>
+<td>m_tick_exe</td>
+<td><a href="#EMQSzeTickExe">EMQSzeTickExe</a> *</td>
+<td>深交所成交消息</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-10-a-id-emtquoteszetree-emqszetree-a-">5.2.10. <a id="emtquoteszetree">EMQSzeTree</a></h3>
+<pre><code class="lang-cpp">// 深交所建树消息
+struct EMQSzeTree
+{
+    EMQSzeTree()
+    {
+        memset(this, 0, sizeof(EMQSzeTree));
+    }
+
+    EMQSzeHead                        m_head;                           // 包头
+    long long                         m_total_trade_num;                // 成交笔数
+    unsigned long long                m_total_quantity;                 // 总成交量，               实际值需要除以 100
+    long long                         m_total_value;                    // 总成交额，               实际值需要除以 1000000
+    unsigned int                      m_pre_close_price;                // 昨收价，                 实际值需要除以 10000
+    unsigned int                      m_last_price;                     // 最新价，                 实际值需要除以 10000
+    unsigned int                      m_open_price;                     // 开盘价，                 实际值需要除以 10000
+    unsigned int                      m_day_high_price;                 // 最高价，                 实际值需要除以 10000
+    unsigned int                      m_day_low_price;                  // 最低价，                 实际值需要除以 10000
+    unsigned int                      m_today_close_price;              // 收盘价，                 实际值需要除以 10000
+    unsigned int                      m_total_bid_weighted_avg_price;   // 买方挂单均价，           实际值需要除以 10000
+    unsigned long long                m_total_bid_quantity;             // 买总量，                 实际值需要除以 100
+    unsigned int                      m_total_ask_weighted_avg_price;   // 卖方挂单均价，           实际值需要除以 10000
+    unsigned long long                m_total_ask_quantity;             // 卖总量，                 实际值需要除以 100
+    unsigned int                      m_upper_limit_price;              // 涨停价，                 实际值需要除以 10000
+    unsigned int                      m_low_limit_price;                // 跌停价，                 实际值需要除以 10000
+    unsigned long long                m_market_open_total_bid;          // Bid 边市价单挂单总量，   实际值需要除以 100
+    unsigned long long                m_market_open_total_ask;          // Ask 边市价单挂单总量，   实际值需要除以 100
+    unsigned int                      m_bid_depth;                      // Bid 边总档位数
+    unsigned int                      m_ask_depth;                      // Ask 边总档位数
+    EMQSzePriceQuantityUnit      m_bid_unit[SZE_LEV2_DEPTH];       // 买方十档
+    EMQSzePriceQuantityUnit      m_ask_unit[SZE_LEV2_DEPTH];       // 卖方十档
+    char                              m_ch_gap_flag;                    // 0x01=此消息前逐笔消息有断号发生；0x00=逐笔消息序号连续，正常；
+    char                              m_reserved[4];                    // 保留字段
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型及长度</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_head</td>
+<td>EMQSzeHead</td>
+<td>包头</td>
+</tr>
+<tr>
+<td>m_total_trade_num</td>
+<td>long long</td>
+<td>成交笔数</td>
+</tr>
+<tr>
+<td>m_total_quantity</td>
+<td>unsigned long long</td>
+<td>总成交量，实际值需要除以 100</td>
+</tr>
+<tr>
+<td>m_total_value</td>
+<td>long long</td>
+<td>总成交额，实际值需要除以 1000000</td>
+</tr>
+<tr>
+<td>m_pre_close_price</td>
+<td>unsigned int</td>
+<td>昨收价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_last_price</td>
+<td>unsigned int</td>
+<td>最新价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_open_price</td>
+<td>unsigned int</td>
+<td>开盘价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_day_high_price</td>
+<td>unsigned int</td>
+<td>最高价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_day_low_price</td>
+<td>unsigned int</td>
+<td>最低价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_today_close_price</td>
+<td>unsigned int</td>
+<td>收盘价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_total_bid_weighted_avg_price</td>
+<td>unsigned int</td>
+<td>买方挂单均价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_total_bid_quantity</td>
+<td>unsigned long long</td>
+<td>买总量，实际值需要除以 100</td>
+</tr>
+<tr>
+<td>m_total_ask_weighted_avg_price</td>
+<td>unsigned int</td>
+<td>卖方挂单均价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_total_ask_quantity</td>
+<td>unsigned long long</td>
+<td>卖总量，实际值需要除以 100</td>
+</tr>
+<tr>
+<td>m_upper_limit_price</td>
+<td>unsigned int</td>
+<td>涨停价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_low_limit_price</td>
+<td>unsigned int</td>
+<td>跌停价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_market_open_total_bid</td>
+<td>unsigned long long</td>
+<td>Bid 边市价单挂单总量，实际值需要除以 100</td>
+</tr>
+<tr>
+<td>m_market_open_total_ask</td>
+<td>unsigned long long</td>
+<td>Ask 边市价单挂单总量，实际值需要除以 100</td>
+</tr>
+<tr>
+<td>m_bid_depth</td>
+<td>unsigned int</td>
+<td>Bid 边总档位数</td>
+</tr>
+<tr>
+<td>m_ask_depth</td>
+<td>unsigned int</td>
+<td>Ask 边总档位数</td>
+</tr>
+<tr>
+<td>m_bid_unit[SZE_LEV2_DEPTH]</td>
+<td><a href="#EMQSzePriceQuantityUnit">EMQSzePriceQuantityUnit</a>[<a href="#SZE_LEV2_DEPTH">SZE_LEV2_DEPTH</a>]</td>
+<td>买方十档</td>
+</tr>
+<tr>
+<td>m_ask_unit[SZE_LEV2_DEPTH]</td>
+<td><a href="#EMQSzePriceQuantityUnit">EMQSzePriceQuantityUnit</a>[<a href="#SZE_LEV2_DEPTH">SZE_LEV2_DEPTH</a>]</td>
+<td>卖方十档</td>
+</tr>
+<tr>
+<td>m_ch_gap_flag</td>
+<td>char</td>
+<td>0x01=此消息前逐笔消息有断号发生；0x00=逐笔消息序号连续，正常</td>
+</tr>
+<tr>
+<td>m_reserved[4]</td>
+<td>char[4]</td>
+<td>保留字段</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-11-a-id-emtquoteszebondsnap-emqszebondsnap-a-">5.2.11. <a id="emtquoteszebondsnap">EMQSzeBondSnap</a></h3>
+<pre><code class="lang-cpp">// 深交债券快照消息
+struct EMQSzeBondSnap
+{
+    EMQSzeBondSnap()
+    {
+        memset( this , 0 , sizeof( EMQSzeBondSnap ) );
+    }
+    EMQSzeHead                        m_head;                            // 包头
+    unsigned char                     m_trading_status;                  // 交易状态码
+    /******************************************************************************************
+     * | Bit 位    | 返回值 | 交易所值 | 描述                                 |
+     * | --------- | ------ | -------- | ------------------------------------ |
+     * | Bid7-Bid4 | 0      | &#39;S&#39;      | 表示启动(开市前)                     |
+     * |           | 1      | &#39;O&#39;      | 表示开盘集合竞价                     |
+     * |           | 2      | &#39;T&#39;      | 表示连续交易                         |
+     * |           | 3      | &#39;B&#39;      | 表示休市                             |
+     * |           | 4      | &#39;C&#39;      | 表示收盘集合竞价                     |
+     * |           | 5      | &#39;E&#39;      | 表示已闭市                           |
+     * |           | 6      | &#39;H&#39;      | 表示临时停牌                         |
+     * |           | 7      | &#39;A&#39;      | 表示盘后交易                         |
+     * |           | 8      | &#39;V&#39;      | 表示波动性中断                       |
+     * |           | 15     | other    | 表示无意义                           |
+     * | Bit3      | 0      | &#39;0&#39;      | 表示此正常状态                       |
+     * |           | 1      | &#39;1&#39;      | 表示全天停牌                         |
+     * |           | 0      | other    | 表示无意义，当成此产品可正常交易处理 |
+     * | Bit2      | 0      |          | 预留位，值为 0                       |
+     * | Bit1      | 0      |          | 预留位，值为 0                       |
+     * | Bit0      | 0      |          | 预留位，值为 0                       |
+    *******************************************************************************************/
+    unsigned long long                m_total_trade_num;                 // 成交笔数
+    unsigned long long                m_total_quantity;                  // 总成交量，          实际值需要除以 100
+    unsigned long long                m_total_value;                     // 总成交额，          实际值需要除以 1000000
+    unsigned int                      m_pre_close_price;                 // 昨收价，            实际值需要除以 10000
+    unsigned int                      m_last_price;                      // 最新价，            实际值需要除以 10000
+    unsigned int                      m_open_price;                      // 开盘价，            实际值需要除以 10000
+    unsigned int                      m_day_high_price;                  // 最高价，            实际值需要除以 10000
+    unsigned int                      m_day_low_price;                   // 最低价，            实际值需要除以 10000
+    unsigned int                      m_today_close_price;               // 收盘价，            实际值需要除以 10000
+    unsigned int                      m_total_trade_weighted_avg_price;  // 加权平均价，        实际值需要除以 10000
+    int                               m_fluctuation_1;                   // 升跌 1,             实际值需要除以 10000
+    int                               m_fluctuation_2;                   // 升跌 2,             实际值需要除以 10000
+    unsigned int                      m_total_bid_weighted_avg_price;    // 买方挂单均价，      实际值需要除以 10000
+    unsigned long long                m_total_bid_quantity;              // 买总量，            实际值需要除以 100
+    unsigned int                      m_total_ask_weighted_avg_price;    // 卖方挂单均价，      实际值需要除以 10000
+    unsigned long long                m_total_ask_quantity;              // 卖总量，            实际值需要除以 100
+
+    int                               m_weighted_avg_price_BP;           // 加权平均涨跌 BP     实际值需要除以 10000
+    unsigned int                      m_weighted_avg_pre_close_price;    // 昨收盘加权平均价    实际值需要除以 10000
+    unsigned int                      m_auction_trade_last_price;        // 匹配成交最新价      实际值需要除以 10000
+    unsigned char                     m_reserved[4];                     // 保留字段
+    unsigned long long                m_auction_volume_trade;            // 匹配成交成交量      实际值需要除以 100
+    unsigned long long                m_auction_value_trade;             // 匹配成交成交金额    实际值需要除以 1000000
+
+    EMQSzePriceQuantityUnit      m_bid_unit[SZE_LEV2_DEPTH];        // 买方十档
+    EMQSzePriceQuantityUnit      m_ask_unit[SZE_LEV2_DEPTH];        // 卖方十档
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型及长度</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_head</td>
+<td><a href="#EMQSzeHead">EMQSzeHead</a></td>
+<td>包头</td>
+</tr>
+<tr>
+<td>m_trading_status</td>
+<td>unsigned char</td>
+<td>交易状态码</td>
+</tr>
+<tr>
+<td>m_total_trade_num</td>
+<td>unsigned long long</td>
+<td>成交笔数</td>
+</tr>
+<tr>
+<td>m_total_quantity</td>
+<td>unsigned long long</td>
+<td>总成交量，实际值需要除以 100</td>
+</tr>
+<tr>
+<td>m_total_value</td>
+<td>unsigned long long</td>
+<td>总成交额，实际值需要除以 1000000</td>
+</tr>
+<tr>
+<td>m_pre_close_price</td>
+<td>unsigned int</td>
+<td>昨收价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_last_price</td>
+<td>unsigned int</td>
+<td>最新价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_open_price</td>
+<td>unsigned int</td>
+<td>开盘价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_day_high_price</td>
+<td>unsigned int</td>
+<td>最高价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_day_low_price</td>
+<td>unsigned int</td>
+<td>最低价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_today_close_price</td>
+<td>unsigned int</td>
+<td>收盘价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_total_trade_weighted_avg_price</td>
+<td>unsigned int</td>
+<td>加权平均价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_fluctuation_1</td>
+<td>int</td>
+<td>升跌 1，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_fluctuation_2</td>
+<td>int</td>
+<td>升跌 2，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_total_bid_weighted_avg_price</td>
+<td>unsigned int</td>
+<td>买方挂单均价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_total_bid_quantity</td>
+<td>unsigned long long</td>
+<td>买总量，实际值需要除以 100</td>
+</tr>
+<tr>
+<td>m_total_ask_weighted_avg_price</td>
+<td>unsigned int</td>
+<td>卖方挂单均价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_total_ask_quantity</td>
+<td>unsigned long long</td>
+<td>卖总量，实际值需要除以 100</td>
+</tr>
+<tr>
+<td>m_weighted_avg_price_BP</td>
+<td>int</td>
+<td>加权平均涨跌 BP，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_weighted_avg_pre_close_price</td>
+<td>unsigned int</td>
+<td>昨收盘加权平均价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_auction_trade_last_price</td>
+<td>unsigned int</td>
+<td>匹配成交最新价，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_reserved[4]</td>
+<td>unsigned char[4]</td>
+<td>保留字段</td>
+</tr>
+<tr>
+<td>m_auction_volume_trade</td>
+<td>unsigned long long</td>
+<td>匹配成交成交量，实际值需要除以 100</td>
+</tr>
+<tr>
+<td>m_auction_value_trade</td>
+<td>unsigned long long</td>
+<td>匹配成交成交金额，实际值需要除以 1000000</td>
+</tr>
+<tr>
+<td>m_bid_unit[SZE_LEV2_DEPTH]</td>
+<td>EMQSzePriceQuantityUnit[<a href="#SZE_LEV2_DEPTH">SZE_LEV2_DEPTH</a>]</td>
+<td>买方十档</td>
+</tr>
+<tr>
+<td>m_ask_unit[SZE_LEV2_DEPTH]</td>
+<td>EMQSzePriceQuantityUnit[<a href="#SZE_LEV2_DEPTH">SZE_LEV2_DEPTH</a>]</td>
+<td>卖方十档</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-12-a-id-emqszebondorder-emqszebondorder-a-">5.2.12. <a id="EMQSzeBondOrder">EMQSzeBondOrder</a></h3>
+<pre><code class="lang-cpp">
+// 深交所债券逐笔委托
+struct EMQSzeBondOrder
+{
+    EMQSzeBondOrder()
+    {
+        memset( this , 0 , sizeof( EMQSzeBondOrder ) );
+    }
+
+    EMQSzeHead                   m_head;                            // 包头
+    /// 对逐笔委托价格转换说明如下：
+    //  ****************************************************************************************************************
+    //  |订单类型 \ 买卖方向 |                    买（1）            |                           卖（2）                    |
+    //  |     市价（1）      |                    直接透传           |                           直接透传                   |
+    //  |    本方最优(U）    |                    直接透传           |                           直接透传                   |
+    //  |     限价（2）      |   如果小于 3 的取为 3，否则取原值     |   如果大于 999999997，取为 999999997，否则取原值     |
+    //  *****************************************************************************************************************
+    unsigned int                      m_price;                           // 价格，  实际值需要除以 10000
+    unsigned long long                m_quantity;                        // 数量，  实际值需要除以 100
+    char                              m_side;                            // 方向，‘1’=买 ‘2’=卖
+    char                              m_order_type;                      // 订单类型
+    //******************************************************************************************
+    // &#39;1&#39;=市价  &#39;2&#39;=限价  &#39;U&#39;=本方最优
+    //******************************************************************************************
+    char                              m_reserved[15];                     // 保留字段
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型及长度</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_head</td>
+<td><a href="#EMQSzeHead">EMQSzeHead</a></td>
+<td>包头</td>
+</tr>
+<tr>
+<td>m_price</td>
+<td>unsigned int</td>
+<td>价格，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_quantity</td>
+<td>unsigned long long</td>
+<td>数量，实际值需要除以 100</td>
+</tr>
+<tr>
+<td>m_side</td>
+<td>char</td>
+<td>方向，‘1’=买 ‘2’=卖</td>
+</tr>
+<tr>
+<td>m_order_type</td>
+<td>char</td>
+<td>订单类型</td>
+</tr>
+<tr>
+<td>m_reserved</td>
+<td>char[15]</td>
+<td>保留字段</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-13-a-id-emqszebondexe-emqszebondexe-a-">5.2.13. <a id="EMQSzeBondExe">EMQSzeBondExe</a></h3>
+<pre><code class="lang-cpp">// 深交所债券逐笔成交
+struct EMQSzeBondExe
+{
+    EMQSzeBondExe()
+    {
+        memset( this , 0 , sizeof( EMQSzeBondExe ) );
+    }
+    EMQSzeHead                   m_head;                           // 包头
+    long long                         m_buy_num;                        // 买方包序号
+    long long                         m_sell_num;                       // 卖方包序号
+    unsigned int                      m_price;                          // 价格，   实际值需要除以 10000
+    long long                         m_quantity;                       // 数量，   实际值需要除以 100
+    char                              m_type;                           // 成交类型
+    //******************************************************************************************
+    // &#39;4&#39;=撤销  &#39;F&#39;=成交
+    //******************************************************************************************
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型及长度</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_head</td>
+<td><a href="#EMQSzeHead">EMQSzeHead</a></td>
+<td>包头</td>
+</tr>
+<tr>
+<td>m_buy_num</td>
+<td>long long</td>
+<td>买方包序号</td>
+</tr>
+<tr>
+<td>m_sell_num</td>
+<td>long long</td>
+<td>卖方包序号</td>
+</tr>
+<tr>
+<td>m_price</td>
+<td>unsigned int</td>
+<td>价格，实际值需要除以 10000</td>
+</tr>
+<tr>
+<td>m_quantity</td>
+<td>long long</td>
+<td>数量，实际值需要除以 100</td>
+</tr>
+<tr>
+<td>m_type</td>
+<td>char</td>
+<td>成交类型</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-14-a-id-emqszebondtick-emqszebondtick-a-">5.2.14. <a id="EMQSzeBondTick">EMQSzeBondTick</a></h3>
+<pre><code class="lang-cpp">struct EMQSzeBondTick
+{
+    EMQSzeTickType m_tick_type;
+    union {
+        EMQSzeBondOrder *m_bond_order;
+        EMQSzeBondExe *m_bond_exe;
+    };
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型及长度</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_tick_type</td>
+<td><a href="#EMQSzeTickType">EMQSzeTickType</a></td>
+<td>逐笔消息类型</td>
+</tr>
+<tr>
+<td>m_bond_order</td>
+<td><a href="#EMQSzeBondOrder">EMQSzeBondOrder</a> *</td>
+<td>指向债券逐笔委托的指针</td>
+</tr>
+<tr>
+<td>m_bond_exe</td>
+<td><a href="#EMQSzeBondExe">EMQSzeBondExe</a> *</td>
+<td>指向债券逐笔成交的指针</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-15-a-id-emqssel2pricequantityunit-emqssel2pricequantityunit-a-">5.2.15. <a id="EMQSseL2PriceQuantityUnit">EMQSseL2PriceQuantityUnit</a></h3>
+<pre><code class="lang-cpp">// 上交所lev2快照档位单元
+struct EMQSseL2PriceQuantityUnit
+{
+    char                              m_reserved[4];                    // 保留字段
+    unsigned int                      m_price;                          // 价格，   实际值需要除以 1000
+    unsigned long long                m_quantity;                       // 数量，   实际值需要除以 1000
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型及长度</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_reserved</td>
+<td>char[4]</td>
+<td>保留字段</td>
+</tr>
+<tr>
+<td>m_price</td>
+<td>unsigned int</td>
+<td>价格，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_quantity</td>
+<td>unsigned long long</td>
+<td>数量，实际值需要除以 1000</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-16-a-id-emqsseheartbeat-emqsseheartbeat-a-">5.2.16. <a id="EMQSseHeartbeat">EMQSseHeartbeat</a></h3>
+<pre><code class="lang-cpp">// 上交所心跳消息
+struct EMQSseHeartbeat
+{
+    unsigned int                      m_sequence;                       // 行情序号
+    unsigned int                      m_reserved_1;                     // 保留字段
+    unsigned char                     m_message_type;                   // 行情类型
+    unsigned char                     m_reserved_2[7];                  // 保留字段
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型及长度</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_sequence</td>
+<td>unsigned int</td>
+<td>行情序号</td>
+</tr>
+<tr>
+<td>m_reserved_1</td>
+<td>unsigned int</td>
+<td>保留字段</td>
+</tr>
+<tr>
+<td>m_message_type</td>
+<td>unsigned char</td>
+<td>行情类型</td>
+</tr>
+<tr>
+<td>m_reserved_2</td>
+<td>unsigned char[7]</td>
+<td>保留字段</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-17-a-id-emqssehead-emqssehead-a-">5.2.17. <a id="EMQSseHead">EMQSseHead</a></h3>
+<pre><code class="lang-cpp">// 上交所消息协议头
+struct EMQSseHead
+{
+    unsigned int                      m_sequence;                       // 行情序号
+    unsigned int                      m_reserved_1;                     // 保留字段
+    unsigned char                     m_message_type;                   // 行情类型
+    unsigned short                    m_message_len;                    // 包括此消息头的长度
+    unsigned char                     m_exchange_id;                    // 交易所编号
+    unsigned short                    m_quote_date_year;                // 行情更新年份
+    unsigned char                     m_quote_date_month;               // 行情更新月份
+    unsigned char                     m_quote_date_day;                 // 行情更新日期
+    unsigned int                      m_send_time;                      // 交易所发送时间
+    unsigned char                     m_category_id;                    // 数据产品类别
+    unsigned int                      m_msg_seq_id;                     // 行情包序号
+    unsigned char                     m_seq_lost_flag;                  // 1=有丢包，0=没有丢包
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型及长度</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_sequence</td>
+<td>unsigned int</td>
+<td>行情序号</td>
+</tr>
+<tr>
+<td>m_reserved_1</td>
+<td>unsigned int</td>
+<td>保留字段</td>
+</tr>
+<tr>
+<td>m_message_type</td>
+<td>unsigned char</td>
+<td>行情类型</td>
+</tr>
+<tr>
+<td>m_message_len</td>
+<td>unsigned short</td>
+<td>包括此消息头的长度</td>
+</tr>
+<tr>
+<td>m_exchange_id</td>
+<td>unsigned char</td>
+<td>交易所编号</td>
+</tr>
+<tr>
+<td>m_quote_date_year</td>
+<td>unsigned short</td>
+<td>行情更新年份</td>
+</tr>
+<tr>
+<td>m_quote_date_month</td>
+<td>unsigned char</td>
+<td>行情更新月份</td>
+</tr>
+<tr>
+<td>m_quote_date_day</td>
+<td>unsigned char</td>
+<td>行情更新日期</td>
+</tr>
+<tr>
+<td>m_send_time</td>
+<td>unsigned int</td>
+<td>交易所发送时间</td>
+</tr>
+<tr>
+<td>m_category_id</td>
+<td>unsigned char</td>
+<td>数据产品类别</td>
+</tr>
+<tr>
+<td>m_msg_seq_id</td>
+<td>unsigned int</td>
+<td>行情包序号</td>
+</tr>
+<tr>
+<td>m_seq_lost_flag</td>
+<td>unsigned char</td>
+<td>1=有丢包，0=没有丢包</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-18-a-id-emqssesnap-emqssesnap-a-">5.2.18. <a id="EMQSseSnap">EMQSseSnap</a></h3>
+<pre><code class="lang-cpp">// 上交所lev2快照消息
+struct EMQSseSnap
+{
+    EMQSseSnap()
+    {
+        memset(this, 0, sizeof(EMQSseSnap));                          // 初始化结构体
+    }
+
+    EMQSseHead                        m_head;                           // 包头
+    unsigned int                      m_quote_update_time;              // 行情更新时间,格式如：HHMMSS（秒）HH=00-23, MM=00-59, SS=00-59(秒)
+    char                              m_symbol[SSE_SYMBOL_LEN];         // 证券代码
+    //******************************************************************************************
+    //0：指数    1：股票 2：基金 3：债券 4：回购 5：权证 6：期货 7：外汇 8：利率 9：期权 10：其他
+    //******************************************************************************************
+    unsigned char                     m_security_type;                  // 证券类型
+    unsigned char                     m_image_status;                   // 快照类型，1=全量，2=更新
+    unsigned char                     m_reserved_1;                     // 保留字段
+    unsigned int                      m_pre_close_price;                // 昨收价，    实际值需要除以 1000
+    unsigned int                      m_open_price;                     // 开盘价，    实际值需要除以 1000
+    unsigned int                      m_day_high_price;                 // 最高价，    实际值需要除以 1000
+    unsigned int                      m_day_low_price;                  // 最低价，    实际值需要除以 1000
+    unsigned int                      m_last_price;                     // 最新价，    实际值需要除以 1000
+    unsigned int                      m_today_close_price;              // 收盘价，    实际值需要除以 1000
+    unsigned char                     m_instrument_status;              // 当前品种交易状态
+    //******************************************************************************************
+    // 0:其他    1:启动 2:开市集合竞价 3:连续自动撮合 4:停牌 5:收盘集合竞价
+    // 6:闭市，自动计算闭市价格  7:交易结束  8:产品未上市
+    //******************************************************************************************
+    unsigned char                     m_trading_status;                 // 当前产品状态
+    //******************************************************************************************
+    // Bit7-Bit4(m_trading_status&amp;0xF0):
+    // 0x00:表示启动（开市前)
+    // 0x10:表示开盘集合竞价
+    // 0x20:表示连续交易
+    // 0x30:表示闭市
+    // 0x40:表示合约停牌
+    // 0x50:表示可恢复交易的熔断时段（盘中集合竞价）
+    // 0x60:表示不可恢复交易的熔断时段（暂停交易至闭市）
+    // 0x70:表示收盘集合竞价时段
+    // 0x80:表示波动性中断（适用于股票期权)
+    // 0x15:表示无意义
+    // Bit3(m_trading_status&amp;0x08):
+    // 0x08:‟表示此合约可正常交易 0x00:表示此合约不可正常交易
+    // Bit2(m_trading_status&amp;0x04):
+    // 0x04:表示已上市 0x00:表示未上市
+    // Bit1(m_trading_status&amp;0x02):
+    // 0x02:表示此合约在当前时段接受订单申报 0x00:表示此合约在当前时段不接受订单申报
+    // Bit0:预留
+    //******************************************************************************************
+    unsigned short                    m_reserved_2;                     // 保留字段
+    unsigned int                      m_total_trade_num;                // 成交笔数
+    unsigned long long                m_total_quantity;                 // 成交总量，               实际值需要除以 1000
+    unsigned long long                m_total_value;                    // 成交总额，               实际值需要除以 100000
+    unsigned long long                m_total_bid_quantity;             // 委托买入总量，           实际值需要除以 1000
+    unsigned int                      m_total_bid_weighted_avg_price;   // 买方加权平均委买价格，   实际值需要除以 1000
+    unsigned long long                m_total_ask_quantity;             // 委托卖出总量，           实际值需要除以 1000
+    unsigned int                      m_total_ask_weighted_avg_price;   // 卖方加权平均委买价格，   实际值需要除以 1000
+    unsigned int                      m_yield_to_maturity;              // 债券到期收益率
+    unsigned char                     m_bid_depth;                      // 买盘价位数量
+    unsigned char                     m_ask_depth;                      // 卖盘价位数量
+    EMQSseL2PriceQuantityUnit    m_bid_unit[SSE_LEV2_DEPTH];       // 买边十档
+    EMQSseL2PriceQuantityUnit    m_ask_unit[SSE_LEV2_DEPTH];       // 卖边十档
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型及长度</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_head</td>
+<td><a href="#EMQSseHead">EMQSseHead</a></td>
+<td>包头</td>
+</tr>
+<tr>
+<td>m_quote_update_time</td>
+<td>unsigned int</td>
+<td>行情更新时间,格式如：HHMMSS（秒）</td>
+</tr>
+<tr>
+<td>m_symbol</td>
+<td>char[<a href="#SSE_SYMBOL_LEN">SSE_SYMBOL_LEN</a>]</td>
+<td>证券代码</td>
+</tr>
+<tr>
+<td>m_security_type</td>
+<td>unsigned char</td>
+<td>证券类型 (0：指数，1：股票，... 10：其他)</td>
+</tr>
+<tr>
+<td>m_image_status</td>
+<td>unsigned char</td>
+<td>快照类型，1=全量，2=更新</td>
+</tr>
+<tr>
+<td>m_reserved_1</td>
+<td>unsigned char</td>
+<td>保留字段</td>
+</tr>
+<tr>
+<td>m_pre_close_price</td>
+<td>unsigned int</td>
+<td>昨收价，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_open_price</td>
+<td>unsigned int</td>
+<td>开盘价，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_day_high_price</td>
+<td>unsigned int</td>
+<td>最高价，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_day_low_price</td>
+<td>unsigned int</td>
+<td>最低价，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_last_price</td>
+<td>unsigned int</td>
+<td>最新价，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_today_close_price</td>
+<td>unsigned int</td>
+<td>收盘价，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_instrument_status</td>
+<td>unsigned char</td>
+<td>当前品种交易状态</td>
+</tr>
+<tr>
+<td>m_trading_status</td>
+<td>unsigned char</td>
+<td>当前产品状态</td>
+</tr>
+<tr>
+<td>m_reserved_2</td>
+<td>unsigned short</td>
+<td>保留字段</td>
+</tr>
+<tr>
+<td>m_total_trade_num</td>
+<td>unsigned int</td>
+<td>成交笔数</td>
+</tr>
+<tr>
+<td>m_total_quantity</td>
+<td>unsigned long long</td>
+<td>成交总量，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_total_value</td>
+<td>unsigned long long</td>
+<td>成交总额，实际值需要除以 100000</td>
+</tr>
+<tr>
+<td>m_total_bid_quantity</td>
+<td>unsigned long long</td>
+<td>委托买入总量，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_total_bid_weighted_avg_price</td>
+<td>unsigned int</td>
+<td>买方加权平均委买价格，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_total_ask_quantity</td>
+<td>unsigned long long</td>
+<td>委托卖出总量，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_total_ask_weighted_avg_price</td>
+<td>unsigned int</td>
+<td>卖方加权平均委买价格，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_yield_to_maturity</td>
+<td>unsigned int</td>
+<td>债券到期收益率</td>
+</tr>
+<tr>
+<td>m_bid_depth</td>
+<td>unsigned char</td>
+<td>买盘价位数量</td>
+</tr>
+<tr>
+<td>m_ask_depth</td>
+<td>unsigned char</td>
+<td>卖盘价位数量</td>
+</tr>
+<tr>
+<td>m_bid_unit</td>
+<td><a href="#EMQSseL2PriceQuantityUnit">EMQSseL2PriceQuantityUnit</a>[<a href="#SSE_LEV2_DEPTH">SSE_LEV2_DEPTH</a>]</td>
+<td>买边十档</td>
+</tr>
+<tr>
+<td>m_ask_unit</td>
+<td><a href="#EMQSseL2PriceQuantityUnit">EMQSseL2PriceQuantityUnit</a>[<a href="#SSE_LEV2_DEPTH">SSE_LEV2_DEPTH</a>]</td>
+<td>卖边十档</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-19-a-id-emqsseidx-emqsseidx-a-">5.2.19. <a id="EMQSseIdx">EMQSseIdx</a></h3>
+<pre><code class="lang-cpp">// 上交所lev2指数消息
+struct EMQSseIdx
+{
+    EMQSseIdx()
+    {
+        memset(this, 0, sizeof(EMQSseIdx));                           // 初始化结构体
+    }
+
+    EMQSseHead                        m_head;                           // 包头
+    unsigned int                      m_quote_update_time;              // 行情更新时间,格式如：HHMMSS（秒）HH=00-23, MM=00-59, SS=00-59(秒)
+    char                              m_symbol[SSE_SYMBOL_LEN];         // 证券代码
+    //******************************************************************************************
+    //0：指数    1：股票 2：基金 3：债券 4：回购 5：权证 6：期货 7：外汇 8：利率 9：期权 10：其他
+    //******************************************************************************************
+    unsigned char                     m_security_type;                  // 0=指数， 10=其他
+    unsigned int                      m_pre_close_price;                // 昨收价，     实际值需要除以 100000
+    unsigned int                      m_open_price;                     // 开盘价，     实际值需要除以 100000
+    unsigned long long                m_total_value;                    // 成交额，     实际值需要除以 10
+    unsigned int                      m_day_high_price;                 // 最高价，     实际值需要除以 100000
+    unsigned int                      m_day_low_price;                  // 最低价，     实际值需要除以 100000
+    unsigned int                      m_last_price;                     // 最新价，     实际值需要除以 100000
+    unsigned long long                m_total_quantity;                 // 成交量，     实际值需要除以 100000
+    unsigned int                      m_today_close_price;              // 今收盘价，   实际值需要除以 100000
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型及长度</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_head</td>
+<td><a href="#EMQSseHead">EMQSseHead</a></td>
+<td>包头</td>
+</tr>
+<tr>
+<td>m_quote_update_time</td>
+<td>unsigned int</td>
+<td>行情更新时间,格式如：HHMMSS（秒）</td>
+</tr>
+<tr>
+<td>m_symbol</td>
+<td>char[<a href="#SSE_SYMBOL_LEN">SSE_SYMBOL_LEN</a>]</td>
+<td>证券代码</td>
+</tr>
+<tr>
+<td>m_security_type</td>
+<td>unsigned char</td>
+<td>证券类型 (0：指数，10：其他)</td>
+</tr>
+<tr>
+<td>m_pre_close_price</td>
+<td>unsigned int</td>
+<td>昨收价，实际值需要除以 100000</td>
+</tr>
+<tr>
+<td>m_open_price</td>
+<td>unsigned int</td>
+<td>开盘价，实际值需要除以 100000</td>
+</tr>
+<tr>
+<td>m_total_value</td>
+<td>unsigned long long</td>
+<td>成交额，实际值需要除以 10</td>
+</tr>
+<tr>
+<td>m_day_high_price</td>
+<td>unsigned int</td>
+<td>最高价，实际值需要除以 100000</td>
+</tr>
+<tr>
+<td>m_day_low_price</td>
+<td>unsigned int</td>
+<td>最低价，实际值需要除以 100000</td>
+</tr>
+<tr>
+<td>m_last_price</td>
+<td>unsigned int</td>
+<td>最新价，实际值需要除以 100000</td>
+</tr>
+<tr>
+<td>m_total_quantity</td>
+<td>unsigned long long</td>
+<td>成交量，实际值需要除以 100000</td>
+</tr>
+<tr>
+<td>m_today_close_price</td>
+<td>unsigned int</td>
+<td>今收盘价，实际值需要除以 100000</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-20-a-id-emqssel2treepricequantityunit-emqssel2treepricequantityunit-a-">5.2.20. <a id="EMQSseL2TreePriceQuantityUnit">EMQSseL2TreePriceQuantityUnit</a></h3>
+<pre><code class="lang-cpp">// 上交所lev2建树档位单元
+struct EMQSseL2TreePriceQuantityUnit
+{
+    unsigned int                      m_price;                          // 价格，   实际值需要除以 1000
+    unsigned long long                m_quantity;                       // 数量，   实际值需要除以 1000
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_price</td>
+<td>unsigned int</td>
+<td>价格，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_quantity</td>
+<td>unsigned long long</td>
+<td>数量，实际值需要除以 1000</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-21-a-id-emqssetree-emqssetree-a-">5.2.21. <a id="EMQSseTree">EMQSseTree</a></h3>
+<pre><code class="lang-cpp">
+// 上交所lev2 建树消息
+struct EMQSseTree
+{
+    EMQSseTree()
+    {
+        memset(this, 0, sizeof(EMQSseTree));
+    }
+
+    EMQSseHead                   m_head;
+    unsigned int                      m_channel_num;                    // 通道号
+    unsigned int                      m_quote_update_time;              // 行情时间
+    char                              m_symbol[SSE_SYMBOL_LEN];         // 标的名称
+    //******************************************************************************************
+    //0：指数    1：股票 2：基金 3：债券 4：回购 5：权证 6：期货 7：外汇 8：利率 9：期权 10：其他
+    //******************************************************************************************
+    unsigned char                     m_security_type;                  // 股票/合约类型
+    unsigned long long                m_biz_index;                      // 业务序列号
+    unsigned int                      m_pre_close_price;                // 昨收价，                 实际值需要除以 1000
+    unsigned int                      m_open_price;                     // 开盘价，                 实际值需要除以 1000
+    unsigned int                      m_day_high_price;                 // 最高价，                 实际值需要除以 1000
+    unsigned int                      m_day_low_price;                  // 最低价，                 实际值需要除以 1000
+    unsigned int                      m_last_price;                     // 最新价，                 实际值需要除以 1000
+    unsigned int                      m_today_close_price;              // 今收盘价，               实际值需要除以 1000
+    unsigned char                     m_instrument_status;              // 当前品种交易状态
+    //******************************************************************************************
+    // 0:其他    1:启动 2:开市集合竞价 3:连续自动撮合 4:停牌 5:收盘集合竞价
+    // 6:闭市，自动计算闭市价格  7:交易结束  8:产品未上市
+    //******************************************************************************************
+    unsigned char                     m_trading_status;                 // 当前产品状态
+    //******************************************************************************************
+    // Bit7-Bit4(m_trading_status&amp;0xF0):
+    // 0x00:表示启动（开市前)
+    // 0x10:表示开盘集合竞价
+    // 0x20:表示连续交易
+    // 0x30:表示闭市
+    // 0x40:表示合约停牌
+    // 0x50:表示可恢复交易的熔断时段（盘中集合竞价）
+    // 0x60:表示不可恢复交易的熔断时段（暂停交易至闭市）
+    // 0x70:表示收盘集合竞价时段
+    // 0x80:表示波动性中断（适用于股票期权)
+    // 0x15:表示无意义
+    // Bit3(m_trading_status&amp;0x08):
+    // 0x08:‟表示此合约可正常交易 0x00:表示此合约不可正常交易
+    // Bit2(m_trading_status&amp;0x04):
+    // 0x04:表示已上市 0x00:表示未上市
+    // Bit1(m_trading_status&amp;0x02):
+    // 0x02:表示此合约在当前时段接受订单申报 0x00:表示此合约在当前时段不接受订单申报
+    // Bit0:预留
+    //******************************************************************************************
+    unsigned char                     m_reserved_0[6];                  // 6个字节的保留字段
+    unsigned int                      m_total_trade_num;                // 总成交笔数
+    unsigned long long                m_total_quantity;                 // 总成交量，               实际值需要除以 1000
+    unsigned long long                m_total_value;                    // 总成交金额，             实际值需要除以 100000
+    unsigned long long                m_total_bid_quantity;             // 委托买入数量，           实际值需要除以 1000
+    unsigned int                      m_total_bid_weighted_avg_price;   // 加权平均委托买入价格，   实际值需要除以 1000
+    unsigned long long                m_total_ask_quantity;             // 委托卖出总量，           实际值需要除以 1000
+    int                               m_total_ask_weighted_avg_price;   // 加权平均委托卖价格，     实际值需要除以 1000
+    int                               m_yield_to_maturity;              // 债券到期收益率
+    unsigned char                     m_bid_depth;                      // 申买档位数
+    unsigned char                     m_ask_depth;                      // 申卖档位数
+    unsigned char                     m_reserved_1[2];                  // 2字节的保留字段
+    EMQSseL2TreePriceQuantityUnit m_bid_unit[SSE_LEV2_DEPTH];       // 申买档位信息
+    EMQSseL2TreePriceQuantityUnit m_ask_unit[SSE_LEV2_DEPTH];       // 申卖档位信息
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_head</td>
+<td><a href="#EMQSseHead">EMQSseHead</a></td>
+<td>包头</td>
+</tr>
+<tr>
+<td>m_channel_num</td>
+<td>unsigned int</td>
+<td>通道号</td>
+</tr>
+<tr>
+<td>m_quote_update_time</td>
+<td>unsigned int</td>
+<td>行情时间</td>
+</tr>
+<tr>
+<td>m_symbol</td>
+<td>char[<a href="#SSE_SYMBOL_LEN">SSE_SYMBOL_LEN</a>]</td>
+<td>标的名称</td>
+</tr>
+<tr>
+<td>m_security_type</td>
+<td>unsigned char</td>
+<td>股票/合约类型</td>
+</tr>
+<tr>
+<td>m_biz_index</td>
+<td>unsigned long long</td>
+<td>业务序列号</td>
+</tr>
+<tr>
+<td>m_pre_close_price</td>
+<td>unsigned int</td>
+<td>昨收价，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_open_price</td>
+<td>unsigned int</td>
+<td>开盘价，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_day_high_price</td>
+<td>unsigned int</td>
+<td>最高价，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_day_low_price</td>
+<td>unsigned int</td>
+<td>最低价，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_last_price</td>
+<td>unsigned int</td>
+<td>最新价，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_today_close_price</td>
+<td>unsigned int</td>
+<td>今收盘价，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_instrument_status</td>
+<td>unsigned char</td>
+<td>当前品种交易状态</td>
+</tr>
+<tr>
+<td>m_trading_status</td>
+<td>unsigned char</td>
+<td>当前产品状态</td>
+</tr>
+<tr>
+<td>m_reserved_0</td>
+<td>unsigned char[6]</td>
+<td>6个字节的保留字段</td>
+</tr>
+<tr>
+<td>m_total_trade_num</td>
+<td>unsigned int</td>
+<td>总成交笔数</td>
+</tr>
+<tr>
+<td>m_total_quantity</td>
+<td>unsigned long long</td>
+<td>总成交量，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_total_value</td>
+<td>unsigned long long</td>
+<td>总成交金额，实际值需要除以 100000</td>
+</tr>
+<tr>
+<td>m_total_bid_quantity</td>
+<td>unsigned long long</td>
+<td>委托买入数量，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_total_bid_weighted_avg_price</td>
+<td>unsigned int</td>
+<td>加权平均委托买入价格，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_total_ask_quantity</td>
+<td>unsigned long long</td>
+<td>委托卖出总量，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_total_ask_weighted_avg_price</td>
+<td>int</td>
+<td>加权平均委托卖价格，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_yield_to_maturity</td>
+<td>int</td>
+<td>债券到期收益率</td>
+</tr>
+<tr>
+<td>m_bid_depth</td>
+<td>unsigned char</td>
+<td>申买档位数</td>
+</tr>
+<tr>
+<td>m_ask_depth</td>
+<td>unsigned char</td>
+<td>申卖档位数</td>
+</tr>
+<tr>
+<td>m_reserved_1</td>
+<td>unsigned char[2]</td>
+<td>2字节的保留字段</td>
+</tr>
+<tr>
+<td>m_bid_unit</td>
+<td>EMQSseL2TreePriceQuantityUnit[<a href="#SSE_LEV2_DEPTH">SSE_LEV2_DEPTH</a>]</td>
+<td>申买档位信息</td>
+</tr>
+<tr>
+<td>m_ask_unit</td>
+<td>EMQSseL2TreePriceQuantityUnit[<a href="#SSE_LEV2_DEPTH">SSE_LEV2_DEPTH</a>]</td>
+<td>申卖档位信息</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-22-a-id-emqssel2bondpricequantityunit-emqssel2bondpricequantityunit-a-">5.2.22. <a id="EMQSseL2BondPriceQuantityUnit">EMQSseL2BondPriceQuantityUnit</a></h3>
+<pre><code class="lang-cpp">// 上交所lev2债券快照档位单元
+struct EMQSseL2BondPriceQuantityUnit
+{
+    unsigned int                      m_price;                          // 价格，   实际值需要除以 1000
+    unsigned long long                m_quantity;                       // 数量，   实际值需要除以 1000
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_price</td>
+<td>unsigned int</td>
+<td>价格，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_quantity</td>
+<td>unsigned long long</td>
+<td>数量，实际值需要除以 1000</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-23-a-id-emqssebondsnap-emqssebondsnap-a-">5.2.23. <a id="EMQSseBondSnap">EMQSseBondSnap</a></h3>
+<pre><code class="lang-cpp">// 上交所lev2债券快照
+struct EMQSseBondSnap
+{
+    EMQSseBondSnap()
+    {
+        memset(this, 0, sizeof(EMQSseBondSnap));                  // 初始化结构体
+    }
+
+    EMQSseHead                   m_head;                           // 包头
+    unsigned int                      m_quote_update_time;              // 行情更新时间,格式如：HHMMSSsss（千分之一秒）HH=00-23, MM=00-59, SS=00-59(秒) sss=000-999(千分之一秒) 如 143025002 表示 14:30:25.002
+    unsigned char                     m_reserved_0[4];                  // 保留字段
+    char                              m_symbol[SSE_SYMBOL_LEN];         // 合约
+    // *******************************************************************************************
+    //     证券类型            证券子类型
+    //     0            指数   0              指数
+    //                         255            未分类
+    //     1            股票   0              主板
+    //                         1
+    //                         2              创业板
+    //                         3              B股
+    //                         4              H股
+    //                         5              科创板
+    //                         255            未分类
+    //     2            基金   248            LOF基金
+    //                         249            ETF基金
+    //                         255            未分类
+    //     3            债券   248            国债
+    //                         249            可转债
+    //                         255            未分类
+    //     4            回购   248            国债回购
+    //                         255            未分类
+    //     9            期权   248            股票期权
+    //                         249            ETF期权
+    //                         255            未分类
+    //     10           其他
+    // *******************************************************************************************
+    unsigned char                     m_security_type;                  // 证券类型
+    unsigned char                     m_sub_security_type;              // 证券子类型
+    unsigned char                     m_reserved_1[3];                  // 保留字段
+    unsigned int                      m_pre_close_price;                // 昨收盘价，       实际值需要除以 1000
+    unsigned int                      m_open_price;                     // 开盘价，         实际值需要除以 1000
+    unsigned int                      m_day_high_price;                 // 最高价，         实际值需要除以 1000
+    unsigned int                      m_day_low_price;                  // 最低价 ，        实际值需要除以 1000
+    unsigned int                      m_last_price;                     // 最新价，         实际值需要除以 1000
+    unsigned int                      m_today_close_price;              // 收盘价，         实际值需要除以 1000
+    unsigned char                     m_instrument_status;              // 当前品种交易状态
+    //******************************************************************************************
+    // 0:其他    1:启动 2:开市集合竞价 3:连续自动撮合 4:停牌
+    // 6:闭市，自动计算闭市价格  7:交易结束  8:产品未上市
+    //******************************************************************************************
+    unsigned char                     m_reserved_2[3];                  // 保留字段
+    unsigned int                      m_total_trade_num;                // 总成交笔数
+    unsigned long long                m_total_quantity;                 // 总成交量，               实际值需要除以 1000
+    unsigned long long                m_total_value;                    // 总成交金额，             实际值需要除以 100000
+    unsigned long long                m_total_bid_quantity;             // 委托买入数量，           实际值需要除以 1000
+    unsigned int                      m_total_bid_weighted_avg_price;   // 加权平均委托买入价格，   实际值需要除以 1000
+    unsigned long long                m_total_ask_quantity;             // 委托卖出总量，           实际值需要除以 1000
+    unsigned int                      m_total_ask_weighted_avg_price;   // 加权平均委托卖价格，     实际值需要除以 1000
+
+    unsigned int                      m_withdraw_bid_num;               // 买入撤单笔数
+    unsigned long long                m_withdraw_bid_amount;            // 买入撤单数量             实际值需要除以 1000
+    unsigned long long                m_withdraw_bid_price;             // 买入撤单金额             实际值需要除以 100000
+    unsigned int                      m_withdraw_ask_num;               // 卖出撤单笔数
+    unsigned long long                m_withdraw_ask_amount;            // 卖出撤单数量             实际值需要除以 1000
+    unsigned long long                m_withdraw_ask_price;             // 卖出撤单金额             实际值需要除以 100000
+    unsigned int                      m_total_bid_num;                  // 买入总笔数
+    unsigned int                      m_total_ask_num;                  // 卖出总笔数
+    unsigned int                      m_bid_trade_max_duration;         // 买入委托成交最大等待时间
+    unsigned int                      m_ask_trade_max_duration;         // 卖出委托成交最大等待时间
+
+    unsigned char                     m_bid_depth;                      // 申买档位数
+    unsigned char                     m_ask_depth;                      // 申卖档位数
+    unsigned char                     m_reserved_3[6];                  // 保留字段
+    EMQSseL2BondPriceQuantityUnit   m_bid_unit[SSE_LEV2_DEPTH];     // 申买信息
+    EMQSseL2BondPriceQuantityUnit   m_ask_unit[SSE_LEV2_DEPTH];     // 申卖信息
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_head</td>
+<td><a href="#EMQSseHead">EMQSseHead</a></td>
+<td>包头</td>
+</tr>
+<tr>
+<td>m_quote_update_time</td>
+<td>unsigned int</td>
+<td>行情更新时间, 格式如：HHMMSSsss（千分之一秒）</td>
+</tr>
+<tr>
+<td>m_reserved_0</td>
+<td>unsigned char[4]</td>
+<td>保留字段</td>
+</tr>
+<tr>
+<td>m_symbol</td>
+<td>char[<a href="#SSE_SYMBOL_LEN">SSE_SYMBOL_LEN</a>]</td>
+<td>合约</td>
+</tr>
+<tr>
+<td>m_security_type</td>
+<td>unsigned char</td>
+<td>证券类型</td>
+</tr>
+<tr>
+<td>m_sub_security_type</td>
+<td>unsigned char</td>
+<td>证券子类型</td>
+</tr>
+<tr>
+<td>m_reserved_1</td>
+<td>unsigned char[3]</td>
+<td>保留字段</td>
+</tr>
+<tr>
+<td>m_pre_close_price</td>
+<td>unsigned int</td>
+<td>昨收盘价，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_open_price</td>
+<td>unsigned int</td>
+<td>开盘价，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_day_high_price</td>
+<td>unsigned int</td>
+<td>最高价，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_day_low_price</td>
+<td>unsigned int</td>
+<td>最低价，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_last_price</td>
+<td>unsigned int</td>
+<td>最新价，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_today_close_price</td>
+<td>unsigned int</td>
+<td>收盘价，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_instrument_status</td>
+<td>unsigned char</td>
+<td>当前品种交易状态<br />0:其他 1:启动 2:开市集合竞价 3:连续自动撮合 4:停牌  6:闭市，自动计算闭市价格  7:交易结束  8:产品未上市</td>
+</tr>
+<tr>
+<td>m_reserved_2</td>
+<td>unsigned char[3]</td>
+<td>保留字段</td>
+</tr>
+<tr>
+<td>m_total_trade_num</td>
+<td>unsigned int</td>
+<td>总成交笔数</td>
+</tr>
+<tr>
+<td>m_total_quantity</td>
+<td>unsigned long long</td>
+<td>总成交量，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_total_value</td>
+<td>unsigned long long</td>
+<td>总成交金额，实际值需要除以 100000</td>
+</tr>
+<tr>
+<td>m_total_bid_quantity</td>
+<td>unsigned long long</td>
+<td>委托买入数量，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_total_bid_weighted_avg_price</td>
+<td>unsigned int</td>
+<td>加权平均委托买入价格，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_total_ask_quantity</td>
+<td>unsigned long long</td>
+<td>委托卖出总量，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_total_ask_weighted_avg_price</td>
+<td>unsigned int</td>
+<td>加权平均委托卖价格，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_withdraw_bid_num</td>
+<td>unsigned int</td>
+<td>买入撤单笔数</td>
+</tr>
+<tr>
+<td>m_withdraw_bid_amount</td>
+<td>unsigned long long</td>
+<td>买入撤单数量，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_withdraw_bid_price</td>
+<td>unsigned long long</td>
+<td>买入撤单金额，实际值需要除以 100000</td>
+</tr>
+<tr>
+<td>m_withdraw_ask_num</td>
+<td>unsigned int</td>
+<td>卖出撤单笔数</td>
+</tr>
+<tr>
+<td>m_withdraw_ask_amount</td>
+<td>unsigned long long</td>
+<td>卖出撤单数量，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_withdraw_ask_price</td>
+<td>unsigned long long</td>
+<td>卖出撤单金额，实际值需要除以 100000</td>
+</tr>
+<tr>
+<td>m_total_bid_num</td>
+<td>unsigned int</td>
+<td>买入总笔数</td>
+</tr>
+<tr>
+<td>m_total_ask_num</td>
+<td>unsigned int</td>
+<td>卖出总笔数</td>
+</tr>
+<tr>
+<td>m_bid_trade_max_duration</td>
+<td>unsigned int</td>
+<td>买入委托成交最大等待时间</td>
+</tr>
+<tr>
+<td>m_ask_trade_max_duration</td>
+<td>unsigned int</td>
+<td>卖出委托成交最大等待时间</td>
+</tr>
+<tr>
+<td>m_bid_depth</td>
+<td>unsigned char</td>
+<td>申买档位数</td>
+</tr>
+<tr>
+<td>m_ask_depth</td>
+<td>unsigned char</td>
+<td>申卖档位数</td>
+</tr>
+<tr>
+<td>m_reserved_3</td>
+<td>unsigned char[6]</td>
+<td>保留字段</td>
+</tr>
+<tr>
+<td>m_bid_unit</td>
+<td>EMQSseL2BondPriceQuantityUnit[<a href="#SSE_LEV2_DEPTH">SSE_LEV2_DEPTH</a>]</td>
+<td>申买信息</td>
+</tr>
+<tr>
+<td>m_ask_unit</td>
+<td>EMQSseL2BondPriceQuantityUnit[<a href="#SSE_LEV2_DEPTH">SSE_LEV2_DEPTH</a>]</td>
+<td>申卖信息</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-24-a-id-emqssebondtick-emqssebondtick-a-">5.2.24. <a id="EMQSseBondTick">EMQSseBondTick</a></h3>
+<pre><code class="lang-cpp">
+// 债券逐笔
+struct EMQSseBondTick
+{
+    EMQSseBondTick()
+    {
+        memset(this, 0, sizeof(EMQSseBondTick));                  // 初始化结构体
+    }
+
+    EMQSseHead                   m_head;                           // 包头
+    unsigned int                      m_tick_index;                     // 序号从1开始,按通道连续
+    unsigned int                      m_channel_num;                    // 通道号
+    char                              m_symbol[SSE_SYMBOL_LEN];         // 标的名称
+    // *******************************************************************************************
+    //     证券类型            证券子类型
+    //     0            指数   0              指数
+    //                         255            未分类
+    //     1            股票   0              主板
+    //                         1
+    //                         2              创业板
+    //                         3              B股
+    //                         4              H股
+    //                         5              科创板
+    //                         255            未分类
+    //     2            基金   248            LOF基金
+    //                         249            ETF基金
+    //                         255            未分类
+    //     3            债券   248            国债
+    //                         249            可转债
+    //                         255            未分类
+    //     4            回购   248            国债回购
+    //                         255            未分类
+    //     9            期权   248            股票期权
+    //                         249            ETF期权
+    //                         255            未分类
+    //     10           其他
+    // *******************************************************************************************
+    unsigned char                     m_security_type;                  // 证券类型
+    unsigned char                     m_sub_security_type;              // 证券子类型
+    unsigned int                      m_tick_time;                      // 订单或成交时间,格式如：HHMMSSsss（千分之一秒）HH=00-23, MM=00-59, SS=00-59(秒) sss=000-999(千分之一秒) 如 143025002 表示 14:30:25.002
+    unsigned char                     m_tick_type;                      // 类型， A新增订单， D删除订单， 删除订单， S产品状态订单， T成交
+    unsigned long long                m_buy_num;                        // 买方订单号
+    unsigned long long                m_sell_num;                       // 卖方订单号
+    unsigned int                      m_price;                          // 价格，对产品状态订单无意义       实际值需要除以 1000
+    unsigned long long                m_quantity;                       // 数量（手），对产品状态订单无意义 实际值需要除以 1000
+    unsigned long long                m_trade_value;                    // 成交额，仅适用于成交消息         实际值需要除以 100000
+    char                              m_side_flag;                      // 买卖标志，若为订单： B - 买单， S - 卖单；若为成交： B - 外盘， 主动买， S - 内盘， 主动卖 N - 未知 。
+    unsigned char                     m_instrument_status;              // 当前品种交易状态，仅适用于产品状态订单
+    //******************************************************************************************
+    // 0:其他    1:启动 2:开市集合竞价 3:连续自动撮合 4:停牌
+    // 6:闭市，自动计算闭市价格  7:交易结束  8:产品未上市
+    //******************************************************************************************
+    unsigned char                     m_reserved[8];                    // 保留字段
+};
+
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_head</td>
+<td><a href="#EMQSseHead">EMQSseHead</a></td>
+<td>包头</td>
+</tr>
+<tr>
+<td>m_tick_index</td>
+<td>unsigned int</td>
+<td>序号从1开始,按通道连续</td>
+</tr>
+<tr>
+<td>m_channel_num</td>
+<td>unsigned int</td>
+<td>通道号</td>
+</tr>
+<tr>
+<td>m_symbol</td>
+<td>char[<a href="#SSE_SYMBOL_LEN">SSE_SYMBOL_LEN</a>]</td>
+<td>标的名称</td>
+</tr>
+<tr>
+<td>m_security_type</td>
+<td>unsigned char</td>
+<td>证券类型</td>
+</tr>
+<tr>
+<td>m_sub_security_type</td>
+<td>unsigned char</td>
+<td>证券子类型</td>
+</tr>
+<tr>
+<td>m_tick_time</td>
+<td>unsigned int</td>
+<td>订单或成交时间，格式如：HHMMSSsss（千分之一秒）</td>
+</tr>
+<tr>
+<td>m_tick_type</td>
+<td>unsigned char</td>
+<td>类型：A新增订单，D删除订单，S产品状态订单，T成交</td>
+</tr>
+<tr>
+<td>m_buy_num</td>
+<td>unsigned long long</td>
+<td>买方订单号</td>
+</tr>
+<tr>
+<td>m_sell_num</td>
+<td>unsigned long long</td>
+<td>卖方订单号</td>
+</tr>
+<tr>
+<td>m_price</td>
+<td>unsigned int</td>
+<td>价格，对产品状态订单无意义，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_quantity</td>
+<td>unsigned long long</td>
+<td>数量（手），对产品状态订单无意义，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_trade_value</td>
+<td>unsigned long long</td>
+<td>成交额，仅适用于成交消息，实际值需要除以 100000</td>
+</tr>
+<tr>
+<td>m_side_flag</td>
+<td>char</td>
+<td>买卖标志，B - 买单，S - 卖单；成交时，B - 外盘，S - 内盘，N - 未知</td>
+</tr>
+<tr>
+<td>m_instrument_status</td>
+<td>unsigned char</td>
+<td>当前品种交易状态，仅适用于产品状态订单</td>
+</tr>
+<tr>
+<td>m_reserved</td>
+<td>unsigned char[8]</td>
+<td>保留字段</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-25-a-id-emqssetick-emqssetick-a-">5.2.25. <a id="EMQSseTick">EMQSseTick</a></h3>
+<pre><code class="lang-cpp">// 逐笔合并
+struct EMQSseTick
+{
+    EMQSseTick()
+    {
+        memset(this, 0, sizeof(EMQSseTick));                  // 初始化结构体
+    }
+
+    unsigned int                      m_sequence;                       // 行情序号
+    unsigned int                      m_reserved_1;                     // 保留字段
+    unsigned char                     m_message_type;                   // 行情类型
+    unsigned long long                m_tick_index;                     // 序号从1开始,按通道连续
+    unsigned short                    m_channel_num;                    // 通道号
+    unsigned short                    m_reserved_2;                     // 保留字段
+    char                              m_symbol[SSE_SYMBOL_LEN];         // 标的名称
+    unsigned int                      m_tick_time;                      // 订单或成交时间,格式如：HHMMSSss（百分之一秒）HH=00-23, MM=00-59, SS=00-59(秒) ss=00-99(百分之一秒) 如 14302502 表示 14:30:25.02
+    unsigned char                     m_tick_type;                      // 类型， A新增订单， D删除订单， S产品状态订单， T成交
+    unsigned long long                m_buy_num;                        // 买方订单号
+    unsigned long long                m_sell_num;                       // 卖方订单号
+    unsigned int                      m_price;                          // 价格，对产品状态订单无意义       实际值需要除以 1000
+    unsigned long long                m_quantity;                       // 数量（手），对产品状态订单无意义 实际值需要除以 1000
+    unsigned long long                m_trade_value;
+    // 对于新增委托，表示已成交的委托数量， 字段类型为 uInt64_1000, 实际值需要除以 1000；
+    // 对于成交，表示成交金额 （ 元 ）， 字段类型为 uInt64_100000, 实际值需要除以 100000；
+    // 其他无意义
+
+    unsigned char                     m_side_flag;                      // TickType不同含义不同，参考附表证券交 易状态表
+    /*******************************************************************************
+    | TickType 类型 | m_tick_type 取值 |     SideFlag 含义      | m_side_flag 取值 |
+    | ------------- | ---------------- | ---------------------- | ---------------- |
+    |   新增订单    |       &#39;A&#39;        |          买单          |       0x00       |
+    |               |                  |          卖单          |       0x01       |
+    | ------------- | ---------------- | ---------------------- | ---------------- |
+    |   删除订单    |       &#39;D&#39;        |          买单          |       0x00       |
+    |               |                  |          卖单          |       0x01       |
+    | ------------- | ---------------- | ---------------------- | ---------------- |
+    | 产品状态订单  |       &#39;S&#39;        |          其他          |       0x00       |
+    |               |                  |          启动          |       0x01       |
+    |               |                  |      开市集合竞价      |       0x02       |
+    |               |                  |      连续自动撮合      |       0x03       |
+    |               |                  |          停牌          |       0x04       |
+    |               |                  |      收盘集合竞价      |       0x05       |
+    |               |                  | 闭市, 自动计算闭市价格 |       0x06       |
+    |               |                  |        交易结束        |       0x07       |
+    |               |                  |       产品未上市       |       0x08       |
+    | ------------- | ---------------- | ---------------------- | ---------------- |
+    |     成交      |       &#39;T&#39;        |      外盘 主动买       |       0x00       |
+    |               |                  |      内盘 主动卖       |       0x01       |
+    |               |                  |          未知          |       0x02       |
+    *******************************************************************************/
+};
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>标识</th>
+<th>类型</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>m_sequence</td>
+<td>unsigned int</td>
+<td>行情序号</td>
+</tr>
+<tr>
+<td>m_reserved_1</td>
+<td>unsigned int</td>
+<td>保留字段</td>
+</tr>
+<tr>
+<td>m_message_type</td>
+<td>unsigned char</td>
+<td>行情类型</td>
+</tr>
+<tr>
+<td>m_tick_index</td>
+<td>unsigned long long</td>
+<td>序号从1开始,按通道连续</td>
+</tr>
+<tr>
+<td>m_channel_num</td>
+<td>unsigned short</td>
+<td>通道号</td>
+</tr>
+<tr>
+<td>m_reserved_2</td>
+<td>unsigned short</td>
+<td>保留字段</td>
+</tr>
+<tr>
+<td>m_symbol</td>
+<td>char[<a href="#SSE_SYMBOL_LEN">SSE_SYMBOL_LEN</a>]</td>
+<td>标的名称</td>
+</tr>
+<tr>
+<td>m_tick_time</td>
+<td>unsigned int</td>
+<td>订单或成交时间，格式如：HHMMSSss（百分之一秒）</td>
+</tr>
+<tr>
+<td>m_tick_type</td>
+<td>unsigned char</td>
+<td>类型：A新增订单，D删除订单，S产品状态订单，T成交</td>
+</tr>
+<tr>
+<td>m_buy_num</td>
+<td>unsigned long long</td>
+<td>买方订单号</td>
+</tr>
+<tr>
+<td>m_sell_num</td>
+<td>unsigned long long</td>
+<td>卖方订单号</td>
+</tr>
+<tr>
+<td>m_price</td>
+<td>unsigned int</td>
+<td>价格，对产品状态订单无意义，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_quantity</td>
+<td>unsigned long long</td>
+<td>数量（手），对产品状态订单无意义，实际值需要除以 1000</td>
+</tr>
+<tr>
+<td>m_trade_value</td>
+<td>unsigned long long</td>
+<td>对于新增委托，表示已成交的委托数量（实际值需要除以 1000）；对于成交，表示成交金额（实际值需要除以 100000）</td>
+</tr>
+<tr>
+<td>m_side_flag</td>
+<td>unsigned char</td>
+<td>m_tick_type取值不同该字段含义也不同，详情参考代码释义</td>
+</tr>
+</tbody>
+</table>
+<h1 id="6-">6. 附录</h1>
+<h2 id="6-1-">6.1. 字典定义</h2>
+<h3 id="6-1-1-a-id-emqszedefine-a-">6.1.1. <a id="EMQSzeDefine">深交所相关常量定义</a></h3>
+<table>
+<thead>
+<tr>
+<th>宏定义</th>
+<th>值</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SZE_EXCHANGE_ID</td>
+<td>101</td>
+<td>深交所 exchange_id</td>
+</tr>
+<tr>
+<td><a id="SZE_SYMBOL_LEN">SZE_SYMBOL_LEN</a></td>
+<td>9</td>
+<td>深交所合约长度</td>
+</tr>
+<tr>
+<td><a id="SZE_LEV2_DEPTH">SZE_LEV2_DEPTH</a></td>
+<td>10</td>
+<td>深交所快照深度</td>
+</tr>
+<tr>
+<td>SZE_IBR_DEPTH</td>
+<td>5</td>
+<td>深交所 IBR 建树深度</td>
+</tr>
+<tr>
+<td>SZE_LEV2_SNAP_MSG_TYPE</td>
+<td>21</td>
+<td>深交所快照消息类型</td>
+</tr>
+<tr>
+<td>SZE_LEV2_IDX_MSG_TYPE</td>
+<td>22</td>
+<td>深交所指数消息类型</td>
+</tr>
+<tr>
+<td>SZE_LEV2_ORDER_MSG_TYPE</td>
+<td>23</td>
+<td>深交所订单消息类型</td>
+</tr>
+<tr>
+<td>SZE_LEV2_EXE_MSG_TYPE</td>
+<td>24</td>
+<td>深交所成交消息类型</td>
+</tr>
+<tr>
+<td>SZE_LEV2_AF_CLOSE_MSG_TYPE</td>
+<td>25</td>
+<td>深交所盘后定价消息类型</td>
+</tr>
+<tr>
+<td>SZE_LEV2_TREE_MSG_TYPE</td>
+<td>29</td>
+<td>深交所建树消息类型</td>
+</tr>
+<tr>
+<td>SZE_LEV2_IBR_TREE_MSG_TYPE</td>
+<td>28</td>
+<td>深交所 IBR 建树快照</td>
+</tr>
+<tr>
+<td>SZE_LEV2_TURNOVER_MSG_TYPE</td>
+<td>26</td>
+<td>深交所成交量统计快照</td>
+</tr>
+<tr>
+<td>SZE_LEV2_BOND_SNAP_MSG_TYPE</td>
+<td>80</td>
+<td>深交所债券快照消息类型</td>
+</tr>
+<tr>
+<td>SZE_LEV2_BOND_ORDER_MSG_TYPE</td>
+<td>81</td>
+<td>深交所债券逐笔委托消息类型</td>
+</tr>
+<tr>
+<td>SZE_LEV2_BOND_EXE_MSG_TYPE</td>
+<td>82</td>
+<td>深交所债券逐笔成交消息类型</td>
+</tr>
+<tr>
+<td>SZE_LEV2_SNAP_HT_MSG_TYPE</td>
+<td>121</td>
+<td>深交所快照心跳消息类型</td>
+</tr>
+<tr>
+<td>SZE_LEV2_IDX_HT_MSG_TYPE</td>
+<td>122</td>
+<td>深交所指数心跳消息类型</td>
+</tr>
+<tr>
+<td>SZE_LEV2_TICK_HT_MSG_TYPE</td>
+<td>123</td>
+<td>深交所逐笔消息心跳消息类型</td>
+</tr>
+<tr>
+<td>SZE_LEV2_AF_CLOSE_HT_MSG_TYPE</td>
+<td>125</td>
+<td>深交所盘后定价心跳消息类型</td>
+</tr>
+<tr>
+<td>SZE_LEV2_TREE_HT_MSG_TYPE</td>
+<td>129</td>
+<td>深交所全新快照心跳消息类型</td>
+</tr>
+<tr>
+<td>SZE_LEV2_IBR_TREE_HT_MSG_TYPE</td>
+<td>128</td>
+<td>深交所 IBR 建树快照心跳消息</td>
+</tr>
+<tr>
+<td>SZE_LEV2_TURNOVER_HT_MSG_TYPE</td>
+<td>126</td>
+<td>深交所成交量统计快照心跳消息</td>
+</tr>
+<tr>
+<td>SZE_LEV2_BOND_SNAP_HT_MSG_TYPE</td>
+<td>180</td>
+<td>深交所债券快照心跳消息类型</td>
+</tr>
+<tr>
+<td>SZE_LEV2_BOND_TICK_HT_MSG_TYPE</td>
+<td>181</td>
+<td>深交所债券逐笔心跳消息类型</td>
+</tr>
+</tbody>
+</table>
+<h3 id="6-1-2-a-id-emqszedefine-a-">6.1.2. <a id="EMQSzeDefine">上交所相关常量定义</a></h3>
+<table>
+<thead>
+<tr>
+<th>宏定义</th>
+<th>值</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SSE_EXCHANGE_ID</td>
+<td>100</td>
+<td>上交所 exchange_id</td>
+</tr>
+<tr>
+<td><a id="SSE_SYMBOL_LEN">SSE_SYMBOL_LEN</a></td>
+<td>9</td>
+<td>上交所合约长度</td>
+</tr>
+<tr>
+<td><a id=SSE_LEV2_DEPTH>SSE_LEV2_DEPTH</a></td>
+<td>10</td>
+<td>上交所 lev2 档位深度</td>
+</tr>
+<tr>
+<td>SSE_OPTION_DEPTH</td>
+<td>5</td>
+<td>上交所期权档位深度</td>
+</tr>
+<tr>
+<td>SSE_SECURITY_NAME_LEN</td>
+<td>9</td>
+<td>上交所证券名称长度</td>
+</tr>
+<tr>
+<td>SSE_PRODUCT_STATUS_LEN</td>
+<td>21</td>
+<td>上交所产品状态长度</td>
+</tr>
+<tr>
+<td>DATE_LEN</td>
+<td>9</td>
+<td>日期长度</td>
+</tr>
+<tr>
+<td>SSE_LEV2_IDX_MSG_TYPE</td>
+<td>33</td>
+<td>上交所 lev2 指数消息类型</td>
+</tr>
+<tr>
+<td>SSE_LEV2_EXE_MSG_TYPE</td>
+<td>34</td>
+<td>上交所 lev2 成交消息类型</td>
+</tr>
+<tr>
+<td>SSE_LEV2_OPT_MSG_TYPE</td>
+<td>35</td>
+<td>上交所 lev2 期权消息类型</td>
+</tr>
+<tr>
+<td>SSE_LEV2_SNAP_MSG_TYPE</td>
+<td>39</td>
+<td>上交所 lev2 快照消息类型</td>
+</tr>
+<tr>
+<td>SSE_LEV2_ORDER_MSG_TYPE</td>
+<td>32</td>
+<td>上交所 lev2 委托信息类型</td>
+</tr>
+<tr>
+<td>SSE_LEV2_TREE_MSG_TYPE</td>
+<td>38</td>
+<td>上交所 lev2 建树信息类型</td>
+</tr>
+<tr>
+<td>SSE_LEV2_BOND_SNAP_MSG_TYPE</td>
+<td>60</td>
+<td>上交所 lev2 债券快照信息类型</td>
+</tr>
+<tr>
+<td>SSE_LEV2_BOND_TICK_MSG_TYPE</td>
+<td>61</td>
+<td>上交所 lev2 债券逐笔信息类型</td>
+</tr>
+<tr>
+<td>SSE_LEV2_TICK_MERGE_MSG_TYPE</td>
+<td>62</td>
+<td>上交所 lev2 逐笔合并信息类型</td>
+</tr>
+<tr>
+<td>SSE_LEV2_ETF_MSG_TYPE</td>
+<td>63</td>
+<td>上交所 lev2 ETF 信息类型</td>
+</tr>
+<tr>
+<td>SSE_LEV2_STATIC_INFO_MSG_TYPE</td>
+<td>255</td>
+<td>上交所 lev2 静态信息类型</td>
+</tr>
+<tr>
+<td>SSE_LEV2_IDX_HT_MSG_TYPE</td>
+<td>133</td>
+<td>上交所 lev2 指数心跳消息类型</td>
+</tr>
+<tr>
+<td>SSE_LEV2_TICK_HT_MSG_TYPE</td>
+<td>132</td>
+<td>上交所 lev2 逐笔心跳信息类型</td>
+</tr>
+<tr>
+<td>SSE_LEV2_OPT_HT_MSG_TYPE</td>
+<td>135</td>
+<td>上交所 lev2 期权心跳信息类型</td>
+</tr>
+<tr>
+<td>SSE_LEV2_TREE_HT_MSG_TYPE</td>
+<td>138</td>
+<td>上交所 lev2 建树心跳信息类型</td>
+</tr>
+<tr>
+<td>SSE_LEV2_SNAP_HT_MSG_TYPE</td>
+<td>139</td>
+<td>上交所 lev2 快照心跳信息类型</td>
+</tr>
+<tr>
+<td>SSE_LEV2_BOND_SNAP_HT_MSG_TYPE</td>
+<td>160</td>
+<td>上交所 lev2 债券快照心跳信息类型</td>
+</tr>
+<tr>
+<td>SSE_LEV2_BOND_TICK_HT_MSG_TYPE</td>
+<td>161</td>
+<td>上交所 lev2 债券逐笔心跳信息类型</td>
+</tr>
+<tr>
+<td>SSE_LEV2_TICK_MERGE_HT_MSG_TYPE</td>
+<td>162</td>
+<td>上交所 lev2 逐笔合并心跳信息类型</td>
+</tr>
+<tr>
+<td>SSE_LEV2_ETF_HT_MSG_TYPE</td>
+<td>163</td>
+<td>上交所 lev2 ETF 心跳信息类型</td>
+</tr>
+</tbody>
+</table>
+<h3 id="6-1-3-a-id-commondefine-a-">6.1.3. <a id="CommonDefine">通用常量定义</a></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">枚举</th>
+<th style="text-align:left">取值</th>
+<th style="text-align:left">定义说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><a id="IP_LEN">IP_LEN</a></td>
+<td style="text-align:left">64</td>
+<td style="text-align:left">IP字符串地址长度定义</td>
+</tr>
+<tr>
+<td style="text-align:left"><a id="ETH_NAME_LEN">ETH_NAME_LEN</a></td>
+<td style="text-align:left">64</td>
+<td style="text-align:left">Eth字符串长度定义</td>
+</tr>
+</tbody>
+</table>
+<h3 id="6-1-4-a-id-emqszeticktype-emqszeticktype-a-">6.1.4. <a id="EMQSzeTickType">证券类别-EMQSzeTickType</a></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">枚举</th>
+<th style="text-align:left">取值</th>
+<th style="text-align:left">定义说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">kTickTypeOrder</td>
+<td style="text-align:left">0</td>
+<td style="text-align:left">逐笔委托</td>
+</tr>
+<tr>
+<td style="text-align:left">kTickTypeExe</td>
+<td style="text-align:left">1</td>
+<td style="text-align:left">逐笔成交</td>
+</tr>
+<tr>
+<td style="text-align:left">kTickTypeBondOrder</td>
+<td style="text-align:left">2</td>
+<td style="text-align:left">债券逐笔委托</td>
+</tr>
+<tr>
+<td style="text-align:left">kTickTypeBondExe</td>
+<td style="text-align:left">3</td>
+<td style="text-align:left">债券逐笔成交</td>
+</tr>
+</tbody>
+</table>
+<h3 id="6-1-5-a-id-emqrecvmode-emqrecvmode-a-">6.1.5. <a id="EMQRecvMode">接收模式-EMQRecvMode</a></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">枚举</th>
+<th style="text-align:left">取值</th>
+<th style="text-align:left">定义说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">kNormal</td>
+<td style="text-align:left">0</td>
+<td style="text-align:left"></td>
+</tr>
+<tr>
+<td style="text-align:left">kEFVI</td>
+<td style="text-align:left">1</td>
+<td style="text-align:left">solarflare efvi接收</td>
+</tr>
+</tbody>
+</table>
+<h3 id="6-1-6-a-id-emqtype-emqtype-a-">6.1.6. <a id="EMQType">行情类型-EMQType</a></h3>
+<table>
+<thead>
+<tr>
+<th>枚举</th>
+<th>取值</th>
+<th>定义说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>kSzeSnap</td>
+<td>0</td>
+<td>深交所快照</td>
+</tr>
+<tr>
+<td>kSzeTick</td>
+<td>1</td>
+<td>深交所逐笔</td>
+</tr>
+<tr>
+<td>kSzeIndex</td>
+<td>2</td>
+<td>深交所指数</td>
+</tr>
+<tr>
+<td>kSzeBondSnap</td>
+<td>3</td>
+<td>深交所债券快照</td>
+</tr>
+<tr>
+<td>kSzeBondTick</td>
+<td>4</td>
+<td>深交所债券逐笔</td>
+</tr>
+<tr>
+<td>kSzeTree</td>
+<td>5</td>
+<td>深交所建树</td>
+</tr>
+<tr>
+<td>kSseSnap</td>
+<td>6</td>
+<td>上交所快照</td>
+</tr>
+<tr>
+<td>kSseTick</td>
+<td>7</td>
+<td>上交所逐笔</td>
+</tr>
+<tr>
+<td>kSseIndex</td>
+<td>8</td>
+<td>上交所指数</td>
+</tr>
+<tr>
+<td>kSseBondSnap</td>
+<td>9</td>
+<td>上交所债券快照</td>
+</tr>
+<tr>
+<td>kSseBondTick</td>
+<td>10</td>
+<td>上交所债券逐笔</td>
+</tr>
+<tr>
+<td>kSseTree</td>
+<td>11</td>
+<td>上交所建树</td>
+</tr>
+</tbody>
+</table>
+<h3 id="6-1-7-a-id-emqexchangetype-emqexchangetype-a-">6.1.7. <a id="EMQExchangeType">交易所类型-EMQExchangeType</a></h3>
+<table>
+<thead>
+<tr>
+<th>枚举</th>
+<th>取值</th>
+<th>定义说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EMQ_EXCHANGE_SH</td>
+<td>1</td>
+<td>上交所</td>
+</tr>
+<tr>
+<td>EMQ_EXCHANGE_SZ</td>
+<td>2</td>
+<td>深交所</td>
+</tr>
+</tbody>
+</table>
+<h3 id="6-1-8-a-id-emqloglevel-emqloglevel-a-">6.1.8. <a id="EMQLogLevel">日志级别-EMQLogLevel</a></h3>
+<table>
+<thead>
+<tr>
+<th>枚举</th>
+<th>取值</th>
+<th>定义说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EMQ_LOG_LEVEL_FATAL</td>
+<td>0</td>
+<td>严重错误级别</td>
+</tr>
+<tr>
+<td>EMQ_LOG_LEVEL_ERROR</td>
+<td>1</td>
+<td>错误级别</td>
+</tr>
+<tr>
+<td>EMQ_LOG_LEVEL_WARNING</td>
+<td>2</td>
+<td>警告级别</td>
+</tr>
+<tr>
+<td>EMQ_LOG_LEVEL_INFO</td>
+<td>3</td>
+<td>通知级别</td>
+</tr>
+<tr>
+<td>EMQ_LOG_LEVEL_DEBUG</td>
+<td>4</td>
+<td>调试级别</td>
+</tr>
+<tr>
+<td>EMQ_LOG_LEVEL_TRACE</td>
+<td>5</td>
+<td>跟踪级别</td>
+</tr>
+</tbody>
+</table>
+
+          	</article>
+        </div>
+		</div>
+  </body>
+</html>
+<script type="text/javascript" src="toc/js/jquery-1.4.4.min.js"></script>
+<script type="text/javascript" src="toc/js/jquery.ztree.all-3.5.min.js"></script>
+<script type="text/javascript" src="toc/js/ztree_toc.js"></script>
+<script type="text/javascript" src="toc_conf.js"></script>
+
+<SCRIPT type="text/javascript" >
+<!--
+$(document).ready(function(){
+    var css_conf = eval(markdown_panel_style);
+    $('#readme').css(css_conf)
+    
+    var conf = eval(jquery_ztree_toc_opts);
+		$('#tree').ztree_toc(conf);
+});
+//-->
+</SCRIPT>
