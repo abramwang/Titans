@@ -35,4 +35,4 @@ link_directories( "./" )
 
 add_executable( ${PROJECT_NAME} ${SRCS} )
 
-target_link_libraries(${PROJECT_NAME} -lemt_api -lmariadb -lcurl -larrow -lparquet -luv -lhiredis -lglog -lrt)
+target_link_libraries(${PROJECT_NAME} -lemt_quote_api_lv2 -lmariadb -lcurl -larrow -lparquet -luv -lhiredis -lglog -lrt)

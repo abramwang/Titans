@@ -10,8 +10,8 @@
             "cStandard": "gnu17",
             "cppStandard": "gnu++14",
             "configurationProvider": "ms-vscode.cmake-tools",
-            "compileCommands": "${workspaceFolder}/iapetos/src/ia_etf_jager_tacit_ronin_gt_auto/build/compile_commands.json"
-            //"compileCommands": "${workspaceFolder}/oceanus/src/oc_quote_ipc_server_anxin_ctp/build/compile_commands.json"
+            "compileCommands": "${workspaceFolder}/oceanus/src/oc_quote_ipc_server_dongfang/build/compile_commands.json"
+            //"compileCommands": "${workspaceFolder}/iapetos/src/ia_etf_jager_tacit_ronin_gt_auto/build/compile_commands.json"
             //"compileCommands": "${workspaceFolder}/oceanus/src/oc_trader_commander_guangfa/build/compile_commands.json"
         }
     ],

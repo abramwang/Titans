@@ -12,8 +12,9 @@ TiDfQuoteClient::TiDfQuoteClient(std::string configPath, TiQuoteCallback* userCb
 {
     m_config = NULL;
     nReqId = 0;
-
+    m_quote_api = NULL;
     m_cb = userCb;
+
     memset(&m_snapStockCash, 0, sizeof(TiQuoteSnapshotStockField));
     memset(&m_snapIndexCash, 0, sizeof(TiQuoteSnapshotIndexField));
     memset(&m_orderCash, 0, sizeof(TiQuoteOrderField));
@@ -23,6 +24,16 @@ TiDfQuoteClient::TiDfQuoteClient(std::string configPath, TiQuoteCallback* userCb
     if(!m_config){
         return;
     }
+
+    m_quote_api = EMQ::API::QuoteApiLv2::CreateQuoteApiLv2("./emq_api_log/emq.log");
+    m_quote_api->RegisterSpi(this);
+
+    std::cout << "Login: " << m_config->szL2ShHost << ", " << m_config->szAccount << ", " << m_config->szPass << std::endl;
+    auto ret = m_quote_api->Login("61.152.230.216", 8093, "510100025168", "OW4273");
+    if (ret != 0) {
+        printf("Login Failed.\n");
+    }
+    //m_quote_api->Start();
 };
 
 TiDfQuoteClient::~TiDfQuoteClient()
@@ -58,6 +69,7 @@ int TiDfQuoteClient::loadConfig(std::string iniFileName)
     m_config->szAccount = string(_iniFile["ti_df_quote_client"]["account"]);
     m_config->szPass = string(_iniFile["ti_df_quote_client"]["pass"]);
     
+    return 0;
     if( m_config->szL1Host.empty() |
         m_config->szL2ShHost.empty() |
         m_config->szL2SzHost.empty() |

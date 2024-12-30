@@ -5,6 +5,8 @@
 #include "ti_quote_callback.h"
 #include "quote_api_lv2.h"
 
+using namespace EMQ::API;
+
 class TiDfQuoteClient: public EMQ::API::QuoteSpiLv2
 {
 public:
@@ -33,7 +35,7 @@ public:
 private:
     int nReqId;
     ConfigInfo* m_config;
-    
+    QuoteApiLv2 *m_quote_api;
 
     TiQuoteCallback* m_cb;
     TiQuoteSnapshotStockField   m_snapStockCash;
