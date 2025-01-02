@@ -18,7 +18,7 @@
 #include "ti_quote_formater.h"
 #include "iniFile.h"
 
-#define LOG_ENABLE True
+#define Enable_QuoteDataOutput 0
 
 class Callback: public TiQuoteCallback
 {
@@ -190,12 +190,14 @@ public:
         //m_mutex.unlock();
     };
     virtual void OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){
+    #if Enable_QuoteDataOutput
         try {
             WriteToCSV(*pData, "quote_matches_data.csv");
         } catch (const std::exception& e) {
             // 捕获异常并打印错误
             std::cerr << "Error writing to CSV: " << e.what() << std::endl;
         }
+    #endif
         //m_mutex.lock();
         if ((pData->time - m_cout_time_trans) > 5000)
         {
@@ -216,12 +218,14 @@ public:
         //m_mutex.unlock();
     };
     virtual void OnL2StockOrderRtn(const TiQuoteOrderField* pData){
+    #if Enable_QuoteDataOutput
         try {
             WriteToCSV(*pData, "quote_order_data.csv");
         } catch (const std::exception& e) {
             // 捕获异常并打印错误
             std::cerr << "Error writing to CSV: " << e.what() << std::endl;
         }
+    #endif
         //m_mutex.lock();
         if ((pData->time - m_cout_time_order) > 5000)
         {
