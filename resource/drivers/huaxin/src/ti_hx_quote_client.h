@@ -97,6 +97,11 @@ public:
 
 private:
     int loadConfig(std::string iniFileName);
+
+    void WriteToCSV(const CTORATstpLev2TransactionField& data, const std::string& fileName);
+    void WriteToCSV(const CTORATstpLev2OrderDetailField& data, const std::string& fileName);
+    void WriteToCSV(const CTORATstpLev2NGTSTickField& data, const std::string& fileName);
+
 public:
 	void connect();
     void subData(const char* exchangeName, char* codeList[], size_t len);

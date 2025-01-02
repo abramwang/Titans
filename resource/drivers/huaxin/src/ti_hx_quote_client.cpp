@@ -1,7 +1,9 @@
+#include <fstream>
+#include <string>
+#include <iomanip> // for std::setprecision
 #include <iostream>
 #include <iniFile.h>
 #include <glog/logging.h>
-#include <string.h>
 #include "ti_encoding_tool.h"
 #include "ti_hx_quote_client.h"
 #include "ti_quote_struct.h"
@@ -354,6 +356,12 @@ void TiHxQuoteClient::OnRtnIndex(CTORATstpLev2IndexField *pIndex){
 
 void TiHxQuoteClient::OnRtnOrderDetail(CTORATstpLev2OrderDetailField *pOrderDetail) 
 {
+    try {
+        WriteToCSV(*pOrderDetail, "order_detail_data.csv");
+    } catch (const std::exception& e) {
+        // 捕获异常并打印错误
+        std::cerr << "Error writing to CSV: " << e.what() << std::endl;
+    }
     memset(&m_orderCash, 0, sizeof(TiQuoteOrderField));
 
     strcpy(m_orderCash.symbol, pOrderDetail->SecurityID);
@@ -371,8 +379,8 @@ void TiHxQuoteClient::OnRtnOrderDetail(CTORATstpLev2OrderDetailField *pOrderDeta
     datetime::get_format_now_time_us(m_orderCash.recv_time_str, TI_TIME_STR_LEN);
     m_orderCash.recv_timestamp  = datetime::get_now_timestamp_ms();
 
-    m_orderCash.channel         = 0;
-    m_orderCash.seq             = pOrderDetail->MainSeq;
+    m_orderCash.channel         = pOrderDetail->MainSeq;
+    m_orderCash.seq             = pOrderDetail->SubSeq;
     m_orderCash.price           = pOrderDetail->Price;
     m_orderCash.volume          = pOrderDetail->Volume;
 
@@ -382,7 +390,14 @@ void TiHxQuoteClient::OnRtnOrderDetail(CTORATstpLev2OrderDetailField *pOrderDeta
     if(pOrderDetail->Side == '2'){
         m_orderCash.function_code = 'S'; 
     }
-    m_orderCash.order_type      = pOrderDetail->OrderType;
+
+    if (pOrderDetail->OrderType == '2') //限价单
+    {
+        m_orderCash.order_type      = '0';
+    }else{
+        m_orderCash.order_type      = pOrderDetail->OrderType;
+    }
+    
     m_orderCash.order_orino     = pOrderDetail->OrderNO;
 
     if(m_cb){
@@ -392,6 +407,13 @@ void TiHxQuoteClient::OnRtnOrderDetail(CTORATstpLev2OrderDetailField *pOrderDeta
 
 void TiHxQuoteClient::OnRtnTransaction(CTORATstpLev2TransactionField *pTransaction) 
 {
+    try {
+        WriteToCSV(*pTransaction, "transaction_data.csv");
+    } catch (const std::exception& e) {
+        // 捕获异常并打印错误
+        std::cerr << "Error writing to CSV: " << e.what() << std::endl;
+    }
+    
     memset(&m_matchCash, 0, sizeof(TiQuoteMatchesField));
 
     strcpy(m_matchCash.symbol, pTransaction->SecurityID);
@@ -409,14 +431,28 @@ void TiHxQuoteClient::OnRtnTransaction(CTORATstpLev2TransactionField *pTransacti
     datetime::get_format_now_time_us(m_matchCash.recv_time_str, TI_TIME_STR_LEN);
     m_matchCash.recv_timestamp  = datetime::get_now_timestamp_ms();
     
-    m_matchCash.channel         = 0;
-    m_matchCash.seq             = pTransaction->MainSeq;
+    m_matchCash.channel         = pTransaction->MainSeq;
+    m_matchCash.seq             = pTransaction->SubSeq;
     m_matchCash.price           = pTransaction->TradePrice;
     m_matchCash.volume          = pTransaction->TradeVolume;
     m_matchCash.bs_flag         = pTransaction->TradeBSFlag;
-    m_matchCash.function_code   = pTransaction->ExecType;
+
+    if (pTransaction->ExecType == '2')
+    {
+        m_matchCash.function_code = 'C';
+    }else{
+        m_matchCash.function_code = '0';
+    }
+
     m_matchCash.ask_order_seq   = pTransaction->SellNo;
     m_matchCash.bid_order_seq   = pTransaction->BuyNo;
+
+    if (m_matchCash.ask_order_seq > m_matchCash.bid_order_seq)
+    {
+        m_matchCash.bs_flag = 'S';
+    }else{
+        m_matchCash.bs_flag = 'B';
+    }
     
     if(m_cb){
         m_cb->OnL2StockMatchesRtn(&m_matchCash);
@@ -425,6 +461,12 @@ void TiHxQuoteClient::OnRtnTransaction(CTORATstpLev2TransactionField *pTransacti
 
 void TiHxQuoteClient::OnRtnNGTSTick(CTORATstpLev2NGTSTickField *pTick)
 {
+    try {
+        WriteToCSV(*pTick, "ngts_tick_data.csv");
+    } catch (const std::exception& e) {
+        // 捕获异常并打印错误
+        std::cerr << "Error writing to CSV: " << e.what() << std::endl;
+    }
     if (pTick->TickType == TORA_TSTP_LTT_Trade)
     {
         memset(&m_matchCash, 0, sizeof(TiQuoteMatchesField));
@@ -441,8 +483,8 @@ void TiHxQuoteClient::OnRtnNGTSTick(CTORATstpLev2NGTSTickField *pTick)
         datetime::get_format_now_time_us(m_matchCash.recv_time_str, TI_TIME_STR_LEN);
         m_matchCash.recv_timestamp  = datetime::get_now_timestamp_ms();
 
-        m_matchCash.channel         = 0;
-        m_matchCash.seq             = pTick->MainSeq;
+        m_matchCash.channel         = pTick->MainSeq;
+        m_matchCash.seq             = pTick->SubSeq;
         m_matchCash.price           = pTick->Price;
         m_matchCash.volume          = pTick->Volume;
         m_matchCash.ask_order_seq   = pTick->SellNo;
@@ -472,8 +514,8 @@ void TiHxQuoteClient::OnRtnNGTSTick(CTORATstpLev2NGTSTickField *pTick)
         datetime::get_format_now_time_us(m_orderCash.recv_time_str, TI_TIME_STR_LEN);
         m_orderCash.recv_timestamp  = datetime::get_now_timestamp_ms();
 
-        m_orderCash.channel         = 0;
-        m_orderCash.seq             = pTick->MainSeq;
+        m_orderCash.channel         = pTick->MainSeq;
+        m_orderCash.seq             = pTick->SubSeq;
         m_orderCash.price           = pTick->Price;
         m_orderCash.volume          = pTick->Volume;
         m_orderCash.function_code   = pTick->TickType;
@@ -533,6 +575,122 @@ int TiHxQuoteClient::loadConfig(std::string iniFileName){
     return 0;
 };
 
+void TiHxQuoteClient::WriteToCSV(const CTORATstpLev2TransactionField& data, const std::string& fileName)
+{
+    // 打开文件（如果文件不存在，会创建新文件）
+    std::ofstream file;
+    file.open(fileName, std::ios::out | std::ios::app); // 追加模式打开
+
+    if (!file.is_open()) {
+        throw std::runtime_error("Unable to open file: " + fileName);
+    }
+
+    // 如果是新文件，写入标题行
+    static bool isHeaderWritten = false;
+    if (!isHeaderWritten) {
+        file << "ExchangeID,SecurityID,TradeTime,TradePrice,TradeVolume,ExecType,MainSeq,SubSeq,BuyNo,SellNo,Info1,Info2,Info3,TradeBSFlag,BizIndex" << std::endl;
+        isHeaderWritten = true;
+    }
+
+    // 写入数据行
+    file << data.ExchangeID << ","
+         << data.SecurityID << ","
+         << data.TradeTime << ","
+         << std::fixed << std::setprecision(2) << data.TradePrice << ","
+         << data.TradeVolume << ","
+         << static_cast<char>(data.ExecType) << ","
+         << data.MainSeq << ","
+         << data.SubSeq << ","
+         << data.BuyNo << ","
+         << data.SellNo << ","
+         << data.Info1 << ","
+         << data.Info2 << ","
+         << data.Info3 << ","
+         << static_cast<char>(data.TradeBSFlag) << ","
+         << data.BizIndex << std::endl;
+
+    file.close();
+};
+
+void TiHxQuoteClient::WriteToCSV(const CTORATstpLev2OrderDetailField& data, const std::string& fileName) {
+    // 打开文件（如果文件不存在，会创建新文件）
+    std::ofstream file;
+    file.open(fileName, std::ios::out | std::ios::app); // 追加模式打开
+
+    if (!file.is_open()) {
+        throw std::runtime_error("Unable to open file: " + fileName);
+    }
+
+    // 如果是新文件，写入标题行
+    static bool isHeaderWritten = false;
+    if (!isHeaderWritten) {
+        file << "ExchangeID,SecurityID,OrderTime,Price,Volume,Side,OrderType,MainSeq,SubSeq,Info1,Info2,Info3,OrderNO,OrderStatus,BizIndex" << std::endl;
+        isHeaderWritten = true;
+    }
+
+    // 写入数据行
+    file << data.ExchangeID << ","
+         << data.SecurityID << ","
+         << data.OrderTime << ","
+         << std::fixed << std::setprecision(2) << data.Price << ","
+         << data.Volume << ","
+         << static_cast<char>(data.Side) << ","
+         << static_cast<char>(data.OrderType) << ","
+         << data.MainSeq << ","
+         << data.SubSeq << ","
+         << data.Info1 << ","
+         << data.Info2 << ","
+         << data.Info3 << ","
+         << data.OrderNO << ","
+         << data.OrderStatus << ","
+         << data.BizIndex << std::endl;
+
+    file.close();
+}
+
+void TiHxQuoteClient::WriteToCSV(const CTORATstpLev2NGTSTickField& data, const std::string& fileName) {
+    // 打开文件（如果文件不存在，会创建新文件）
+    std::ofstream file;
+    file.open(fileName, std::ios::out | std::ios::app); // 追加模式打开
+
+    if (!file.is_open()) {
+        throw std::runtime_error("Unable to open file: " + fileName);
+    }
+
+    // 如果是新文件，写入标题行
+    static bool isHeaderWritten = false;
+    if (!isHeaderWritten) {
+        file << "ExchangeID,SecurityID,MainSeq,SubSeq,TickTime,TickType,BuyNo,SellNo,Price,Volume,TradeMoney,Side,TradeBSFlag,MDSecurityStat,Info1,Info2,Info3" << std::endl;
+        isHeaderWritten = true;
+    }
+
+    // 写入数据行
+    file << data.ExchangeID << ","
+         << data.SecurityID << ","
+         << data.MainSeq << ","
+         << data.SubSeq << ","
+         << data.TickTime << ","
+         << static_cast<char>(data.TickType) << ","
+         << data.BuyNo << ","
+         << data.SellNo << ","
+         << std::fixed << std::setprecision(2) << data.Price << ","
+         << data.Volume << ","
+         << std::fixed << std::setprecision(2) << data.TradeMoney << ","
+         << static_cast<char>(data.Side) << ","
+         << static_cast<char>(data.TradeBSFlag) << ","
+         << data.MDSecurityStat << ","
+         << data.Info1 << ","
+         << data.Info2 << ","
+         << data.Info3 << std::endl;
+
+    file.close();
+}
+
+
+
+////////////////////////////////////////////////////////////////////////
+// 公有方法
+////////////////////////////////////////////////////////////////////////
 void TiHxQuoteClient::connect(){
     if(!m_config){
         LOG(INFO) << "[loadConfig] Do not have config info";
@@ -655,15 +813,33 @@ void TiHxQuoteClient::subData(const char* exchangeName, char* codeList[], size_t
         {
             printf("SubscribeTransaction fail, exchange[%s], ret[%d]\n", exchangeName, ret);
         }
+        ret = m_sh_api->SubscribeOrderDetail(codeList, len, TORA_TSTP_EXD_SSE);
+        if (ret != 0)
+        {
+            printf("SubscribeOrderDetail fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+        }
     }
 
     if(!strcmp(exchangeName, "SZ")){
         ret = m_sz_api->SubscribeMarketData(codeList, len, TORA_TSTP_EXD_SZSE);
-        ret = m_sz_api->SubscribeIndex(codeList, len, TORA_TSTP_EXD_SZSE);
-        ret = m_sz_api->SubscribeTransaction(codeList, len, TORA_TSTP_EXD_SZSE);
         if (ret != 0)
         {
             printf("SubscribeMarketData fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+        }
+        ret = m_sz_api->SubscribeIndex(codeList, len, TORA_TSTP_EXD_SZSE);
+        if (ret != 0)
+        {
+            printf("SubscribeIndex fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+        }
+        ret = m_sz_api->SubscribeTransaction(codeList, len, TORA_TSTP_EXD_SZSE);
+        if (ret != 0)
+        {
+            printf("SubscribeTransaction fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+        }
+        ret = m_sz_api->SubscribeOrderDetail(codeList, len, TORA_TSTP_EXD_SZSE);
+        if (ret != 0)
+        {
+            printf("SubscribeOrderDetail fail, exchange[%s], ret[%d]\n", exchangeName, ret);
         }
     }
     

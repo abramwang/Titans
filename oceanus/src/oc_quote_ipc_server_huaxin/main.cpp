@@ -1,10 +1,13 @@
-﻿#include "redis_uv.h"
+﻿#include <fstream>
+#include <string>
+#include <iomanip> // for std::setprecision
 #include <cstring>
 #include <unistd.h>
 #include <mutex>
 #include <vector>
 #include <glog/logging.h>
 
+#include "redis_uv.h"
 #include "ti_hx_quote_client.h"
 #include "ti_quote_cache.h"
 #include "ti_quote_callback.h"
@@ -187,7 +190,12 @@ public:
         //m_mutex.unlock();
     };
     virtual void OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){
-        //return;
+        try {
+            WriteToCSV(*pData, "quote_matches_data.csv");
+        } catch (const std::exception& e) {
+            // 捕获异常并打印错误
+            std::cerr << "Error writing to CSV: " << e.what() << std::endl;
+        }
         //m_mutex.lock();
         if ((pData->time - m_cout_time_trans) > 5000)
         {
@@ -208,6 +216,12 @@ public:
         //m_mutex.unlock();
     };
     virtual void OnL2StockOrderRtn(const TiQuoteOrderField* pData){
+        try {
+            WriteToCSV(*pData, "quote_order_data.csv");
+        } catch (const std::exception& e) {
+            // 捕获异常并打印错误
+            std::cerr << "Error writing to CSV: " << e.what() << std::endl;
+        }
         //m_mutex.lock();
         if ((pData->time - m_cout_time_order) > 5000)
         {
@@ -228,6 +242,79 @@ public:
         //m_mutex.unlock();
     };
 
+    // 定义一个函数，将结构体数据写入 CSV 文件
+    void WriteToCSV(const TiQuoteOrderField& data, const std::string& fileName) {
+        // 打开文件（如果文件不存在，会创建新文件）
+        std::ofstream file;
+        file.open(fileName, std::ios::out | std::ios::app); // 追加模式打开
+
+        if (!file.is_open()) {
+            throw std::runtime_error("Unable to open file: " + fileName);
+        }
+
+        // 如果是新文件，写入标题行
+        static bool isHeaderWritten = false;
+        if (!isHeaderWritten) {
+            file << "Exchange,Symbol,Date,Time,Timestamp,TimeStr,RecvTimeStr,RecvTimestamp,Channel,Seq,OrderOrino,Price,Volume,OrderType,FunctionCode" << std::endl;
+            isHeaderWritten = true;
+        }
+
+        // 写入数据行
+        file << data.exchange << ","
+            << data.symbol << ","
+            << data.date << ","
+            << data.time << ","
+            << data.timestamp << ","
+            << data.time_str << ","
+            << data.recv_time_str << ","
+            << data.recv_timestamp << ","
+            << data.channel << ","
+            << data.seq << ","
+            << data.order_orino << ","
+            << std::fixed << std::setprecision(2) << data.price << ","
+            << data.volume << ","
+            << static_cast<char>(data.order_type) << ","
+            << static_cast<char>(data.function_code) << std::endl;
+
+        file.close();
+    }
+
+    void WriteToCSV(const TiQuoteMatchesField& data, const std::string& fileName) {
+        // 打开文件（如果文件不存在，会创建新文件）
+        std::ofstream file;
+        file.open(fileName, std::ios::out | std::ios::app); // 追加模式打开
+
+        if (!file.is_open()) {
+            throw std::runtime_error("Unable to open file: " + fileName);
+        }
+
+        // 如果是新文件，写入标题行
+        static bool isHeaderWritten = false;
+        if (!isHeaderWritten) {
+            file << "Exchange,Symbol,Date,Time,Timestamp,TimeStr,RecvTimeStr,RecvTimestamp,Channel,Seq,Price,Volume,BsFlag,FunctionCode,AskOrderSeq,BidOrderSeq" << std::endl;
+            isHeaderWritten = true;
+        }
+
+        // 写入数据行
+        file << data.exchange << ","
+            << data.symbol << ","
+            << data.date << ","
+            << data.time << ","
+            << data.timestamp << ","
+            << data.time_str << ","
+            << data.recv_time_str << ","
+            << data.recv_timestamp << ","
+            << data.channel << ","
+            << data.seq << ","
+            << std::fixed << std::setprecision(2) << data.price << ","
+            << data.volume << ","
+            << static_cast<char>(data.bs_flag) << ","
+            << static_cast<char>(data.function_code) << ","
+            << data.ask_order_seq << ","
+            << data.bid_order_seq << std::endl;
+
+        file.close();
+    }
 };
 
 int main(int argc, char* argv[])
