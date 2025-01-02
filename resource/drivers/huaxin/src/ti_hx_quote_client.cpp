@@ -11,6 +11,8 @@
 
 using namespace std;
 
+#define Enable_Hx_DataOutput 0
+
 TiHxQuoteClient::TiHxQuoteClient(std::string configPath, TiQuoteCallback* userCb)
 {
     m_config = NULL;
@@ -356,12 +358,14 @@ void TiHxQuoteClient::OnRtnIndex(CTORATstpLev2IndexField *pIndex){
 
 void TiHxQuoteClient::OnRtnOrderDetail(CTORATstpLev2OrderDetailField *pOrderDetail) 
 {
+#if Enable_Hx_DataOutput
     try {
         WriteToCSV(*pOrderDetail, "order_detail_data.csv");
     } catch (const std::exception& e) {
         // 捕获异常并打印错误
         std::cerr << "Error writing to CSV: " << e.what() << std::endl;
     }
+#endif
     memset(&m_orderCash, 0, sizeof(TiQuoteOrderField));
 
     strcpy(m_orderCash.symbol, pOrderDetail->SecurityID);
@@ -407,13 +411,14 @@ void TiHxQuoteClient::OnRtnOrderDetail(CTORATstpLev2OrderDetailField *pOrderDeta
 
 void TiHxQuoteClient::OnRtnTransaction(CTORATstpLev2TransactionField *pTransaction) 
 {
+#if Enable_Hx_DataOutput
     try {
         WriteToCSV(*pTransaction, "transaction_data.csv");
     } catch (const std::exception& e) {
         // 捕获异常并打印错误
         std::cerr << "Error writing to CSV: " << e.what() << std::endl;
     }
-    
+#endif
     memset(&m_matchCash, 0, sizeof(TiQuoteMatchesField));
 
     strcpy(m_matchCash.symbol, pTransaction->SecurityID);
@@ -461,12 +466,14 @@ void TiHxQuoteClient::OnRtnTransaction(CTORATstpLev2TransactionField *pTransacti
 
 void TiHxQuoteClient::OnRtnNGTSTick(CTORATstpLev2NGTSTickField *pTick)
 {
+#if Enable_Hx_DataOutput
     try {
         WriteToCSV(*pTick, "ngts_tick_data.csv");
     } catch (const std::exception& e) {
         // 捕获异常并打印错误
         std::cerr << "Error writing to CSV: " << e.what() << std::endl;
     }
+#endif
     if (pTick->TickType == TORA_TSTP_LTT_Trade)
     {
         memset(&m_matchCash, 0, sizeof(TiQuoteMatchesField));
