@@ -163,20 +163,20 @@ void TiHxQuoteL1Client::subData(const char* exchangeName, char* codeList[], size
     if(!strcmp(exchangeName, "SH")){
         ret = m_api->SubscribeMarketData(codeList, len, TORALEV1API::TORA_TSTP_EXD_SSE);
         //ret = m_api->SubscribeSimplifyMarketData(codeList, len, TORALEV1API::TORA_TSTP_EXD_SSE);
-        printf("SubscribeMarketData exchange[%s], ret[%d]\n", exchangeName, ret);
+        printf("[L1]SubscribeMarketData exchange[%s], ret[%d]\n", exchangeName, ret);
         if (ret != 0)
         {
-            printf("SubscribeMarketData fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+            printf("[L1]SubscribeMarketData fail, exchange[%s], ret[%d]\n", exchangeName, ret);
         }
     }
 
     if(!strcmp(exchangeName, "SZ")){
         ret = m_api->SubscribeMarketData(codeList, len, TORALEV1API::TORA_TSTP_EXD_SZSE);
         //ret = m_api->SubscribeSimplifyMarketData(codeList, len, TORALEV1API::TORA_TSTP_EXD_SSE);
-        printf("SubscribeMarketData exchange[%s], ret[%d]\n", exchangeName, ret);
+        printf("[L1]SubscribeMarketData exchange[%s], ret[%d]\n", exchangeName, ret);
         if (ret != 0)
         {
-            printf("SubscribeMarketData fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+            printf("[L1]SubscribeMarketData fail, exchange[%s], ret[%d]\n", exchangeName, ret);
         }
     }
 };

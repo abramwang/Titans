@@ -747,27 +747,27 @@ void TiHxQuoteClient::subData(const char* exchangeName, char* codeList[], size_t
             ret = m_multicast_api->SubscribeMarketData(codeList, len, TORA_TSTP_EXD_SSE);
             if (ret != 0)
             {
-                printf("SubscribeMarketData fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+                printf("[L2 multicast SH]SubscribeMarketData fail, exchange[%s], ret[%d]\n", exchangeName, ret);
             }
             ret = m_multicast_api->SubscribeIndex(codeList, len, TORA_TSTP_EXD_SSE);
             if (ret != 0)
             {
-                printf("SubscribeIndex fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+                printf("[L2 multicast SH]SubscribeIndex fail, exchange[%s], ret[%d]\n", exchangeName, ret);
             }
             ret = m_multicast_api->SubscribeTransaction(codeList, len, TORA_TSTP_EXD_SSE);
             if (ret != 0)
             {
-                printf("SubscribeTransaction fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+                printf("[L2 multicast SH]SubscribeTransaction fail, exchange[%s], ret[%d]\n", exchangeName, ret);
             }
             ret = m_multicast_api->SubscribeOrderDetail(codeList, len, TORA_TSTP_EXD_SSE);
             if (ret != 0)
             {
-                printf("SubscribeOrderDetail fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+                printf("[L2 multicast SH]SubscribeOrderDetail fail, exchange[%s], ret[%d]\n", exchangeName, ret);
             }
             ret = m_multicast_api->SubscribeNGTSTick(codeList, len, TORA_TSTP_EXD_SSE);
             if (ret != 0)
             {
-                printf("SubscribeNGTSTick fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+                printf("[L2 multicast SH]SubscribeNGTSTick fail, exchange[%s], ret[%d]\n", exchangeName, ret);
             }
             return;
         }
@@ -775,22 +775,22 @@ void TiHxQuoteClient::subData(const char* exchangeName, char* codeList[], size_t
             ret = m_multicast_api->SubscribeMarketData(codeList, len, TORA_TSTP_EXD_SZSE);
             if (ret != 0)
             {
-                printf("SubscribeMarketData fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+                printf("[L2 multicast SZ]SubscribeMarketData fail, exchange[%s], ret[%d]\n", exchangeName, ret);
             }
             ret = m_multicast_api->SubscribeIndex(codeList, len, TORA_TSTP_EXD_SZSE);
             if (ret != 0)
             {
-                printf("SubscribeIndex fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+                printf("[L2 multicast SZ]SubscribeIndex fail, exchange[%s], ret[%d]\n", exchangeName, ret);
             }
             ret = m_multicast_api->SubscribeTransaction(codeList, len, TORA_TSTP_EXD_SZSE);
             if (ret != 0)
             {
-                printf("SubscribeTransaction fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+                printf("[L2 multicast SZ]SubscribeTransaction fail, exchange[%s], ret[%d]\n", exchangeName, ret);
             }
             ret = m_multicast_api->SubscribeOrderDetail(codeList, len, TORA_TSTP_EXD_SZSE);
             if (ret != 0)
             {
-                printf("SubscribeOrderDetail fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+                printf("[L2 multicast SZ]SubscribeOrderDetail fail, exchange[%s], ret[%d]\n", exchangeName, ret);
             }
             return;
         }
@@ -801,22 +801,22 @@ void TiHxQuoteClient::subData(const char* exchangeName, char* codeList[], size_t
         ret = m_sh_api->SubscribeMarketData(codeList, len, TORA_TSTP_EXD_SSE);
         if (ret != 0)
         {
-            printf("SubscribeMarketData fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+            printf("[L2 SH]SubscribeMarketData fail, exchange[%s], ret[%d]\n", exchangeName, ret);
         }
         ret = m_sh_api->SubscribeIndex(codeList, len, TORA_TSTP_EXD_SSE);
         if (ret != 0)
         {
-            printf("SubscribeIndex fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+            printf("[L2 SH]SubscribeIndex fail, exchange[%s], ret[%d]\n", exchangeName, ret);
         }
         ret = m_sh_api->SubscribeTransaction(codeList, len, TORA_TSTP_EXD_SSE);
         if (ret != 0)
         {
-            printf("SubscribeTransaction fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+            printf("[L2 SH]SubscribeTransaction fail, exchange[%s], ret[%d]\n", exchangeName, ret);
         }
         ret = m_sh_api->SubscribeOrderDetail(codeList, len, TORA_TSTP_EXD_SSE);
         if (ret != 0)
         {
-            printf("SubscribeOrderDetail fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+            printf("[L2 SH]SubscribeOrderDetail fail, exchange[%s], ret[%d]\n", exchangeName, ret);
         }
     }
 
@@ -824,22 +824,22 @@ void TiHxQuoteClient::subData(const char* exchangeName, char* codeList[], size_t
         ret = m_sz_api->SubscribeMarketData(codeList, len, TORA_TSTP_EXD_SZSE);
         if (ret != 0)
         {
-            printf("SubscribeMarketData fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+            printf("[L2 SZ]SubscribeMarketData fail, exchange[%s], ret[%d]\n", exchangeName, ret);
         }
         ret = m_sz_api->SubscribeIndex(codeList, len, TORA_TSTP_EXD_SZSE);
         if (ret != 0)
         {
-            printf("SubscribeIndex fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+            printf("[L2 SZ]SubscribeIndex fail, exchange[%s], ret[%d]\n", exchangeName, ret);
         }
         ret = m_sz_api->SubscribeTransaction(codeList, len, TORA_TSTP_EXD_SZSE);
         if (ret != 0)
         {
-            printf("SubscribeTransaction fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+            printf("[L2 SZ]SubscribeTransaction fail, exchange[%s], ret[%d]\n", exchangeName, ret);
         }
         ret = m_sz_api->SubscribeOrderDetail(codeList, len, TORA_TSTP_EXD_SZSE);
         if (ret != 0)
         {
-            printf("SubscribeOrderDetail fail, exchange[%s], ret[%d]\n", exchangeName, ret);
+            printf("[L2 SZ]SubscribeOrderDetail fail, exchange[%s], ret[%d]\n", exchangeName, ret);
         }
     }
     
