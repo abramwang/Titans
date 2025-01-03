@@ -2,5 +2,6 @@ dev-env
 build
 dist
 test
+*.xlsx
 *.pyc
 *.log
