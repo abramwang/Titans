@@ -7,6 +7,8 @@
 #include "ti_quote_struct.h"
 #include "datetime.h"
 
+#include "ti_quote_formater.h"
+
 namespace
 {
 static constexpr int kCacheSize = 2048;
@@ -92,27 +94,83 @@ void TiDfQuoteClient::OnLv2TickSze(EMQSzeTick *tick)
     char cache[kCacheSize] = {0};
     if (tick->m_tick_type == EMQSzeTickType::kTickTypeOrder)
     {
-        sprintf(cache, "order,0x%02x,0x%02x,%s,%llu,%u,%llu,%u,%llu,0x%02x,%c,%d,%d,%u,%u,%llu\n",
-                tick->m_tick_order->m_head.m_security_type, tick->m_tick_order->m_head.m_sub_security_type,
-                tick->m_tick_order->m_head.m_symbol, tick->m_tick_order->m_head.m_quote_update_time,
-                tick->m_tick_order->m_head.m_channel_num, tick->m_tick_order->m_head.m_sequence_num,
-                tick->m_tick_order->m_order_price, tick->m_tick_order->m_order_quantity,
-                tick->m_tick_order->m_side_flag, tick->m_tick_order->m_order_type,
-                tick->m_tick_order->m_head.m_sequence, tick->m_tick_order->m_head.m_message_type,
-                tick->m_tick_order->m_head.m_exchange_id, tick->m_tick_order->m_head.m_md_stream_id, ts);
-        std::cout << cache << std::flush;
+        memset(&m_orderCash, 0, sizeof(TiQuoteOrderField));
+        strcpy(m_orderCash.symbol, (char*)tick->m_tick_order->m_head.m_symbol);
+        strcpy(m_orderCash.exchange, "SZ");
+        formatQuoteUpdatetime(tick->m_tick_order->m_head.m_quote_update_time, 
+            m_orderCash.date, m_orderCash.time, m_orderCash.timestamp);
+        datetime::get_format_time_ms(m_orderCash.date, m_orderCash.time, m_orderCash.time_str, TI_TIME_STR_LEN);
+        datetime::get_format_now_time_us(m_orderCash.recv_time_str, TI_TIME_STR_LEN);
+        m_orderCash.recv_timestamp = datetime::get_now_timestamp_ms();
+
+        m_orderCash.channel         = tick->m_tick_order->m_head.m_channel_num;
+        m_orderCash.seq             = tick->m_tick_order->m_head.m_sequence;
+        m_orderCash.price           = tick->m_tick_order->m_order_price/10000;
+        m_orderCash.volume          = tick->m_tick_order->m_order_quantity/100;
+        m_orderCash.order_orino     = tick->m_tick_order->m_head.m_sequence;
+
+        if(tick->m_tick_order->m_side_flag == '1'){
+            m_orderCash.function_code = 'B'; 
+        }
+        if(tick->m_tick_order->m_side_flag == '2'){
+            m_orderCash.function_code = 'S'; 
+        }
+
+        if (tick->m_tick_order->m_order_type == '2') //限价单
+        {
+            m_orderCash.order_type      = '0';
+        }else{
+            m_orderCash.order_type      = tick->m_tick_order->m_order_type;
+        }
+
+        if(m_cb){
+            m_cb->OnL2StockOrderRtn(&m_orderCash);
+        }
+
+        json j;
+        TiQuoteFormater::FormatOrder(&m_orderCash, j);
+        std::cout << "FormatOrder: "  << j.dump() << std::endl;
+
     }
     else if (tick->m_tick_type == EMQSzeTickType::kTickTypeExe)
     {
-        sprintf(cache, "exe,0x%02x,0x%02x,%s,%llu,%u,%llu,%lld,%lld,%u,%lld,%c,%u,%d,%u,%u,%lu\n",
-                tick->m_tick_exe->m_head.m_security_type, tick->m_tick_exe->m_head.m_sub_security_type,
-                tick->m_tick_exe->m_head.m_symbol, tick->m_tick_exe->m_head.m_quote_update_time,
-                tick->m_tick_exe->m_head.m_channel_num, tick->m_tick_exe->m_head.m_sequence_num,
-                tick->m_tick_exe->m_trade_buy_num, tick->m_tick_exe->m_trade_sell_num, tick->m_tick_exe->m_trade_price,
-                tick->m_tick_exe->m_trade_quantity, tick->m_tick_exe->m_trade_type, tick->m_tick_exe->m_head.m_sequence,
-                tick->m_tick_exe->m_head.m_message_type, tick->m_tick_exe->m_head.m_exchange_id,
-                tick->m_tick_exe->m_head.m_md_stream_id, ts);
-        std::cout << cache << std::flush;
+        memset(&m_matchCash, 0, sizeof(TiQuoteMatchesField));
+        strcpy(m_matchCash.symbol, (char*)tick->m_tick_exe->m_head.m_symbol);
+        strcpy(m_matchCash.exchange, "SZ");
+        formatQuoteUpdatetime(tick->m_tick_exe->m_head.m_quote_update_time, 
+            m_matchCash.date, m_matchCash.time, m_matchCash.timestamp);
+        datetime::get_format_time_ms(m_matchCash.date, m_matchCash.time, m_matchCash.time_str, TI_TIME_STR_LEN);
+        datetime::get_format_now_time_us(m_matchCash.recv_time_str, TI_TIME_STR_LEN);
+        m_matchCash.recv_timestamp = datetime::get_now_timestamp_ms();
+
+        m_matchCash.channel         = tick->m_tick_exe->m_head.m_channel_num;
+        m_matchCash.seq             = tick->m_tick_exe->m_head.m_sequence;
+        m_matchCash.price           = tick->m_tick_exe->m_trade_price/10000;
+        m_matchCash.volume          = tick->m_tick_exe->m_trade_quantity/100;
+        m_matchCash.ask_order_seq   = tick->m_tick_exe->m_trade_sell_num;
+        m_matchCash.bid_order_seq   = tick->m_tick_exe->m_trade_buy_num;
+
+        if(tick->m_tick_exe->m_trade_type == 'F')
+        {
+            m_matchCash.function_code = '0';
+        }else{
+            m_matchCash.function_code = 'C';
+        }
+
+        if (m_matchCash.ask_order_seq > m_matchCash.bid_order_seq)
+        {
+            m_matchCash.bs_flag = 'S';
+        }else{
+            m_matchCash.bs_flag = 'B';
+        }
+        
+        if(m_cb){
+            m_cb->OnL2StockMatchesRtn(&m_matchCash);
+        }
+
+        json j;
+        TiQuoteFormater::FormatMatch(&m_matchCash, j);
+        std::cout << "FormatMatch: " << j.dump() << std::endl;
     }
 }
 
