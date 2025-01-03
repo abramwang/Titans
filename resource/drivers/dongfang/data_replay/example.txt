@@ -1,0 +1,13 @@
+回放沪市：
+快照: sudo ./replay_sender --ip 233.56.2.105 --port 36105 --filepath ./data/sh_snap.pcap --filetype 1 --filter "udp and port 36105" --loopback 100 --mbps 1 --protocol udp --device lo --debug 0
+逐笔: sudo ./replay_sender --ip 233.56.2.110 --port 36110 --filepath ./data/sh_tickmerge.pcap --filetype 1 --filter "udp and port 36110" --loopback 100 --mbps 1 --protocol udp --device lo --debug 0
+指数: sudo ./replay_sender --ip 233.56.2.102 --port 36102 --filepath ./data/sh_idx.pcap --filetype 1 --filter "udp and port 36102" --loopback 100 --mbps 1 --protocol udp --device lo --debug 0
+债券快照: sudo ./replay_sender --ip 233.56.2.107 --port 36107 --filepath ./data/sh_bondsnap.pcap --filetype 1 --filter "udp and port 36107" --loopback 100 --mbps 1 --protocol udp --device lo --debug 0
+债券逐笔: sudo ./replay_sender --ip 233.56.2.108 --port 36108 --filepath ./data/sh_bondtick.pcap --filetype 1 --filter "udp and port 36108" --loopback 100 --mbps 1 --protocol udp --device lo --debug 0
+
+回放深市：
+快照: sudo ./replay_sender --ip 233.57.1.100 --port 37100 --filepath ./data/sz_snap.pcap --filetype 1 --filter "udp and port 37100" --loopback 100 --mbps 1 --protocol udp --device lo --debug 0
+逐笔: sudo ./replay_sender --ip 233.57.1.101 --port 37101 --filepath ./data/sz_tick.pcap --filetype 1 --filter "udp and port 37101" --loopback 100 --mbps 1 --protocol udp --device lo --debug 0
+指数: sudo ./replay_sender --ip 233.57.1.102 --port 37102 --filepath ./data/sz_idx.pcap --filetype 1 --filter "udp and port 37102" --loopback 100 --mbps 1 --protocol udp --device lo --debug 0
+债券快照: sudo ./replay_sender --ip 233.57.1.107 --port 37107 --filepath ./data/sz_bondsnap.pcap --filetype 1 --filter "udp and port 37107" --loopback 100 --mbps 1 --protocol udp --device lo --debug 0
+债券逐笔: sudo ./replay_sender --ip 233.57.1.108 --port 37108 --filepath ./data/sz_bondtick.pcap --filetype 1 --filter "udp and port 37108" --loopback 100 --mbps 1 --protocol udp --device lo --debug 0
