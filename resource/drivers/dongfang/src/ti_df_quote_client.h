@@ -5,79 +5,43 @@
 #include "ti_quote_callback.h"
 #include "quote_api_lv2.h"
 
-using namespace EMQ::API;
 
-class TiDfQuoteClient: public EMQ::API::QuoteSpiLv2
-{
-public:
-    typedef struct ConfigInfo
-    {
-        std::string szL1Host;        //level 1 host
+class TiDfQuoteClient : public EMQ::API::QuoteSpiLv2 {
+  public:
+    TiDfQuoteClient();
+    ~TiDfQuoteClient();
+    void Run();
 
-        std::string szL2ShHost;
-        std::string szL2SzHost;
-
-        bool bIsMulticast;                  //是否组播行情
-        std::string szL2Multicast;          //组播行情地址
-        std::string szL2MulticastInterface; //组播行情接收网卡地址
-
-        std::string szProductInfo;
-        std::string szAccount;
-        std::string szPass;
-    } ConfigInfo;
-    
-    typedef struct LoginStatus
-    {
-        int nReqId;
-        bool bLoginSuccess;
-    } LoginStatus;
-
-private:
-    int nReqId;
-    ConfigInfo* m_config;
-    QuoteApiLv2 *m_quote_api;
-
-    TiQuoteCallback* m_cb;
-    TiQuoteSnapshotStockField   m_snapStockCash;
-    TiQuoteSnapshotIndexField   m_snapIndexCash;
-    TiQuoteOrderField           m_orderCash;
-    TiQuoteMatchesField         m_matchCash;
-
-public:
-    TiDfQuoteClient(std::string configPath, TiQuoteCallback* userCb);
-    virtual ~TiDfQuoteClient();
-
-protected: // inherit from EMQ::API::QuoteSpiLv2
+  protected:
+    // inherit from EMQ::API::QuoteSpiLv2
     // 深交所快照行情
-    void OnLv2SnapSze(EMQSzeSnap *snap) {};
+    void OnLv2SnapSze(EMQSzeSnap *snap) override;
     // 深交所逐笔合并行情
-    void OnLv2TickSze(EMQSzeTick *tick) {};
+    void OnLv2TickSze(EMQSzeTick *tick) override;
     // 深交所指数行情
-    void OnLv2IndexSze(EMQSzeIdx *idx) {};
+    void OnLv2IndexSze(EMQSzeIdx *idx) override;
     // 深交所债券快照行情
-    //void OnLv2BondSnapSze(EMQSzeBondSnap *bond_snap) {};
+    void OnLv2BondSnapSze(EMQSzeBondSnap *bond_snap) override;
     // 深交所债券逐笔合并行情
-    //void OnLv2BondTickSze(EMQSzeBondTick *bond_tick) {};
+    void OnLv2BondTickSze(EMQSzeBondTick *bond_tick) override;
     // 深交所建树行情
-    void OnLv2TreeSze(EMQSzeTree *tree) {};
+    void OnLv2TreeSze(EMQSzeTree *tree) override;
 
     // 上交所快照行情
-    void OnLv2SnapSse(EMQSseSnap *snap) {};
+    void OnLv2SnapSse(EMQSseSnap *snap) override;
     // 上交所逐笔合并行情
-    void OnLv2TickSse(EMQSseTick *tick) {};
+    void OnLv2TickSse(EMQSseTick *tick) override;
     // 上交所指数行情
-    void OnLv2IndexSse(EMQSseIdx *idx) {};
+    void OnLv2IndexSse(EMQSseIdx *idx) override;
     // 上交所债券快照行情
-    //void OnLv2BondSnapSse(EMQSseBondSnap *bond_snap) {};
+    void OnLv2BondSnapSse(EMQSseBondSnap *bond_snap) override;
     // 上交所债券逐笔行情
-    void OnLv2BondTickSse(EMQSseBondTick *bond_tick) {};
+    void OnLv2BondTickSse(EMQSseBondTick *bond_tick) override;
     // 上交所建树行情
-    void OnLv2TreeSse(EMQSseTree *tree) {};
-private:
-    int loadConfig(std::string iniFileName);
-public:
-	void connect();
-    void subData(const char* exchangeName, char* codeList[], size_t len);
+    void OnLv2TreeSse(EMQSseTree *tree) override;
+
+  private:
+    EMQ::API::QuoteApiLv2 *quote_api_;
 };
 
 #endif
