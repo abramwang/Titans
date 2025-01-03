@@ -5,14 +5,9 @@
 #include "ti_quote_callback.h"
 #include "quote_api_lv2.h"
 
-
-class TiDfQuoteClient : public EMQ::API::QuoteSpiLv2 {
-  public:
-    TiDfQuoteClient();
-    ~TiDfQuoteClient();
-    void Run();
-
-  protected:
+class TiDfQuoteClient : public EMQ::API::QuoteSpiLv2
+{
+protected:
     // inherit from EMQ::API::QuoteSpiLv2
     // 深交所快照行情
     void OnLv2SnapSze(EMQSzeSnap *snap) override;
@@ -40,8 +35,16 @@ class TiDfQuoteClient : public EMQ::API::QuoteSpiLv2 {
     // 上交所建树行情
     void OnLv2TreeSse(EMQSseTree *tree) override;
 
-  private:
+private:
     EMQ::API::QuoteApiLv2 *quote_api_;
+
+
+public:
+    TiDfQuoteClient();
+    ~TiDfQuoteClient();
+public:
+    void connect();
+    void subData(const char* exchangeName, char* codeList[], size_t len);
 };
 
 #endif

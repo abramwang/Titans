@@ -21,19 +21,9 @@ TiDfQuoteClient::~TiDfQuoteClient()
     quote_api_->Release();
 }
 
-void TiDfQuoteClient::Run()
-{
-    quote_api_ = EMQ::API::QuoteApiLv2::CreateQuoteApiLv2("./emq_api_log/emq.log");
-    quote_api_->RegisterSpi(this);
-
-    int x = quote_api_->Login("61.129.116.188", 9988, "510100025168", "OW4273");
-    std::cout << "Login: " << x << std::endl;
-    quote_api_->Start();
-    while (true)
-    {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-}
+//////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////
 
 // 深交所快照行情
 void TiDfQuoteClient::OnLv2SnapSze(EMQSzeSnap *snap)
@@ -313,4 +303,22 @@ void TiDfQuoteClient::OnLv2TreeSse(EMQSseTree *tree)
             tree->m_ask_unit[0].m_quantity, tree->m_ask_unit[9].m_price, tree->m_ask_unit[9].m_quantity, ts);
 
     std::cout << cache << std::flush;
+}
+
+//////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////
+
+void TiDfQuoteClient::connect()
+{
+    quote_api_ = EMQ::API::QuoteApiLv2::CreateQuoteApiLv2("./emq_api_log/emq.log");
+    quote_api_->RegisterSpi(this);
+
+    int x = quote_api_->Login("61.129.116.188", 9988, "510100025168", "OW4273");
+    std::cout << "Login: " << x << std::endl;
+    quote_api_->Start();
+    while (true)
+    {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
 }
