@@ -38,8 +38,15 @@ protected:
 
 private:
     EMQ::API::QuoteApiLv2 *quote_api_;
+    
+    TiQuoteSnapshotStockField   m_snapStockCash;
+    TiQuoteSnapshotIndexField   m_snapIndexCash;
+    TiQuoteOrderField           m_orderCash;
+    TiQuoteMatchesField         m_matchCash;
 
-
+    TiQuoteCallback* m_cb;
+private:
+    void formatQuoteUpdatetime(unsigned long long quote_update_time, int32_t &date, int32_t &time, int64_t &timestamp);
 public:
     TiDfQuoteClient();
     ~TiDfQuoteClient();

@@ -14,6 +14,7 @@ static constexpr int kCacheSize = 2048;
 
 TiDfQuoteClient::TiDfQuoteClient()
 {
+
 }
 
 TiDfQuoteClient::~TiDfQuoteClient()
@@ -25,28 +26,63 @@ TiDfQuoteClient::~TiDfQuoteClient()
 //
 //////////////////////////////////////////////////////////
 
+void TiDfQuoteClient::formatQuoteUpdatetime(unsigned long long quote_update_time, int32_t &date, int32_t &time, int64_t &timestamp)
+{
+    date = quote_update_time / 1000000000;
+    time = quote_update_time % 1000000000;
+    timestamp = datetime::get_timestamp_ms(date, time);
+};
+//////////////////////////////////////////////////////////
+//
+//////////////////////////////////////////////////////////
+
 // 深交所快照行情
 void TiDfQuoteClient::OnLv2SnapSze(EMQSzeSnap *snap)
 {
-    auto ts = quote_api_->GetPacketHardwareRXTs(snap);
+    memset(&m_snapStockCash, 0, sizeof(TiQuoteSnapshotStockField));
 
-    char cache[1024];
-    sprintf(cache,
-            "%d,%d,%s,%llu,%d,%#x,%llu,%llu,%llu,%u,%u,%u,%u,%u,%u,%u,%llu,%u,%llu,%u,%u,%u,%u,%u,%u,%llu,%u,%llu,%u,"
-            "%llu,%u,%llu,%d,%d,%hhu,%llu,%u,%lu\n",
-            snap->m_head.m_security_type, snap->m_head.m_sub_security_type, snap->m_head.m_symbol,
-            snap->m_head.m_quote_update_time, snap->m_head.m_channel_num, snap->m_trading_status,
-            snap->m_total_trade_num, snap->m_total_quantity, snap->m_total_value, snap->m_pre_close_price,
-            snap->m_last_price, snap->m_open_price, snap->m_day_high_price, snap->m_day_low_price,
-            snap->m_today_close_price, snap->m_total_bid_weighted_avg_price, snap->m_total_bid_quantity,
-            snap->m_total_ask_weighted_avg_price, snap->m_total_ask_quantity, snap->m_lpv, snap->m_iopv,
-            snap->m_upper_limit_price, snap->m_low_limit_price, snap->m_open_interest, snap->m_bid_unit[0].m_price,
-            snap->m_bid_unit[0].m_quantity, snap->m_ask_unit[0].m_price, snap->m_ask_unit[0].m_quantity,
-            snap->m_bid_unit[9].m_price, snap->m_bid_unit[9].m_quantity, snap->m_ask_unit[9].m_price,
-            snap->m_ask_unit[9].m_quantity, snap->m_head.m_sequence, snap->m_head.m_message_type,
-            snap->m_head.m_exchange_id, snap->m_head.m_sequence_num, snap->m_head.m_md_stream_id, ts);
+    strcpy(m_snapStockCash.symbol, (char*)snap->m_head.m_symbol);
+    strcpy(m_snapStockCash.exchange, "SZ");
+    formatQuoteUpdatetime(snap->m_head.m_quote_update_time, 
+        m_snapStockCash.date, m_snapStockCash.time, m_snapStockCash.timestamp);
+    datetime::get_format_time_ms(m_snapStockCash.date, m_snapStockCash.time, m_snapStockCash.time_str, TI_TIME_STR_LEN);
+    datetime::get_format_now_time_us(m_snapStockCash.recv_time_str, TI_TIME_STR_LEN);
+    m_snapStockCash.recv_timestamp = datetime::get_now_timestamp_ms();
 
-    std::cout << cache << std::flush;
+    m_snapStockCash.last            = snap->m_last_price/10000;
+    m_snapStockCash.pre_close       = snap->m_pre_close_price/10000;
+    m_snapStockCash.open            = snap->m_open_price/10000;
+    m_snapStockCash.high            = snap->m_day_high_price/10000;
+    m_snapStockCash.low             = snap->m_day_low_price/10000;
+    m_snapStockCash.high_limit      = snap->m_upper_limit_price/10000;
+    m_snapStockCash.low_limit       = snap->m_low_limit_price/10000;
+    m_snapStockCash.acc_volume      = snap->m_total_quantity/100;
+    m_snapStockCash.acc_turnover    = snap->m_total_value/1000000;
+    m_snapStockCash.match_items     = snap->m_total_trade_num;
+    m_snapStockCash.total_ask_qty   = snap->m_total_ask_quantity/100;
+    m_snapStockCash.total_bid_qty   = snap->m_total_bid_quantity/100;
+    m_snapStockCash.wavg_ask        = snap->m_total_ask_weighted_avg_price/10000;
+    m_snapStockCash.wavg_bid        = snap->m_total_bid_weighted_avg_price/10000;
+    m_snapStockCash.interest        = snap->m_open_interest/10000;
+    m_snapStockCash.iopv            = snap->m_iopv/10000;
+
+    for (size_t i = 0; i < 10; i++)
+    {
+        m_snapStockCash.ask_price[i] = snap->m_ask_unit[i].m_price/10000;
+        m_snapStockCash.ask_volume[i] = snap->m_ask_unit[i].m_quantity/100;
+
+        m_snapStockCash.bid_price[i] = snap->m_bid_unit[i].m_price/10000;
+        m_snapStockCash.bid_volume[i] = snap->m_bid_unit[i].m_quantity/100;
+    }
+    
+
+    printf("[OnL2StockSnapshotRtn] %s, %s, %d, %f, %ld, %f, %f, %f\n", 
+                m_snapStockCash.symbol, m_snapStockCash.time_str, m_snapStockCash.time, 
+                m_snapStockCash.last, m_snapStockCash.acc_volume, m_snapStockCash.acc_turnover, m_snapStockCash.high_limit, m_snapStockCash.low_limit);
+
+    if(m_cb){
+        m_cb->OnL2StockSnapshotRtn(&m_snapStockCash);
+    }
 }
 
 // 深交所逐笔合并行情
