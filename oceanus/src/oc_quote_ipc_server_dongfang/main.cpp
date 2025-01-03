@@ -7,8 +7,8 @@
 
 
 int main(int argc, char *argv[]) {
-    TiDfTraderClient client;
-    client.Run();
+    TiDfQuoteClient client;
+    client.connect();
 
     return 0;
 }
