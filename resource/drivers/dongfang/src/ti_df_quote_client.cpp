@@ -177,17 +177,31 @@ void TiDfQuoteClient::OnLv2TickSze(EMQSzeTick *tick)
 // 深交所指数行情
 void TiDfQuoteClient::OnLv2IndexSze(EMQSzeIdx *idx)
 {
-    auto ts = quote_api_->GetPacketHardwareRXTs(idx);
+    memset(&m_snapIndexCash, 0, sizeof(TiQuoteSnapshotIndexField));
+    strcpy(m_snapIndexCash.symbol, (char*)idx->m_head.m_symbol);
+    strcpy(m_snapIndexCash.exchange, "SZ");
+    formatQuoteUpdatetime(idx->m_head.m_quote_update_time, 
+        m_snapIndexCash.date, m_snapIndexCash.time, m_snapIndexCash.timestamp);
+    datetime::get_format_time_ms(m_snapIndexCash.date, m_snapIndexCash.time, m_snapIndexCash.time_str, TI_TIME_STR_LEN);
+    datetime::get_format_now_time_us(m_snapIndexCash.recv_time_str, TI_TIME_STR_LEN);
+    m_snapIndexCash.recv_timestamp = datetime::get_now_timestamp_ms();
 
-    char cache[1024];
-    sprintf(cache, "%d,%d,%s,%llu,%d,%llu,%llu,%llu,%u,%u,%u,%u,%u,%u,%u,%d,%d,%llu,%d,%lu\n",
-            idx->m_head.m_security_type, idx->m_head.m_sub_security_type, idx->m_head.m_symbol,
-            idx->m_head.m_quote_update_time, idx->m_head.m_channel_num, idx->m_total_trade_num, idx->m_total_quantity,
-            idx->m_total_value, idx->m_last_price, idx->m_pre_close_price, idx->m_open_price, idx->m_day_high_price,
-            idx->m_day_low_price, idx->m_today_close_price, idx->m_head.m_sequence, idx->m_head.m_message_type,
-            idx->m_head.m_exchange_id, idx->m_head.m_sequence_num, idx->m_head.m_md_stream_id, ts);
+    m_snapIndexCash.last            = idx->m_last_price/10000;
+    m_snapIndexCash.pre_close       = idx->m_pre_close_price/10000;
+    m_snapIndexCash.open            = idx->m_open_price/10000;
+    m_snapIndexCash.high            = idx->m_day_high_price/10000;
+    m_snapIndexCash.low             = idx->m_day_low_price/10000;
+    m_snapIndexCash.volume          = idx->m_total_quantity/100;
+    m_snapIndexCash.turnover        = idx->m_total_value/1000000;
+    m_snapIndexCash.close           = idx->m_today_close_price/10000;
 
-    std::cout << cache << std::flush;
+    if(m_cb){
+        m_cb->OnL2IndexSnapshotRtn(&m_snapIndexCash);
+    }
+
+    json j;
+    TiQuoteFormater::FormatSnapshot(&m_snapIndexCash, j);
+    std::cout << "FormatSnapshot: " << j.dump() << std::endl;
 }
 
 // 深交所债券快照行情
