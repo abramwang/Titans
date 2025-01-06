@@ -176,9 +176,11 @@ void TiDfQuoteL1Client::OnDepthMarketData(EMTMarketDataStruct *market_data, int6
         m_snapStockCash.bid_volume[i] = market_data->bid_qty[i];
     }
 
+    /*
     json j;
     TiQuoteFormater::FormatSnapshot(&m_snapStockCash, j);
     std::cout << "FormatSnapshot: " << j.dump() << std::endl;
+    */
 
     TiQuoteSnapshotStockField* pSnap = GetStockSnapshot(m_snapStockCash.symbol, m_snapStockCash.exchange);
     if(pSnap){

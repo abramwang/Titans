@@ -426,10 +426,6 @@ void TiDfQuoteClient::OnLv2SnapSse(EMQSseSnap *snap)
         m_snapStockCash.low_limit       = pContract->low_limit;
     }
     
-    json j;
-    TiQuoteFormater::FormatSnapshot(&m_snapStockCash, j);
-    std::cout << "FormatSnapshot: " << j.dump() << std::endl;
-
 #if Enable_Df_DataOutput
     json j;
     TiQuoteFormater::FormatSnapshot(&m_snapStockCash, j);
@@ -853,8 +849,4 @@ void TiDfQuoteClient::connect()
         m_config->szL2Account.c_str(), m_config->szL2Pass.c_str());
     std::cout << "L2 Login: " << x << std::endl;
     m_quote_api->Start();
-    while (true)
-    {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
 }
