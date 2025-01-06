@@ -21,8 +21,6 @@ TiDfQuoteClient::TiDfQuoteClient()
 
     m_quote_api = NULL;
     m_quoteL1Client = new TiDfQuoteL1Client();
-
-    m_quoteL1Client->Run();
 }
 
 TiDfQuoteClient::~TiDfQuoteClient()
@@ -391,6 +389,17 @@ void TiDfQuoteClient::OnLv2SnapSse(EMQSseSnap *snap)
         m_snapStockCash.bid_price[i] = snap->m_bid_unit[i].m_price/10000;
         m_snapStockCash.bid_volume[i] = snap->m_bid_unit[i].m_quantity/100;
     }
+
+    TiQuoteContractInfoField* pContract = m_quoteL1Client->GetContractInfo(m_snapStockCash.symbol, m_snapStockCash.exchange);
+    if (pContract)
+    {
+        m_snapStockCash.high_limit      = pContract->high_limit;
+        m_snapStockCash.low_limit       = pContract->low_limit;
+    }
+    
+    json j;
+    TiQuoteFormater::FormatSnapshot(&m_snapStockCash, j);
+    std::cout << "FormatSnapshot: " << j.dump() << std::endl;
 
 #if Enable_Df_DataOutput
     json j;

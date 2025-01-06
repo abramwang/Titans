@@ -45,9 +45,13 @@ void TiDfQuoteL1Client::Init() {
     }
     std::cout << "Quote Login Success!" << std::endl;
 
-    //m_quote_api->QueryAllTickersFullInfo(EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SH);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    subData("SH", nullptr, 0);
+    m_quote_api->QueryAllTickersFullInfo(EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SH);
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    //subData("SH", nullptr, 0);
 }
 
 void TiDfQuoteL1Client::formatQuoteUpdatetime(unsigned long long quote_update_time, int32_t &date, int32_t &time, int64_t &timestamp)
