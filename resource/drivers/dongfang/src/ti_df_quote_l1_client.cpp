@@ -45,7 +45,9 @@ void TiDfQuoteL1Client::Init() {
     }
     std::cout << "Quote Login Success!" << std::endl;
 
-    m_quote_api->QueryAllTickersFullInfo(EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SH);
+    //m_quote_api->QueryAllTickersFullInfo(EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SH);
+
+    subData("SH", nullptr, 0);
 }
 
 void TiDfQuoteL1Client::formatQuoteUpdatetime(unsigned long long quote_update_time, int32_t &date, int32_t &time, int64_t &timestamp)
@@ -197,7 +199,7 @@ void TiDfQuoteL1Client::subData(const char* exchangeName, char* codeList[], size
         {
             m_quote_api->SubscribeMarketData(codeList, len, EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SZ);
         }else{
-            m_quote_api->SubscribeAllIndexData(EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SZ);
+            m_quote_api->SubscribeAllMarketData(EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SZ);
         }
     }
     if (strcmp(exchangeName, "SH") == 0) {
@@ -205,7 +207,7 @@ void TiDfQuoteL1Client::subData(const char* exchangeName, char* codeList[], size
         {
             m_quote_api->SubscribeMarketData(codeList, len, EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SH);
         }else{
-            m_quote_api->SubscribeAllIndexData(EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SH);
+            m_quote_api->SubscribeAllMarketData(EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SH);
         }
     }
 };
