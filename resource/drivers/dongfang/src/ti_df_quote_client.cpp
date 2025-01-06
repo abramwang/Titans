@@ -14,6 +14,11 @@
 TiDfQuoteClient::TiDfQuoteClient()
 {
     m_trading_day = datetime::get_today();
+    memset(&m_snapStockCash, 0, sizeof(TiQuoteSnapshotStockField));
+    memset(&m_snapIndexCash, 0, sizeof(TiQuoteSnapshotIndexField));
+    memset(&m_orderCash, 0, sizeof(TiQuoteOrderField));
+    memset(&m_matchCash, 0, sizeof(TiQuoteMatchesField));
+
     m_quote_api = NULL;
     m_quoteL1Client = new TiDfQuoteL1Client();
 

@@ -4,9 +4,13 @@
 #include <iostream>
 #include <thread>
 
+#include "datetime.h"
+#include "ti_quote_formater.h"
 
 TiDfQuoteL1Client::TiDfQuoteL1Client() : m_quote_api(nullptr)
 { 
+    m_cb = NULL;
+
     Init(); 
 }
 
@@ -37,19 +41,14 @@ void TiDfQuoteL1Client::Init() {
     std::cout << "Quote Login Success!" << std::endl;
 }
 
-void TiDfQuoteL1Client::Run() {
-    char *securityCodeSz[] = {(char *)"000001", (char *)"300059"};
-    // 订阅指定标的快照行情
-    m_quote_api->SubscribeMarketData(securityCodeSz, 2, EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SZ);
+void TiDfQuoteL1Client::formatQuoteUpdatetime(unsigned long long quote_update_time, int32_t &date, int32_t &time, int64_t &timestamp)
+{
+    date = quote_update_time / 1000000000;
+    time = quote_update_time % 1000000000;
+    timestamp = datetime::get_timestamp_ms(date, time);
+};
 
-    // 订阅深圳全市场指数快照行情
-    m_quote_api->SubscribeAllIndexData(EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SZ);
 
-    return;
-    while (true) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-}
 
 // 订阅快照行情响应
 void TiDfQuoteL1Client::OnSubMarketData(EMTSpecificTickerStruct *ticker, EMTRspInfoStruct *error_info, bool is_last) {
@@ -70,33 +69,95 @@ void TiDfQuoteL1Client::OnSubscribeAllIndexData(EMQ_EXCHANGE_TYPE exchange_id, E
 
 // 现货集中竞价快照行情
 void TiDfQuoteL1Client::OnDepthMarketData(EMTMarketDataStruct *market_data, int64_t bid1_qty[], int32_t bid1_count, int32_t max_bid1_count, int64_t ask1_qty[],
-                                  int32_t ask1_count, int32_t max_ask1_count) {
-    std::cout << "----------OnDepthMarketData----------" << std::endl
-              << "exchage_type:" << static_cast<int>(market_data->exchange_id) << std::endl
-              << "ticker:" << market_data->ticker << std::endl
-              << "avg_price:" << market_data->avg_price << std::endl
-              << "last_price:" << market_data->last_price << std::endl
-              << "pre_close_price:" << market_data->pre_close_price << std::endl
-              << "open_price:" << market_data->open_price << std::endl
-              << "high_price:" << market_data->high_price << std::endl
-              << "low_price:" << market_data->low_price << std::endl
-              << "close_price:" << market_data->close_price << std::endl
-              << "upper_limit_price:" << market_data->upper_limit_price << std::endl
-              << "lower_limit_price:" << market_data->lower_limit_price << std::endl;
-
-    if (market_data->exchange_id == EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SHHK || market_data->exchange_id == EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SZHK) {
-        std::cout << "refer_price: " << market_data->hk.refer_price << std::endl
-                  << "nominal_Price:" << market_data->hk.nominal_price << std::endl
-                  << "buySideUpLimitPrice:" << market_data->hk.buyside_up_limit_price << std::endl
-                  << "buySideLowLimitPrice:" << market_data->hk.buyside_low_limit_price << std::endl
-                  << "sellSideUpLimitPrice:" << market_data->hk.sellside_up_limit_price << std::endl
-                  << "sellSideLowLimitPrice:" << market_data->hk.sellside_low_limit_price << std::endl;
+                                  int32_t ask1_count, int32_t max_ask1_count)
+{
+    memset(&m_snapStockCash, 0, sizeof(TiQuoteSnapshotStockField));
+    if (market_data->exchange_id == EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SH) {
+        strcpy(m_snapStockCash.symbol, "SH");
+    } else if (market_data->exchange_id == EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SZ) {
+        strcpy(m_snapStockCash.symbol, "SZ");
     }
+
+    formatQuoteUpdatetime(market_data->data_time, 
+        m_snapStockCash.date, m_snapStockCash.time, m_snapStockCash.timestamp);
+    datetime::get_format_time_ms(m_snapStockCash.date, m_snapStockCash.time, m_snapStockCash.time_str, TI_TIME_STR_LEN);
+    datetime::get_format_now_time_us(m_snapStockCash.recv_time_str, TI_TIME_STR_LEN);
+    m_snapStockCash.recv_timestamp = datetime::get_now_timestamp_ms();
+
+    strcpy(m_snapStockCash.symbol, market_data->ticker);
+    m_snapStockCash.last = market_data->last_price;
+    m_snapStockCash.pre_close = market_data->pre_close_price;
+    m_snapStockCash.open = market_data->open_price;
+    m_snapStockCash.high = market_data->high_price;
+    m_snapStockCash.low = market_data->low_price;
+    m_snapStockCash.high_limit = market_data->upper_limit_price;
+    m_snapStockCash.low_limit = market_data->lower_limit_price;
+    m_snapStockCash.acc_volume = market_data->qty;
+    m_snapStockCash.acc_turnover = market_data->turnover;
+    m_snapStockCash.match_items = market_data->trades_count;
+
+    for (int i = 0; i < 5; i++) {
+        m_snapStockCash.ask_price[i] = market_data->ask[i];
+        m_snapStockCash.ask_volume[i] = market_data->ask_qty[i];
+        m_snapStockCash.bid_price[i] = market_data->bid[i];
+        m_snapStockCash.bid_volume[i] = market_data->bid_qty[i];
+    }
+
+    json j;
+    TiQuoteFormater::FormatSnapshot(&m_snapStockCash, j);
+    std::cout << "FormatSnapshot: " << j.dump() << std::endl;
+
+    TiQuoteSnapshotStockField* pSnap = GetStockSnapshot(m_snapStockCash.symbol, m_snapStockCash.exchange);
+    if(pSnap){
+        memcpy(pSnap, &m_snapStockCash, sizeof(TiQuoteSnapshotStockField));
+    }else{
+        m_snapshot_map[TiQuoteTools::GetSymbolID(m_snapStockCash.exchange, m_snapStockCash.symbol)] = std::make_unique<TiQuoteSnapshotStockField>(m_snapStockCash);
+    }
+
+    /*
+    if(m_cb){
+        m_cb->OnL2StockSnapshotRtn(&m_snapStockCash);
+    }
+    */
 }
 
 // 指数快照行情
 void TiDfQuoteL1Client::OnIndexData(EMTIndexDataStruct *index_data) {
+    return;
     std::cout << "----------OnIndexData-----------------" << std::endl;
     std::cout << index_data->ticker << std::endl
               << index_data->last_price << std::endl;
 }
+
+
+
+
+void TiDfQuoteL1Client::Run() {
+    char *securityCodeSz[] = {(char *)"000001", (char *)"300059"};
+    // 订阅指定标的快照行情
+    m_quote_api->SubscribeMarketData(securityCodeSz, 2, EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SZ);
+
+    
+    char *securityCodeSh[] = {(char *)"600000", (char *)"688001"};
+    // 订阅指定标的快照行情
+    m_quote_api->SubscribeMarketData(securityCodeSh, 2, EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SH);
+
+    // 订阅深圳全市场指数快照行情
+    m_quote_api->SubscribeAllIndexData(EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SZ);
+
+    return;
+    while (true) {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+}
+
+TiQuoteSnapshotStockField* TiDfQuoteL1Client::GetStockSnapshot(const char* symbol, const char* exchange)
+{
+    int64_t id = TiQuoteTools::GetSymbolID(exchange, symbol);
+    auto it = m_snapshot_map.find(id);
+    if (it != m_snapshot_map.end())
+    {
+        return it->second.get();
+    }
+    return nullptr;
+};

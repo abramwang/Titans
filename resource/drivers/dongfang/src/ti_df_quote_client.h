@@ -39,14 +39,15 @@ protected:
     void OnLv2TreeSse(EMQSseTree *tree);
 
 private:
-    TiDfQuoteL1Client* m_quoteL1Client;
-    EMQ::API::QuoteApiLv2 *m_quote_api;
     unsigned int m_trading_day;
     
     TiQuoteSnapshotStockField   m_snapStockCash;
     TiQuoteSnapshotIndexField   m_snapIndexCash;
     TiQuoteOrderField           m_orderCash;
     TiQuoteMatchesField         m_matchCash;
+    
+    TiDfQuoteL1Client* m_quoteL1Client;
+    EMQ::API::QuoteApiLv2 *m_quote_api;
 
     TiQuoteCallback* m_cb;
 private:
