@@ -88,6 +88,7 @@ void TiHxQuoteL1Client::OnRtnMarketData(TORALEV1API::CTORATstpMarketDataField *p
 
     strcpy(m_snapStockCash.symbol, pMarketDataField->SecurityID);
     m_snapStockCash.date            = m_trading_day;
+    m_snapStockCash.time            = atoi(pMarketDataField->UpdateTime);
     
     if(pMarketDataField->ExchangeID == '1'){
         strcpy(m_snapStockCash.exchange, "SH");
