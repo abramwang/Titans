@@ -9,6 +9,8 @@
 
 #include "ti_quote_formater.h"
 
+#define Enable_Df_DataOutput 0
+
 TiDfQuoteClient::TiDfQuoteClient()
 {
     m_trading_day = datetime::get_today();
@@ -72,10 +74,11 @@ void TiDfQuoteClient::OnLv2SnapSze(EMQSzeSnap *snap)
         m_snapStockCash.bid_volume[i] = snap->m_bid_unit[i].m_quantity/100;
     }
     
-
-    printf("[OnL2StockSnapshotRtn] %s, %s, %d, %f, %ld, %f, %f, %f\n", 
-                m_snapStockCash.symbol, m_snapStockCash.time_str, m_snapStockCash.time, 
-                m_snapStockCash.last, m_snapStockCash.acc_volume, m_snapStockCash.acc_turnover, m_snapStockCash.high_limit, m_snapStockCash.low_limit);
+#if Enable_Df_DataOutput
+    json j;
+    TiQuoteFormater::FormatSnapshot(&m_snapIndexCash, j);
+    std::cout << "FormatSnapshot: " << j.dump() << std::endl;
+#endif
 
     if(m_cb){
         m_cb->OnL2StockSnapshotRtn(&m_snapStockCash);
@@ -116,14 +119,15 @@ void TiDfQuoteClient::OnLv2TickSze(EMQSzeTick *tick)
             m_orderCash.order_type      = tick->m_tick_order->m_order_type;
         }
 
-        if(m_cb){
-            m_cb->OnL2StockOrderRtn(&m_orderCash);
-        }
-
+#if Enable_Df_DataOutput
         json j;
         TiQuoteFormater::FormatOrder(&m_orderCash, j);
         std::cout << "FormatOrder: "  << j.dump() << std::endl;
+#endif
 
+        if(m_cb){
+            m_cb->OnL2StockOrderRtn(&m_orderCash);
+        }
     }
     else if (tick->m_tick_type == EMQSzeTickType::kTickTypeExe)
     {
@@ -156,14 +160,16 @@ void TiDfQuoteClient::OnLv2TickSze(EMQSzeTick *tick)
         }else{
             m_matchCash.bs_flag = 'B';
         }
-        
-        if(m_cb){
-            m_cb->OnL2StockMatchesRtn(&m_matchCash);
-        }
 
+#if Enable_Df_DataOutput
         json j;
         TiQuoteFormater::FormatMatch(&m_matchCash, j);
         std::cout << "FormatMatch: " << j.dump() << std::endl;
+#endif
+
+        if(m_cb){
+            m_cb->OnL2StockMatchesRtn(&m_matchCash);
+        }
     }
 }
 
@@ -188,13 +194,15 @@ void TiDfQuoteClient::OnLv2IndexSze(EMQSzeIdx *idx)
     m_snapIndexCash.turnover        = idx->m_total_value/1000000;
     m_snapIndexCash.close           = idx->m_today_close_price/10000;
 
-    if(m_cb){
-        m_cb->OnL2IndexSnapshotRtn(&m_snapIndexCash);
-    }
-
+#if Enable_Df_DataOutput
     json j;
     TiQuoteFormater::FormatSnapshot(&m_snapIndexCash, j);
     std::cout << "FormatSnapshot: " << j.dump() << std::endl;
+#endif
+
+    if(m_cb){
+        m_cb->OnL2IndexSnapshotRtn(&m_snapIndexCash);
+    }
 }
 
 // 深交所债券快照行情
@@ -231,12 +239,16 @@ void TiDfQuoteClient::OnLv2BondSnapSze(EMQSzeBondSnap *bond_snap)
         m_snapStockCash.bid_volume[i] = bond_snap->m_bid_unit[i].m_quantity/100;
     }
 
-
+#if Enable_Df_DataOutput
     json j;
     TiQuoteFormater::FormatSnapshot(&m_snapStockCash, j);
     std::cout << "FormatSnapshot: " << j.dump() << std::endl;
+#endif
 
-    return;
+    if(m_cb){
+        m_cb->OnL2StockSnapshotRtn(&m_snapStockCash);
+    }
+
 }
 
 // 深交所债券逐笔合并行情
@@ -273,14 +285,14 @@ void TiDfQuoteClient::OnLv2BondTickSze(EMQSzeBondTick *bond_tick)
             m_orderCash.order_type      = bond_tick->m_bond_order->m_order_type;
         }
 
-        if(m_cb){
-            m_cb->OnL2StockOrderRtn(&m_orderCash);
-        }
-
+#if Enable_Df_DataOutput
         json j;
         TiQuoteFormater::FormatOrder(&m_orderCash, j);
         std::cout << "FormatOrder: "  << j.dump() << std::endl;
-
+#endif
+        if(m_cb){
+            m_cb->OnL2StockOrderRtn(&m_orderCash);
+        }
     }
     else if (bond_tick->m_tick_type == EMQSzeTickType::kTickTypeBondExe)
     {
@@ -314,13 +326,16 @@ void TiDfQuoteClient::OnLv2BondTickSze(EMQSzeBondTick *bond_tick)
             m_matchCash.bs_flag = 'B';
         }
 
+#if Enable_Df_DataOutput
+        json j;
+        TiQuoteFormater::FormatMatch(&m_matchCash, j);
+        std::cout << "FormatMatch: " << j.dump() << std::endl;
+#endif
+
         if(m_cb){
             m_cb->OnL2StockMatchesRtn(&m_matchCash);
         }
 
-        json j;
-        TiQuoteFormater::FormatMatch(&m_matchCash, j);
-        std::cout << "FormatMatch: " << j.dump() << std::endl;
     }
 }
 
@@ -368,14 +383,15 @@ void TiDfQuoteClient::OnLv2SnapSse(EMQSseSnap *snap)
         m_snapStockCash.bid_volume[i] = snap->m_bid_unit[i].m_quantity/100;
     }
 
-    if(m_cb){
-        m_cb->OnL2StockSnapshotRtn(&m_snapStockCash);
-    }
-
+#if Enable_Df_DataOutput
     json j;
     TiQuoteFormater::FormatSnapshot(&m_snapStockCash, j);
     std::cout << "FormatSnapshot: " << j.dump() << std::endl;
-    return;
+#endif
+
+    if(m_cb){
+        m_cb->OnL2StockSnapshotRtn(&m_snapStockCash);
+    }
 }
 
 // 上交所逐笔合并行情
@@ -409,13 +425,16 @@ void TiDfQuoteClient::OnLv2TickSse(EMQSseTick *tick)
         }
         m_orderCash.order_type      = tick->m_tick_type;
         
+#if Enable_Df_DataOutput
+        json j;
+        TiQuoteFormater::FormatOrder(&m_orderCash, j);
+        std::cout << "FormatOrder: "  << j.dump() << std::endl;
+#endif
+
         if(m_cb){
             m_cb->OnL2StockOrderRtn(&m_orderCash);
         }
 
-        json j;
-        TiQuoteFormater::FormatOrder(&m_orderCash, j);
-        std::cout << "FormatOrder: "  << j.dump() << std::endl;
     }
 
     if (tick->m_tick_type == 'T')
@@ -448,13 +467,16 @@ void TiDfQuoteClient::OnLv2TickSse(EMQSseTick *tick)
             m_matchCash.bs_flag = 'S';
         }
 
+#if Enable_Df_DataOutput
+        json j;
+        TiQuoteFormater::FormatMatch(&m_matchCash, j);
+        std::cout << "FormatMatch: " << j.dump() << std::endl;
+#endif
+
         if(m_cb){
             m_cb->OnL2StockOrderRtn(&m_orderCash);
         }
         
-        json j;
-        TiQuoteFormater::FormatMatch(&m_matchCash, j);
-        std::cout << "FormatMatch: " << j.dump() << std::endl;
     }
 }
 
@@ -479,6 +501,12 @@ void TiDfQuoteClient::OnLv2IndexSse(EMQSseIdx *idx)
     m_snapIndexCash.volume          = idx->m_total_quantity/100;
     m_snapIndexCash.turnover        = idx->m_total_value/1000000;
     m_snapIndexCash.close           = idx->m_today_close_price/10000;
+
+#if Enable_Df_DataOutput
+    json j;
+    TiQuoteFormater::FormatSnapshot(&m_snapIndexCash, j);
+    std::cout << "FormatSnapshot: " << j.dump() << std::endl;
+#endif
 
     if(m_cb){
         m_cb->OnL2IndexSnapshotRtn(&m_snapIndexCash);
@@ -521,13 +549,15 @@ void TiDfQuoteClient::OnLv2BondSnapSse(EMQSseBondSnap *bond_snap)
         m_snapStockCash.bid_volume[i] = bond_snap->m_bid_unit[i].m_quantity/100;
     }
 
-    if(m_cb){
-        m_cb->OnL2StockSnapshotRtn(&m_snapStockCash);
-    }
-
+#if Enable_Df_DataOutput
     json j;
     TiQuoteFormater::FormatSnapshot(&m_snapStockCash, j);
     std::cout << "FormatSnapshot: " << j.dump() << std::endl;
+#endif
+
+    if(m_cb){
+        m_cb->OnL2StockSnapshotRtn(&m_snapStockCash);
+    }
 }
 
 // 上交所债券逐笔行情
@@ -560,14 +590,17 @@ void TiDfQuoteClient::OnLv2BondTickSse(EMQSseBondTick *bond_tick)
             m_orderCash.function_code = 'S';
         }
         m_orderCash.order_type      = bond_tick->m_tick_type;
-        
+
+#if Enable_Df_DataOutput
+        json j;
+        TiQuoteFormater::FormatOrder(&m_orderCash, j);
+        std::cout << "FormatOrder: "  << j.dump() << std::endl;
+#endif
+
         if(m_cb){
             m_cb->OnL2StockOrderRtn(&m_orderCash);
         }
 
-        json j;
-        TiQuoteFormater::FormatOrder(&m_orderCash, j);
-        std::cout << "FormatOrder: "  << j.dump() << std::endl;
     }
 
     if (bond_tick->m_tick_type == 'T')
@@ -600,13 +633,16 @@ void TiDfQuoteClient::OnLv2BondTickSse(EMQSseBondTick *bond_tick)
             m_matchCash.bs_flag = 'S';
         }
 
+#if Enable_Df_DataOutput
+        json j;
+        TiQuoteFormater::FormatMatch(&m_matchCash, j);
+        std::cout << "FormatMatch: " << j.dump() << std::endl;
+#endif
+
         if(m_cb){
             m_cb->OnL2StockOrderRtn(&m_orderCash);
         }
         
-        json j;
-        TiQuoteFormater::FormatMatch(&m_matchCash, j);
-        std::cout << "FormatMatch: " << j.dump() << std::endl;
     }
 }
 
