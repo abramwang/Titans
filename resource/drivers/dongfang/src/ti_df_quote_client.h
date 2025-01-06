@@ -38,6 +38,7 @@ protected:
 
 private:
     EMQ::API::QuoteApiLv2 *quote_api_;
+    unsigned int m_trading_day;
     
     TiQuoteSnapshotStockField   m_snapStockCash;
     TiQuoteSnapshotIndexField   m_snapIndexCash;
