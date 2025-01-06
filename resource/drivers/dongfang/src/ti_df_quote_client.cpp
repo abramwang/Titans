@@ -9,11 +9,6 @@
 
 #include "ti_quote_formater.h"
 
-namespace
-{
-static constexpr int kCacheSize = 2048;
-}
-
 TiDfQuoteClient::TiDfQuoteClient()
 {
     m_trading_day = datetime::get_today();
@@ -488,92 +483,137 @@ void TiDfQuoteClient::OnLv2IndexSse(EMQSseIdx *idx)
     if(m_cb){
         m_cb->OnL2IndexSnapshotRtn(&m_snapIndexCash);
     }
-
-    json j;
-    TiQuoteFormater::FormatSnapshot(&m_snapIndexCash, j);
-    std::cout << "FormatSnapshot: " << j.dump() << std::endl;
-
-    auto ts = quote_api_->GetPacketHardwareRXTs(idx);
-    char cache[1024];
-
-    sprintf(cache, "%d,%d,%u,%s,%d,%u,%u,%llu,%u,%u,%u,%llu,%u,%u,%d,%d,%d,%d,%d,%d,%d,%u,%lu\n", idx->m_head.m_category_id,
-            idx->m_head.m_msg_seq_id, idx->m_quote_update_time, idx->m_symbol, idx->m_security_type,
-            idx->m_pre_close_price, idx->m_open_price, idx->m_total_value, idx->m_day_high_price, idx->m_day_low_price,
-            idx->m_last_price, idx->m_total_quantity, idx->m_today_close_price, idx->m_head.m_sequence,
-            idx->m_head.m_message_type, idx->m_head.m_message_len, idx->m_head.m_exchange_id,
-            idx->m_head.m_quote_date_year, idx->m_head.m_quote_date_month, idx->m_head.m_quote_date_day,
-            idx->m_head.m_send_time, idx->m_head.m_seq_lost_flag, ts);
-
-    std::cout << cache << std::flush;
 }
 
 // 上交所债券快照行情
 void TiDfQuoteClient::OnLv2BondSnapSse(EMQSseBondSnap *bond_snap)
 {
-    auto ts = quote_api_->GetPacketHardwareRXTs(bond_snap);
-    char cache[kCacheSize];
+    memset(&m_snapStockCash, 0, sizeof(TiQuoteSnapshotStockField));
 
-    sprintf(cache,
-            "%d,%d,%u,%s,%d,%d,%u,%u,%u,%u,%u,%u,%u,%u,%llu,%llu,%llu,%u,%llu,%u,%u,%llu,%llu,%u,%llu,%llu,%u,%u,%u,%u,"
-            "%u,%llu,%u,%llu,%u,%llu,%u,%llu,%u,%u,%d,%d,%d,%d,%d,%d,%d,%d,%d,%lu\n",
-            bond_snap->m_head.m_category_id, bond_snap->m_head.m_msg_seq_id, bond_snap->m_quote_update_time,
-            bond_snap->m_symbol, bond_snap->m_security_type, bond_snap->m_sub_security_type,
-            bond_snap->m_pre_close_price, bond_snap->m_open_price, bond_snap->m_day_high_price,
-            bond_snap->m_day_low_price, bond_snap->m_last_price, bond_snap->m_today_close_price,
-            bond_snap->m_instrument_status, bond_snap->m_total_trade_num, bond_snap->m_total_quantity,
-            bond_snap->m_total_value, bond_snap->m_total_bid_quantity, bond_snap->m_total_bid_weighted_avg_price,
-            bond_snap->m_total_ask_quantity, bond_snap->m_total_ask_weighted_avg_price, bond_snap->m_withdraw_bid_num,
-            bond_snap->m_withdraw_bid_amount, bond_snap->m_withdraw_bid_price, bond_snap->m_withdraw_ask_num,
-            bond_snap->m_withdraw_ask_amount, bond_snap->m_withdraw_ask_price, bond_snap->m_total_bid_num,
-            bond_snap->m_total_ask_num, bond_snap->m_bid_trade_max_duration, bond_snap->m_ask_trade_max_duration,
-            bond_snap->m_bid_unit[0].m_price, bond_snap->m_bid_unit[0].m_quantity, bond_snap->m_ask_unit[0].m_price,
-            bond_snap->m_ask_unit[0].m_quantity, bond_snap->m_bid_unit[9].m_price, bond_snap->m_bid_unit[9].m_quantity,
-            bond_snap->m_ask_unit[9].m_price, bond_snap->m_ask_unit[9].m_quantity, bond_snap->m_head.m_sequence,
-            bond_snap->m_head.m_message_type, bond_snap->m_head.m_message_len, bond_snap->m_head.m_exchange_id,
-            bond_snap->m_head.m_quote_date_year, bond_snap->m_head.m_quote_date_month,
-            bond_snap->m_head.m_quote_date_day, bond_snap->m_head.m_send_time, bond_snap->m_head.m_seq_lost_flag,
-            bond_snap->m_bid_depth, bond_snap->m_ask_depth, ts);
+    strcpy(m_snapStockCash.symbol, (char*)bond_snap->m_symbol);
+    strcpy(m_snapStockCash.exchange, "SH");
+    m_snapStockCash.date            = m_trading_day;
+    m_snapStockCash.time            = bond_snap->m_quote_update_time;
+    m_snapStockCash.timestamp       = datetime::get_timestamp_ms(m_trading_day, m_snapStockCash.time);
+    datetime::get_format_time_ms(m_snapStockCash.date, m_snapStockCash.time, m_snapStockCash.time_str, TI_TIME_STR_LEN);
+    datetime::get_format_now_time_us(m_snapStockCash.recv_time_str, TI_TIME_STR_LEN);
+    m_snapStockCash.recv_timestamp  = datetime::get_now_timestamp_ms();
 
-    std::cout << cache << std::flush;
+    m_snapStockCash.last            = bond_snap->m_last_price/10000;
+    m_snapStockCash.pre_close       = bond_snap->m_pre_close_price/10000;
+    m_snapStockCash.open            = bond_snap->m_open_price/10000;
+    m_snapStockCash.high            = bond_snap->m_day_high_price/10000;
+    m_snapStockCash.low             = bond_snap->m_day_low_price/10000;
+    m_snapStockCash.acc_volume      = bond_snap->m_total_quantity/100;
+    m_snapStockCash.acc_turnover    = bond_snap->m_total_value/1000000;
+    m_snapStockCash.match_items     = bond_snap->m_total_trade_num;
+    m_snapStockCash.total_ask_qty   = bond_snap->m_total_ask_quantity/100;
+    m_snapStockCash.total_bid_qty   = bond_snap->m_total_bid_quantity/100;
+    m_snapStockCash.wavg_ask        = bond_snap->m_total_ask_weighted_avg_price/10000;
+    m_snapStockCash.wavg_bid        = bond_snap->m_total_bid_weighted_avg_price/10000;
+
+    for (size_t i = 0; i < 10; i++)
+    {
+        m_snapStockCash.ask_price[i] = bond_snap->m_ask_unit[i].m_price/10000;
+        m_snapStockCash.ask_volume[i] = bond_snap->m_ask_unit[i].m_quantity/100;
+
+        m_snapStockCash.bid_price[i] = bond_snap->m_bid_unit[i].m_price/10000;
+        m_snapStockCash.bid_volume[i] = bond_snap->m_bid_unit[i].m_quantity/100;
+    }
+
+    if(m_cb){
+        m_cb->OnL2StockSnapshotRtn(&m_snapStockCash);
+    }
+
+    json j;
+    TiQuoteFormater::FormatSnapshot(&m_snapStockCash, j);
+    std::cout << "FormatSnapshot: " << j.dump() << std::endl;
 }
 
 // 上交所债券逐笔行情
 void TiDfQuoteClient::OnLv2BondTickSse(EMQSseBondTick *bond_tick)
 {
-    auto ts = quote_api_->GetPacketHardwareRXTs(bond_tick);
-    char cache[kCacheSize];
+    if (bond_tick->m_tick_type == 'A' || bond_tick->m_tick_type == 'D')
+    {
+        memset(&m_orderCash, 0, sizeof(TiQuoteOrderField));
+        strcpy(m_orderCash.symbol, (char*)bond_tick->m_symbol);
+        strcpy(m_orderCash.exchange, "SH");
+        m_orderCash.date            = m_trading_day;
+        m_orderCash.time            = bond_tick->m_tick_time;
+        m_orderCash.timestamp       = datetime::get_timestamp_ms(m_trading_day, m_orderCash.time);
+        datetime::get_format_time_ms(m_orderCash.date, m_orderCash.time, m_orderCash.time_str, TI_TIME_STR_LEN);
+        datetime::get_format_now_time_us(m_orderCash.recv_time_str, TI_TIME_STR_LEN);
+        m_orderCash.recv_timestamp = datetime::get_now_timestamp_ms();
 
-    sprintf(cache, "%d,%d,%u,%u,%s,%d,%d,%u,%u,%llu,%llu,%u,%llu,%llu,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%lu\n",
-            bond_tick->m_head.m_category_id, bond_tick->m_head.m_msg_seq_id, bond_tick->m_tick_index,
-            bond_tick->m_channel_num, bond_tick->m_symbol, bond_tick->m_security_type, bond_tick->m_sub_security_type,
-            bond_tick->m_tick_time, bond_tick->m_tick_type, bond_tick->m_buy_num, bond_tick->m_sell_num,
-            bond_tick->m_price, bond_tick->m_quantity, bond_tick->m_trade_value, bond_tick->m_side_flag,
-            bond_tick->m_instrument_status, bond_tick->m_head.m_sequence, bond_tick->m_head.m_message_type,
-            bond_tick->m_head.m_message_len, bond_tick->m_head.m_exchange_id, bond_tick->m_head.m_quote_date_year,
-            bond_tick->m_head.m_quote_date_month, bond_tick->m_head.m_quote_date_day, bond_tick->m_head.m_send_time,
-            bond_tick->m_head.m_seq_lost_flag, ts);
+        m_orderCash.channel         = bond_tick->m_channel_num;
+        m_orderCash.seq             = bond_tick->m_tick_index;
+        m_orderCash.price           = bond_tick->m_price/10000;
+        m_orderCash.volume          = bond_tick->m_quantity/100;
+        m_orderCash.order_orino     = bond_tick->m_tick_index;
 
-    std::cout << cache << std::flush;
+        if (bond_tick->m_side_flag == 0x00)
+        {
+            m_orderCash.function_code = 'B';
+        }
+        if (bond_tick->m_side_flag == 0x01)
+        {
+            m_orderCash.function_code = 'S';
+        }
+        m_orderCash.order_type      = bond_tick->m_tick_type;
+        
+        if(m_cb){
+            m_cb->OnL2StockOrderRtn(&m_orderCash);
+        }
+
+        json j;
+        TiQuoteFormater::FormatOrder(&m_orderCash, j);
+        std::cout << "FormatOrder: "  << j.dump() << std::endl;
+    }
+
+    if (bond_tick->m_tick_type == 'T')
+    {
+        memset(&m_matchCash, 0, sizeof(TiQuoteMatchesField));
+        strcpy(m_matchCash.symbol, (char*)bond_tick->m_symbol);
+        strcpy(m_matchCash.exchange, "SH");
+        m_matchCash.date            = m_trading_day;
+        m_matchCash.time            = bond_tick->m_tick_time;
+        m_matchCash.timestamp       = datetime::get_timestamp_ms(m_trading_day, m_matchCash.time);
+        datetime::get_format_time_ms(m_matchCash.date, m_matchCash.time, m_matchCash.time_str, TI_TIME_STR_LEN);
+        datetime::get_format_now_time_us(m_matchCash.recv_time_str, TI_TIME_STR_LEN);
+        m_matchCash.recv_timestamp  = datetime::get_now_timestamp_ms();
+
+        m_matchCash.channel         = bond_tick->m_channel_num;
+        m_matchCash.seq             = bond_tick->m_tick_index;
+        m_matchCash.price           = bond_tick->m_price/10000;
+        m_matchCash.volume          = bond_tick->m_quantity/100;
+        m_matchCash.ask_order_seq   = bond_tick->m_sell_num;
+        m_matchCash.bid_order_seq   = bond_tick->m_buy_num;
+        
+        m_matchCash.function_code   = '0';
+
+        if (bond_tick->m_side_flag == 0x00)
+        {
+            m_matchCash.bs_flag = 'B';
+        }
+        if (bond_tick->m_side_flag == 0x01)
+        {
+            m_matchCash.bs_flag = 'S';
+        }
+
+        if(m_cb){
+            m_cb->OnL2StockOrderRtn(&m_orderCash);
+        }
+        
+        json j;
+        TiQuoteFormater::FormatMatch(&m_matchCash, j);
+        std::cout << "FormatMatch: " << j.dump() << std::endl;
+    }
 }
 
 // 上交所建树行情
 void TiDfQuoteClient::OnLv2TreeSse(EMQSseTree *tree)
 {
-    auto ts = quote_api_->GetPacketHardwareRXTs(tree);
-    char cache[kCacheSize] = {0};
-    sprintf(cache,
-            "%u,%u,%u,%u,%s,%u,%u,%llu,%lld,%u,%u,%u,%u,%u,%u,%u,%llu,%u,"
-            "%llu,%u,%u,%u,%llu,%u,%llu,%u,%llu,%u,%llu,%lu\n",
-            tree->m_head.m_sequence, tree->m_head.m_send_time, tree->m_head.m_msg_seq_id, tree->m_quote_update_time,
-            tree->m_symbol, tree->m_security_type, tree->m_total_trade_num, tree->m_total_quantity, tree->m_total_value,
-            tree->m_pre_close_price, tree->m_last_price, tree->m_open_price, tree->m_day_high_price,
-            tree->m_day_low_price, tree->m_today_close_price, tree->m_total_bid_weighted_avg_price,
-            tree->m_total_bid_quantity, tree->m_total_ask_weighted_avg_price, tree->m_total_ask_quantity,
-            tree->m_bid_depth, tree->m_ask_depth, tree->m_bid_unit[0].m_price, tree->m_bid_unit[0].m_quantity,
-            tree->m_bid_unit[9].m_price, tree->m_bid_unit[9].m_quantity, tree->m_ask_unit[0].m_price,
-            tree->m_ask_unit[0].m_quantity, tree->m_ask_unit[9].m_price, tree->m_ask_unit[9].m_quantity, ts);
-
-    std::cout << cache << std::flush;
+    return;
 }
 
 //////////////////////////////////////////////////////////
