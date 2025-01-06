@@ -11,13 +11,17 @@
 
 #define Enable_Df_DataOutput 0
 
-TiDfQuoteClient::TiDfQuoteClient()
+TiDfQuoteClient::TiDfQuoteClient(std::string configPath, TiQuoteCallback* userCb)
 {
     m_trading_day = datetime::get_today();
     memset(&m_snapStockCash, 0, sizeof(TiQuoteSnapshotStockField));
     memset(&m_snapIndexCash, 0, sizeof(TiQuoteSnapshotIndexField));
     memset(&m_orderCash, 0, sizeof(TiQuoteOrderField));
     memset(&m_matchCash, 0, sizeof(TiQuoteMatchesField));
+
+    m_cb = userCb;
+
+    loadConfig(configPath);
 
     m_quote_api = NULL;
     m_quoteL1Client = new TiDfQuoteL1Client();
@@ -31,6 +35,30 @@ TiDfQuoteClient::~TiDfQuoteClient()
 //////////////////////////////////////////////////////////
 //
 //////////////////////////////////////////////////////////
+int TiDfQuoteClient::loadConfig(std::string iniFileName)
+{
+    IniFile ini;
+    if (!ini.load(iniFileName))
+    {
+        LOG(ERROR) << "Failed to load config file: " << iniFileName;
+        return -1;
+    }
+
+    m_config = new ConfigInfo();
+    
+    m_config->szL1Host = string(ini["ti_df_quote_client"]["l1_host"]);
+    m_config->nL1Port = ini["ti_df_quote_client"]["l1_port"];
+    m_config->szL1Account = string(ini["ti_df_quote_client"]["l1_account"]);
+    m_config->szL1Pass = string(ini["ti_df_quote_client"]["l1_pass"]);
+
+    m_config->szL2Host = string(ini["ti_df_quote_client"]["l2_host"]);
+    m_config->nL2Port = ini["ti_df_quote_client"]["l2_port"];
+    m_config->szL2MulticastDevice = string(ini["ti_df_quote_client"]["l2_multicast_device"]);
+    m_config->szL2Account = string(ini["ti_df_quote_client"]["l2_account"]);
+    m_config->szL2Pass = string(ini["ti_df_quote_client"]["l2_pass"]);
+    
+    return 0;
+};
 
 void TiDfQuoteClient::formatQuoteUpdatetime(unsigned long long quote_update_time, int32_t &date, int32_t &time, int64_t &timestamp)
 {

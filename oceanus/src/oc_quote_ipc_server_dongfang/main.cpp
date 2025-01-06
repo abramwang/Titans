@@ -7,7 +7,7 @@
 
 
 int main(int argc, char *argv[]) {
-    TiDfQuoteClient client;
+    TiDfQuoteClient client("./config.ini", nullptr);
     client.connect();
 
     return 0;

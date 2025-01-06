@@ -10,6 +10,23 @@
 
 class TiDfQuoteClient : public EMQ::API::QuoteSpiLv2
 {
+public:
+    typedef struct ConfigInfo
+    {
+        std::string szL1Host;           //level 1 host
+        int nL1Port;                    //level 1 port
+
+        std::string szL1Account;
+        std::string szL1Pass;
+        
+        std::string szL2Host;           //level 2 host
+        int nL2Port;                    //level 2 port
+
+        std::string szL2MulticastDevice;    //组播行情接收网卡地址
+
+        std::string szL2Account;
+        std::string szL2Pass;
+    } ConfigInfo;
 protected:
     // inherit from EMQ::API::QuoteSpiLv2
     // 深交所快照行情
@@ -39,6 +56,8 @@ protected:
     void OnLv2TreeSse(EMQSseTree *tree);
 
 private:
+    ConfigInfo* m_config;
+    TiQuoteCallback* m_cb;
     unsigned int m_trading_day;
     
     TiQuoteSnapshotStockField   m_snapStockCash;
@@ -48,12 +67,11 @@ private:
     
     TiDfQuoteL1Client* m_quoteL1Client;
     EMQ::API::QuoteApiLv2 *m_quote_api;
-
-    TiQuoteCallback* m_cb;
 private:
+    int loadConfig(std::string iniFileName);
     void formatQuoteUpdatetime(unsigned long long quote_update_time, int32_t &date, int32_t &time, int64_t &timestamp);
 public:
-    TiDfQuoteClient();
+    TiDfQuoteClient(std::string configPath, TiQuoteCallback* userCb);
     ~TiDfQuoteClient();
 public:
     void connect();
