@@ -5,6 +5,8 @@
 #include "ti_quote_callback.h"
 #include "quote_api_lv2.h"
 
+#include "ti_df_quote_l1_client.h"
+
 
 class TiDfQuoteClient : public EMQ::API::QuoteSpiLv2
 {
@@ -37,7 +39,8 @@ protected:
     void OnLv2TreeSse(EMQSseTree *tree);
 
 private:
-    EMQ::API::QuoteApiLv2 *quote_api_;
+    TiDfQuoteL1Client* m_quoteL1Client;
+    EMQ::API::QuoteApiLv2 *m_quote_api;
     unsigned int m_trading_day;
     
     TiQuoteSnapshotStockField   m_snapStockCash;

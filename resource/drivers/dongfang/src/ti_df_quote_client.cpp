@@ -14,11 +14,15 @@
 TiDfQuoteClient::TiDfQuoteClient()
 {
     m_trading_day = datetime::get_today();
+    m_quote_api = NULL;
+    m_quoteL1Client = new TiDfQuoteL1Client();
+
+    m_quoteL1Client->Run();
 }
 
 TiDfQuoteClient::~TiDfQuoteClient()
 {
-    quote_api_->Release();
+    m_quote_api->Release();
 }
 
 //////////////////////////////////////////////////////////
@@ -658,8 +662,8 @@ void TiDfQuoteClient::OnLv2TreeSse(EMQSseTree *tree)
 
 void TiDfQuoteClient::connect()
 {
-    quote_api_ = EMQ::API::QuoteApiLv2::CreateQuoteApiLv2("./emq_api_log/emq.log");
-    quote_api_->RegisterSpi(this);
+    m_quote_api = EMQ::API::QuoteApiLv2::CreateQuoteApiLv2("./emq_api_log/emq.log");
+    m_quote_api->RegisterSpi(this);
 
     constexpr int kConfigNum = 12;
     EMQ::API::EMQConfigLv2 configs[kConfigNum];
@@ -794,11 +798,11 @@ void TiDfQuoteClient::connect()
     configs[11].handle_cpu_id = 11;
     configs[11].spsc_size = 8;
     configs[11].rx_pkt_num = 8;
-    quote_api_->SetChannelConfig(configs, kConfigNum);
+    m_quote_api->SetChannelConfig(configs, kConfigNum);
 
-    int x = quote_api_->Login("61.129.116.188", 9988, "510100025168", "OW4273");
+    int x = m_quote_api->Login("61.129.116.188", 9988, "510100025168", "OW4273");
     std::cout << "Login: " << x << std::endl;
-    quote_api_->Start();
+    m_quote_api->Start();
     while (true)
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
