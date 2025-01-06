@@ -14,6 +14,8 @@ public:
     ~TiDfQuoteL1Client();
 
 protected:
+    virtual void OnQueryAllTickersFullInfo(EMTQuoteFullInfo* qfi, EMTRspInfoStruct* error_info, bool is_last);
+
     // inherit from EMQ::API::QuoteSpi
     // 订阅快照行情应答
     void OnSubMarketData(EMTSpecificTickerStruct *ticker, EMTRspInfoStruct *error_info, bool is_last) override;
@@ -30,17 +32,19 @@ private:
     TiQuoteCallback* m_cb;
     EMQ::API::QuoteApi *m_quote_api;
 
+    unsigned int m_trading_day;
     TiQuoteSnapshotStockField   m_snapStockCash;
     std::unordered_map<int64_t, std::shared_ptr<TiQuoteSnapshotStockField>> m_snapshot_map;
-
+    std::unordered_map<int64_t, std::shared_ptr<TiQuoteContractInfoField>> m_contract_map;
 
 private:
     void Init();
     void formatQuoteUpdatetime(unsigned long long quote_update_time, int32_t &date, int32_t &time, int64_t &timestamp);
 
 public:
-    void Run();
+    void subData(const char* exchangeName, char* codeList[], size_t len);
     TiQuoteSnapshotStockField* GetStockSnapshot(const char* symbol, const char* exchange);
+    TiQuoteContractInfoField* GetContractInfo(const char* symbol, const char* exchange);
 };
 
 #endif

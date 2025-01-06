@@ -4,13 +4,14 @@
 #include <iostream>
 #include <thread>
 
-#include "datetime.h"
 #include "ti_quote_formater.h"
+#include "ti_encoding_tool.h"
+#include "datetime.h"
 
 TiDfQuoteL1Client::TiDfQuoteL1Client() : m_quote_api(nullptr)
 { 
     m_cb = NULL;
-
+    m_trading_day   = datetime::get_today();
     Init(); 
 }
 
@@ -20,6 +21,10 @@ TiDfQuoteL1Client::~TiDfQuoteL1Client() {
         m_quote_api = nullptr;
     }
 }
+
+////////////////////////////////////////////////////////////////////////
+// 私有方法
+////////////////////////////////////////////////////////////////////////
 
 void TiDfQuoteL1Client::Init() {
     // 初始化行情类Api
@@ -39,6 +44,8 @@ void TiDfQuoteL1Client::Init() {
         return;
     }
     std::cout << "Quote Login Success!" << std::endl;
+
+    m_quote_api->QueryAllTickersFullInfo(EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SH);
 }
 
 void TiDfQuoteL1Client::formatQuoteUpdatetime(unsigned long long quote_update_time, int32_t &date, int32_t &time, int64_t &timestamp)
@@ -49,6 +56,61 @@ void TiDfQuoteL1Client::formatQuoteUpdatetime(unsigned long long quote_update_ti
 };
 
 
+////////////////////////////////////////////////////////////////////////
+// 回调方法
+////////////////////////////////////////////////////////////////////////
+
+void TiDfQuoteL1Client::OnQueryAllTickersFullInfo(EMTQuoteFullInfo* qfi, EMTRspInfoStruct* error_info, bool is_last)
+{
+    if (error_info->error_id || is_last)
+    {
+        std::cout << "----------OnQueryAllTickersFullInfo----------" << std::endl;
+        std::cout << "error_id: " << error_info->error_id << std::endl
+                << "error_msg: " << error_info->error_msg << std::endl
+                << "is_last: " << is_last << std::endl;
+    }
+
+    if (qfi && !is_last) {
+        TiQuoteContractInfoField contract = {0};
+        if (qfi->exchange_id == EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SH) {
+            strcpy(contract.exchange, "SH");
+        } else if (qfi->exchange_id == EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SZ)
+        {
+            strcpy(contract.exchange, "SH");
+        }
+        strcpy(contract.symbol, qfi->ticker);
+        strcpy(contract.symbol_name, TiEncodingTool::GbkToUtf8(qfi->ticker_name).c_str());
+        contract.date = m_trading_day;
+        contract.is_registration = qfi->is_registration;
+        contract.is_VIE = qfi->is_VIE;
+        contract.is_noprofit = qfi->is_noprofit;
+        contract.is_weighted_voting_rights = qfi->is_weighted_voting_rights;
+        contract.is_have_price_limit = qfi->is_have_price_limit;
+        contract.high_limit = qfi->upper_limit_price;
+        contract.low_limit = qfi->lower_limit_price;
+        contract.pre_close = qfi->pre_close_price;
+        contract.price_tick = qfi->price_tick;
+        contract.bid_qty_upper_limit = qfi->bid_qty_upper_limit;
+        contract.bid_qty_lower_limit = qfi->bid_qty_lower_limit;
+        contract.bid_qty_unit = qfi->bid_qty_unit;
+        contract.ask_qty_upper_limit = qfi->ask_qty_upper_limit;
+        contract.ask_qty_lower_limit = qfi->ask_qty_lower_limit;
+        contract.ask_qty_unit = qfi->ask_qty_unit;
+
+        TiQuoteContractInfoField* pContract = GetContractInfo(contract.symbol, contract.exchange);
+        if(pContract){
+            memcpy(pContract, &contract, sizeof(TiQuoteContractInfoField));
+        }else{
+            m_contract_map[TiQuoteTools::GetSymbolID(contract.exchange, contract.symbol)] = std::make_unique<TiQuoteContractInfoField>(contract);
+        }
+    }
+
+    if (is_last)
+    {
+        std::cout << "QueryAllTickersFullInfo Done! " << m_contract_map.size() << std::endl;
+    }
+    
+};
 
 // 订阅快照行情响应
 void TiDfQuoteL1Client::OnSubMarketData(EMTSpecificTickerStruct *ticker, EMTRspInfoStruct *error_info, bool is_last) {
@@ -114,11 +176,10 @@ void TiDfQuoteL1Client::OnDepthMarketData(EMTMarketDataStruct *market_data, int6
         m_snapshot_map[TiQuoteTools::GetSymbolID(m_snapStockCash.exchange, m_snapStockCash.symbol)] = std::make_unique<TiQuoteSnapshotStockField>(m_snapStockCash);
     }
 
-    /*
+    
     if(m_cb){
         m_cb->OnL2StockSnapshotRtn(&m_snapStockCash);
     }
-    */
 }
 
 // 指数快照行情
@@ -127,35 +188,44 @@ void TiDfQuoteL1Client::OnIndexData(EMTIndexDataStruct *index_data) {
     std::cout << "----------OnIndexData-----------------" << std::endl;
     std::cout << index_data->ticker << std::endl
               << index_data->last_price << std::endl;
-}
+};
 
-
-
-
-void TiDfQuoteL1Client::Run() {
-    char *securityCodeSz[] = {(char *)"000001", (char *)"300059"};
-    // 订阅指定标的快照行情
-    m_quote_api->SubscribeMarketData(securityCodeSz, 2, EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SZ);
-
-    
-    char *securityCodeSh[] = {(char *)"600000", (char *)"688001"};
-    // 订阅指定标的快照行情
-    m_quote_api->SubscribeMarketData(securityCodeSh, 2, EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SH);
-
-    // 订阅深圳全市场指数快照行情
-    m_quote_api->SubscribeAllIndexData(EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SZ);
-
-    return;
-    while (true) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+void TiDfQuoteL1Client::subData(const char* exchangeName, char* codeList[], size_t len)
+{
+    if (strcmp(exchangeName, "SZ") == 0) {
+        if (len)
+        {
+            m_quote_api->SubscribeMarketData(codeList, len, EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SZ);
+        }else{
+            m_quote_api->SubscribeAllIndexData(EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SZ);
+        }
     }
-}
+    if (strcmp(exchangeName, "SH") == 0) {
+        if (len)
+        {
+            m_quote_api->SubscribeMarketData(codeList, len, EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SH);
+        }else{
+            m_quote_api->SubscribeAllIndexData(EMQ_EXCHANGE_TYPE::EMQ_EXCHANGE_SH);
+        }
+    }
+};
 
 TiQuoteSnapshotStockField* TiDfQuoteL1Client::GetStockSnapshot(const char* symbol, const char* exchange)
 {
     int64_t id = TiQuoteTools::GetSymbolID(exchange, symbol);
     auto it = m_snapshot_map.find(id);
     if (it != m_snapshot_map.end())
+    {
+        return it->second.get();
+    }
+    return nullptr;
+};
+
+TiQuoteContractInfoField* TiDfQuoteL1Client::GetContractInfo(const char* symbol, const char* exchange)
+{
+    int64_t id = TiQuoteTools::GetSymbolID(exchange, symbol);
+    auto it = m_contract_map.find(id);
+    if (it != m_contract_map.end())
     {
         return it->second.get();
     }
