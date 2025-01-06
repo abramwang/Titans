@@ -24,7 +24,8 @@ TiDfQuoteClient::TiDfQuoteClient(std::string configPath, TiQuoteCallback* userCb
     loadConfig(configPath);
 
     m_quote_api = NULL;
-    m_quoteL1Client = new TiDfQuoteL1Client();
+    m_quoteL1Client = new TiDfQuoteL1Client(m_config->szL1Host, m_config->nL1Port, 
+        m_config->szL1Account, m_config->szL1Pass, userCb);
 }
 
 TiDfQuoteClient::~TiDfQuoteClient()
@@ -709,7 +710,7 @@ void TiDfQuoteClient::connect()
         return ;
     }
 
-    m_quote_api = EMQ::API::QuoteApiLv2::CreateQuoteApiLv2("./emq_api_log/emq.log");
+    m_quote_api = EMQ::API::QuoteApiLv2::CreateQuoteApiLv2("./emq_api_log/l2_emq.log");
     m_quote_api->RegisterSpi(this);
 
     constexpr int kConfigNum = 12;

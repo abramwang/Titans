@@ -8,11 +8,14 @@
 #include "ti_encoding_tool.h"
 #include "datetime.h"
 
-TiDfQuoteL1Client::TiDfQuoteL1Client() : m_quote_api(nullptr)
+TiDfQuoteL1Client::TiDfQuoteL1Client(std::string host, int port, 
+        std::string account, std::string pass,
+        TiQuoteCallback* userCb) : 
+    m_quote_api(nullptr)
 { 
-    m_cb = NULL;
+    m_cb = userCb;
     m_trading_day   = datetime::get_today();
-    Init(); 
+    Init(host, port, account, pass); 
 }
 
 TiDfQuoteL1Client::~TiDfQuoteL1Client() {
@@ -26,9 +29,10 @@ TiDfQuoteL1Client::~TiDfQuoteL1Client() {
 // 私有方法
 ////////////////////////////////////////////////////////////////////////
 
-void TiDfQuoteL1Client::Init() {
+void TiDfQuoteL1Client::Init(std::string host, int port, 
+        std::string account, std::string pass) {
     // 初始化行情类Api
-    m_quote_api = EMQ::API::QuoteApi::CreateQuoteApi("./logs", EMQ_LOG_LEVEL::EMQ_LOG_LEVEL_DEBUG, EMQ_LOG_LEVEL::EMQ_LOG_LEVEL_DEBUG);
+    m_quote_api = EMQ::API::QuoteApi::CreateQuoteApi("./emq_api_log/l1_emq.log", EMQ_LOG_LEVEL::EMQ_LOG_LEVEL_DEBUG, EMQ_LOG_LEVEL::EMQ_LOG_LEVEL_DEBUG);
     if (!m_quote_api) {
         std::cout << "CreatQuoteApi Failed!" << std::endl;
         return;
@@ -38,7 +42,8 @@ void TiDfQuoteL1Client::Init() {
     m_quote_api->RegisterSpi(this);
 
     // 行情登录，请将您的行情账号密码填入
-    auto error_code = m_quote_api->Login("61.152.230.216", 8093, "510100025168", "OW4273");
+    auto error_code = m_quote_api->Login(host.c_str(), port,
+        account.c_str(), pass.c_str());
     if (error_code < 0) {
         std::cout << "Quote Login Failed! error code: " << error_code << std::endl << std::endl;
         return;

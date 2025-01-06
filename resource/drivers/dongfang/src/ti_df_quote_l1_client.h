@@ -10,7 +10,9 @@
 class TiDfQuoteL1Client : public EMQ::API::QuoteSpi
 {
 public:
-    TiDfQuoteL1Client();
+    TiDfQuoteL1Client(std::string host, int port, 
+        std::string account, std::string pass,
+        TiQuoteCallback* userCb);
     ~TiDfQuoteL1Client();
 
 protected:
@@ -38,7 +40,8 @@ private:
     std::unordered_map<int64_t, std::shared_ptr<TiQuoteContractInfoField>> m_contract_map;
 
 private:
-    void Init();
+    void Init(std::string host, int port, 
+        std::string account, std::string pass);
     void formatQuoteUpdatetime(unsigned long long quote_update_time, int32_t &date, int32_t &time, int64_t &timestamp);
 
 public:
