@@ -704,6 +704,11 @@ void TiDfQuoteClient::OnLv2TreeSse(EMQSseTree *tree)
 
 void TiDfQuoteClient::connect()
 {
+    if(!m_config){
+        LOG(ERROR) << "[OnFrontConnected] Do not have config info";
+        return ;
+    }
+
     m_quote_api = EMQ::API::QuoteApiLv2::CreateQuoteApiLv2("./emq_api_log/emq.log");
     m_quote_api->RegisterSpi(this);
 
@@ -712,7 +717,7 @@ void TiDfQuoteClient::connect()
     configs[0].enable = true;
     configs[0].mode = EMQ::API::EMQRecvMode::kNormal;
     configs[0].quote_type = EMQ::API::EMQType::kSzeSnap;
-    strcpy(configs[0].eth_name, "eno1");
+    strcpy(configs[0].eth_name, m_config->szL2MulticastDevice.c_str());
     strcpy(configs[0].multicast_ip, "233.57.1.100");
     configs[0].multicast_port = 37100;
     configs[0].rx_cpu_id = 0;
@@ -723,7 +728,7 @@ void TiDfQuoteClient::connect()
     configs[1].enable = true;
     configs[1].mode = EMQ::API::EMQRecvMode::kNormal;
     configs[1].quote_type = EMQ::API::EMQType::kSzeTick;
-    strcpy(configs[1].eth_name, "eno1");
+    strcpy(configs[1].eth_name, m_config->szL2MulticastDevice.c_str());
     strcpy(configs[1].multicast_ip, "233.57.1.101");
     configs[1].multicast_port = 37101;
     configs[1].rx_cpu_id = 2;
@@ -734,7 +739,7 @@ void TiDfQuoteClient::connect()
     configs[2].enable = true;
     configs[2].mode = EMQ::API::EMQRecvMode::kNormal;
     configs[2].quote_type = EMQ::API::EMQType::kSzeIndex;
-    strcpy(configs[2].eth_name, "eno1");
+    strcpy(configs[2].eth_name, m_config->szL2MulticastDevice.c_str());
     strcpy(configs[2].multicast_ip, "233.57.1.102");
     configs[2].multicast_port = 37102;
     configs[2].rx_cpu_id = 4;
@@ -745,7 +750,7 @@ void TiDfQuoteClient::connect()
     configs[3].enable = true;
     configs[3].mode = EMQ::API::EMQRecvMode::kNormal;
     configs[3].quote_type = EMQ::API::EMQType::kSzeBondSnap;
-    strcpy(configs[3].eth_name, "eno1");
+    strcpy(configs[3].eth_name, m_config->szL2MulticastDevice.c_str());
     strcpy(configs[3].multicast_ip, "233.57.1.107");
     configs[3].multicast_port = 37107;
     configs[3].rx_cpu_id = 4;
@@ -756,7 +761,7 @@ void TiDfQuoteClient::connect()
     configs[4].enable = true;
     configs[4].mode = EMQ::API::EMQRecvMode::kNormal;
     configs[4].quote_type = EMQ::API::EMQType::kSzeBondTick;
-    strcpy(configs[4].eth_name, "eno1");
+    strcpy(configs[4].eth_name, m_config->szL2MulticastDevice.c_str());
     strcpy(configs[4].multicast_ip, "233.57.1.108");
     configs[4].multicast_port = 37108;
     configs[4].rx_cpu_id = 4;
@@ -767,7 +772,7 @@ void TiDfQuoteClient::connect()
     configs[5].enable = false;
     configs[5].mode = EMQ::API::EMQRecvMode::kNormal;
     configs[5].quote_type = EMQ::API::EMQType::kSzeTree;
-    strcpy(configs[5].eth_name, "eno1");
+    strcpy(configs[5].eth_name, m_config->szL2MulticastDevice.c_str());
     strcpy(configs[5].multicast_ip, "233.57.1.101");
     configs[5].multicast_port = 37101;
     configs[5].rx_cpu_id = 4;
@@ -778,7 +783,7 @@ void TiDfQuoteClient::connect()
     configs[6].enable = true;
     configs[6].mode = EMQ::API::EMQRecvMode::kNormal;
     configs[6].quote_type = EMQ::API::EMQType::kSseSnap;
-    strcpy(configs[6].eth_name, "eno1");
+    strcpy(configs[6].eth_name, m_config->szL2MulticastDevice.c_str());
     strcpy(configs[6].multicast_ip, "233.56.2.105");
     configs[6].multicast_port = 36105;
     configs[6].rx_cpu_id = 6;
@@ -789,7 +794,7 @@ void TiDfQuoteClient::connect()
     configs[7].enable = true;
     configs[7].mode = EMQ::API::EMQRecvMode::kNormal;
     configs[7].quote_type = EMQ::API::EMQType::kSseTick;
-    strcpy(configs[7].eth_name, "eno1");
+    strcpy(configs[7].eth_name, m_config->szL2MulticastDevice.c_str());
     strcpy(configs[7].multicast_ip, "233.56.2.110");
     configs[7].multicast_port = 36110;
     configs[7].rx_cpu_id = 8;
@@ -800,7 +805,7 @@ void TiDfQuoteClient::connect()
     configs[8].enable = true;
     configs[8].mode = EMQ::API::EMQRecvMode::kNormal;
     configs[8].quote_type = EMQ::API::EMQType::kSseIndex;
-    strcpy(configs[8].eth_name, "eno1");
+    strcpy(configs[8].eth_name, m_config->szL2MulticastDevice.c_str());
     strcpy(configs[8].multicast_ip, "233.56.2.102");
     configs[8].multicast_port = 36102;
     configs[8].rx_cpu_id = 10;
@@ -811,7 +816,7 @@ void TiDfQuoteClient::connect()
     configs[9].enable = true;
     configs[9].mode = EMQ::API::EMQRecvMode::kNormal;
     configs[9].quote_type = EMQ::API::EMQType::kSseBondSnap;
-    strcpy(configs[9].eth_name, "eno1");
+    strcpy(configs[9].eth_name, m_config->szL2MulticastDevice.c_str());
     strcpy(configs[9].multicast_ip, "233.56.2.107");
     configs[9].multicast_port = 36107;
     configs[9].rx_cpu_id = 10;
@@ -822,7 +827,7 @@ void TiDfQuoteClient::connect()
     configs[10].enable = true;
     configs[10].mode = EMQ::API::EMQRecvMode::kNormal;
     configs[10].quote_type = EMQ::API::EMQType::kSseBondTick;
-    strcpy(configs[10].eth_name, "eno1");
+    strcpy(configs[10].eth_name, m_config->szL2MulticastDevice.c_str());
     strcpy(configs[10].multicast_ip, "233.56.2.108");
     configs[10].multicast_port = 36108;
     configs[10].rx_cpu_id = 10;
@@ -833,7 +838,7 @@ void TiDfQuoteClient::connect()
     configs[11].enable = false;
     configs[11].mode = EMQ::API::EMQRecvMode::kNormal;
     configs[11].quote_type = EMQ::API::EMQType::kSseTree;
-    strcpy(configs[11].eth_name, "eno1");
+    strcpy(configs[11].eth_name, m_config->szL2MulticastDevice.c_str());
     strcpy(configs[11].multicast_ip, "233.57.1.101");
     configs[11].multicast_port = 37101;
     configs[11].rx_cpu_id = 10;
@@ -842,8 +847,10 @@ void TiDfQuoteClient::connect()
     configs[11].rx_pkt_num = 8;
     m_quote_api->SetChannelConfig(configs, kConfigNum);
 
-    int x = m_quote_api->Login("61.129.116.188", 9988, "510100025168", "OW4273");
-    std::cout << "Login: " << x << std::endl;
+    int x = m_quote_api->Login(
+        m_config->szL2Host.c_str(), m_config->nL2Port,
+        m_config->szL2Account.c_str(), m_config->szL2Pass.c_str());
+    std::cout << "L2 Login: " << x << std::endl;
     m_quote_api->Start();
     while (true)
     {
