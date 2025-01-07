@@ -5,15 +5,16 @@
 #include <map>
 #include <string>
 #include <vector>
-
 #include "emt_trader_api.h"
+#include "ti_trader_callback.h"
+#include "ti_trader_client.h"
 
-class TiDfTraderClient : public EMT::API::TraderSpi
+class TiDfTraderClient 
+    : public EMT::API::TraderSpi, public TiTraderClient
 {
 public:
     TiDfTraderClient();
     ~TiDfTraderClient();
-    void Run();
 
 protected:
     // inherit from EMT::API::TraderSpi
@@ -36,6 +37,20 @@ private:
     std::map<std::string, uint64_t> session_map_;
     std::atomic<uint32_t> client_order_id_;
     std::atomic<uint32_t> req_id_;
+
+public:
+    void connect();
+    int orderInsertBatch(std::vector<TiReqOrderInsert> &req_vec, std::string account_id);
+    int orderInsert(TiReqOrderInsert* req);
+    int orderDelete(TiReqOrderDelete* req);
+
+public:
+    TiRtnOrderStatus* getOrderStatus(int64_t req_id, int64_t order_id);
+
+    int QueryAsset();
+    int QueryOrders();
+    int QueryMatches();
+    int QueryPositions();
 };
 
 #endif // TI_DF_TRADER_CLIENT_H

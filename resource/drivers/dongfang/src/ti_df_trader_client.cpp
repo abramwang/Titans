@@ -51,57 +51,6 @@ void TiDfTraderClient::Init() {
     //Login("user2");
 }
 
-void TiDfTraderClient::Run() {
-    // 报单
-    EMTOrderInsertInfo order_info{0};
-    order_info.order_client_id = client_order_id_++;
-    memcpy(order_info.ticker, "000001", 7);
-    order_info.market = EMT_MKT_SZ_A;
-    order_info.price = 10;
-    order_info.price_type = EMT_PRICE_FORWARD_BEST;
-    order_info.side = EMT_SIDE_BUY;
-    order_info.business_type = EMT_BUSINESS_TYPE_CASH;
-    order_info.quantity = 100;
-    auto session_id = session_map_["510100025168"];
-    auto emt_id = trader_api_->InsertOrder(&order_info, session_id);
-    if (emt_id == 0) {
-        auto last_error = trader_api_->GetApiLastError();
-        std::cout << "InsertOrder Failed! error code: " << last_error->error_id << ", error msg: " << last_error->error_msg << std::endl;
-        return;
-    }
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-
-    // 撤单，撤单成功会回调OnOrderEvent，失败回调virtual void OnCancelOrderError
-    trader_api_->CancelOrder(emt_id, session_id);
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-
-    // 分页查询报单
-    EMTQueryOrderByPageReq query_order{
-        .req_count = 100, // 单次查询的数量
-        .reference = 0,   // 从头查询
-    };
-    trader_api_->QueryOrdersByPage(&query_order, session_id, req_id_++);
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-
-    // 分页查询持仓
-    EMTQueryPositionByPageReq query_position{
-        .req_count = 100, // 单次查询的数量
-        .reference = 0,   // 从头查询
-    };
-    trader_api_->QueryPositionByPage(&query_position, session_id, req_id_++);
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-
-    // 查询成交
-    EMTQueryTraderReq query_trade{};
-    trader_api_->QueryTrades(&query_trade, session_id, req_id_++);
-    std::cout << "QueryTrades" << std::endl;
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-
-    while (true) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-}
-
 void TiDfTraderClient::OnOrderEvent(EMTOrderInfo *order_info, EMTRI *error_info, uint64_t session_id) {
     // 每次订单状态更新时，都会被调用
     std::cout << "-------------OnOrderEvent------------" << std::endl;
@@ -240,3 +189,88 @@ void TiDfTraderClient::OnQueryPositionByPage(EMTQueryStkPositionRsp *trade_info,
     // 休眠5ms, 避免查询过于频繁超过流控限制
     std::this_thread::sleep_for(std::chrono::milliseconds(5));
 }
+
+
+void TiDfTraderClient::connect() {
+    // 报单
+    EMTOrderInsertInfo order_info{0};
+    order_info.order_client_id = client_order_id_++;
+    memcpy(order_info.ticker, "000001", 7);
+    order_info.market = EMT_MKT_SZ_A;
+    order_info.price = 10;
+    order_info.price_type = EMT_PRICE_FORWARD_BEST;
+    order_info.side = EMT_SIDE_BUY;
+    order_info.business_type = EMT_BUSINESS_TYPE_CASH;
+    order_info.quantity = 100;
+    auto session_id = session_map_["510100025168"];
+    auto emt_id = trader_api_->InsertOrder(&order_info, session_id);
+    if (emt_id == 0) {
+        auto last_error = trader_api_->GetApiLastError();
+        std::cout << "InsertOrder Failed! error code: " << last_error->error_id << ", error msg: " << last_error->error_msg << std::endl;
+        return;
+    }
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    // 撤单，撤单成功会回调OnOrderEvent，失败回调virtual void OnCancelOrderError
+    trader_api_->CancelOrder(emt_id, session_id);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    // 分页查询报单
+    EMTQueryOrderByPageReq query_order{
+        .req_count = 100, // 单次查询的数量
+        .reference = 0,   // 从头查询
+    };
+    trader_api_->QueryOrdersByPage(&query_order, session_id, req_id_++);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    // 分页查询持仓
+    EMTQueryPositionByPageReq query_position{
+        .req_count = 100, // 单次查询的数量
+        .reference = 0,   // 从头查询
+    };
+    trader_api_->QueryPositionByPage(&query_position, session_id, req_id_++);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    // 查询成交
+    EMTQueryTraderReq query_trade{};
+    trader_api_->QueryTrades(&query_trade, session_id, req_id_++);
+    std::cout << "QueryTrades" << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+};
+
+int TiDfTraderClient::orderInsertBatch(std::vector<TiReqOrderInsert> &req_vec, std::string account_id)
+{
+    return 0;
+};
+
+int TiDfTraderClient::orderInsert(TiReqOrderInsert* req)
+{
+    return 0;
+};
+
+int TiDfTraderClient::orderDelete(TiReqOrderDelete* req)
+{
+    return 0;
+};
+
+TiRtnOrderStatus* TiDfTraderClient::getOrderStatus(int64_t req_id, int64_t order_id)
+{
+    return nullptr;
+};
+
+int TiDfTraderClient::QueryAsset()
+{
+    return 0;
+};
+int TiDfTraderClient::QueryOrders()
+{
+    return 0;
+};
+int TiDfTraderClient::QueryMatches()
+{
+    return 0;
+};
+int TiDfTraderClient::QueryPositions()
+{
+    return 0;
+};
