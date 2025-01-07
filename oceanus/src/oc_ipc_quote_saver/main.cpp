@@ -314,6 +314,7 @@ void remove_file(const char* filePath)
 }
 
 int main(int argc, char* argv[]) {
+    remove_file("quote_snap_data.csv");
     remove_file("quote_matches_data.csv");
     remove_file("quote_order_data.csv");
 
