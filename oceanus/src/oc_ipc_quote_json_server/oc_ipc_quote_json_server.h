@@ -88,10 +88,13 @@ private:
     int64_t m_cout_time_snap;
 
     TiQuoteIpcClient* m_quote_client;
+    std::unordered_map<int64_t, std::shared_ptr<TiQuoteSnapshotStockField>> m_snapshot_map;
 
 private:
     int loadConfig(std::string iniFileName);
     void resetStreamKey();
+    TiQuoteSnapshotStockField* GetStockSnapshot(const char* symbol, const char* exchange);
+    
 
 public:
     std::mutex m_mutex;

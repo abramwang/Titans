@@ -70,6 +70,17 @@ void OcIpcQuoteJsonServer::OnTimer()
     }
     //*/
 
+    
+    for (auto iter = m_snapshot_map.begin(); iter!= m_snapshot_map.end(); iter++)
+    {
+        json j;
+        TiQuoteFormater::FormatSnapshot(iter->second.get(), j);
+        j["type"] = "snapshot";
+        m_json_cash.push_back(j);
+
+        m_redis.hset(m_config->szQuoteQueryKey.c_str(), iter->second->symbol, j.dump().c_str());
+    }
+    
     if (m_json_cash.empty())
     {
         return;
@@ -79,7 +90,6 @@ void OcIpcQuoteJsonServer::OnTimer()
     m_json_cash = json::array();
 
     m_redis.xadd(m_config->szQuoteStreamKey.c_str(), msg.c_str(), 2000);
-    //m_redis.xtrim(m_config->szQuoteStreamKey.c_str(), 2000);
 };
 
 
@@ -113,12 +123,12 @@ void OcIpcQuoteJsonServer::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField*
         m_cout_time_snap = pData->time;
     }
 
-    json j;
-    TiQuoteFormater::FormatSnapshot(pData, j);
-    j["type"] = "snapshot";
-    m_json_cash.push_back(j);
-
-    m_redis.hset(m_config->szQuoteQueryKey.c_str(), pData->symbol, j.dump().c_str());
+    TiQuoteSnapshotStockField* pSnap = GetStockSnapshot(pData->symbol, pData->exchange);
+    if(pSnap){
+        memcpy(pSnap, pData, sizeof(TiQuoteSnapshotStockField));
+    }else{
+        m_snapshot_map[TiQuoteTools::GetSymbolID(pData->exchange, pData->symbol)] = std::make_unique<TiQuoteSnapshotStockField>(*pData);
+    }
 };
 
 void OcIpcQuoteJsonServer::OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){
@@ -241,3 +251,15 @@ void OcIpcQuoteJsonServer::resetStreamKey()
         m_redis.del(m_config->szQuoteStreamKey.c_str());
     }
 };
+
+TiQuoteSnapshotStockField* OcIpcQuoteJsonServer::GetStockSnapshot(const char* symbol, const char* exchange)
+{
+    int64_t id = TiQuoteTools::GetSymbolID(exchange, symbol);
+    auto it = m_snapshot_map.find(id);
+    if (it != m_snapshot_map.end())
+    {
+        return it->second.get();
+    }
+    return nullptr;
+};
+    
