@@ -3,7 +3,7 @@
 OcIpcQuoteDepthServer::OcIpcQuoteDepthServer(uv_loop_s* loop){
     m_cout_time = 0;
     m_quote_ipc_publisher = new TiQuoteIpcPublisher("quote_depth_data");
-    for(int32_t i = 0; i < 6; i++){
+    for(int32_t i = 0; i < 12; i++){
         //TiQuoteIpcPublisher* quote_ipc_publisher = new TiQuoteIpcPublisher("quote_depth_data");
         OcBookWorker* worker = new OcBookWorker(i, m_quote_ipc_publisher, m_quote_ipc_publisher);
         m_worker_vec.push_back(worker);

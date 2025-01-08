@@ -32,26 +32,57 @@ class UserCallback :
     public TiQuoteCallback, public TiQuoteDepthCallback
 {
 private:
+    std::string m_topic;
+    uv_loop_s* m_loop;
+    uv_timer_t m_timer;
+
     int64_t m_cout_future_time;
     int64_t m_cout_snap_time;
     int64_t m_cout_match_time;
     int64_t m_cout_order_time;
     int64_t m_cout_order_book_time;
     std::set<std::string> m_selected_symbols;
-
     
     TI_ISODateTimeType m_recv_time_str;
     int64_t m_recv_timestamp;
 public:
-    UserCallback(){
+    UserCallback(std::string topic, uv_loop_s* loop){
+        m_topic = topic;
+        m_loop = loop;
         m_cout_future_time = 0;
         m_cout_snap_time = 0;
         m_cout_match_time = 0;
         m_cout_order_time = 0;
         m_cout_order_book_time = 0;
+
+            
+        m_timer.data = this;
+        uv_timer_init(loop, &m_timer);
+        uv_timer_start(&m_timer, onTimer, 1000, 500);
     };
     virtual ~UserCallback(){};
 public:
+    static void onTimer(uv_timer_t* handle)
+    {
+        UserCallback* pThis = (UserCallback*)handle->data;
+        pThis->OnTimer();
+    };
+
+    virtual void OnTimer()
+    {
+        std::time_t currentTime = std::time(nullptr);
+        std::tm* localTime = std::localtime(&currentTime);
+        if (localTime->tm_hour >= 15 )
+        {
+            if (localTime->tm_hour == 15 && localTime->tm_min < 30)
+            {
+                return;
+            }
+            printf("terminate\n");
+            std::terminate();
+        }
+    };;
+
     virtual void OnTradingDayRtn(const unsigned int day, const char* exchangeName){};
    
     virtual void OnL2IndexSnapshotRtn(const TiQuoteSnapshotIndexField* pData){
@@ -78,7 +109,7 @@ public:
     virtual void OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData){
 #if Enable_QuoteDataOutput
         try {
-            WriteToCSV(*pData, "quote_snap_data.csv");
+            WriteToCSV(*pData, m_topic + ".quote_snap_data.csv");
         } catch (const std::exception& e) {
             // 捕获异常并打印错误
             std::cerr << "Error writing to CSV: " << e.what() << std::endl;
@@ -98,7 +129,7 @@ public:
     virtual void OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){
 #if Enable_QuoteDataOutput
         try {
-            WriteToCSV(*pData, "quote_matches_data.csv");
+            WriteToCSV(*pData, m_topic + ".quote_matches_data.csv");
         } catch (const std::exception& e) {
             // 捕获异常并打印错误
             std::cerr << "Error writing to CSV: " << e.what() << std::endl;
@@ -115,7 +146,7 @@ public:
     virtual void OnL2StockOrderRtn(const TiQuoteOrderField* pData){
 #if Enable_QuoteDataOutput
         try {
-            WriteToCSV(*pData, "quote_order_data.csv");
+            WriteToCSV(*pData, m_topic + ".quote_order_data.csv");
         } catch (const std::exception& e) {
             // 捕获异常并打印错误
             std::cerr << "Error writing to CSV: " << e.what() << std::endl;
@@ -314,17 +345,22 @@ void remove_file(const char* filePath)
 }
 
 int main(int argc, char* argv[]) {
-    remove_file("quote_snap_data.csv");
-    remove_file("quote_matches_data.csv");
-    remove_file("quote_order_data.csv");
+    std::string topic = "quote_data";
+    if (argc == 2)
+    {
+        topic = argv[1];
+    }
 
+    remove_file((topic + ".quote_snap_data.csv").c_str());
+    remove_file((topic + ".quote_matches_data.csv").c_str());
+    remove_file((topic + ".quote_order_data.csv").c_str());
 
 	FLAGS_log_dir = "./log/";
     google::InitGoogleLogging(argv[0]);
 
     uv_loop_t* loop = uv_default_loop();
 
-    UserCallback cb;
+    UserCallback cb(topic, loop);
 
     TiQuoteIpcClient client("./config.ini", loop, &cb, &cb);
 	
