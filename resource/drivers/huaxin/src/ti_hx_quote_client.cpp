@@ -220,8 +220,8 @@ void TiHxQuoteClient::OnRtnMarketData(CTORATstpLev2MarketDataField *pDepthMarket
         m_snapStockCash.time            = pDepthMarketData->DataTimeStamp;
     }
     m_snapStockCash.timestamp       = datetime::get_timestamp_ms(m_trading_day, m_snapStockCash.time);
-    datetime::get_format_time_ms(m_trading_day, m_snapStockCash.time, m_snapStockCash.time_str, TI_TIME_STR_LEN);
-    datetime::get_format_now_time_us(m_snapStockCash.recv_time_str, TI_TIME_STR_LEN);
+    //datetime::get_format_time_ms(m_trading_day, m_snapStockCash.time, m_snapStockCash.time_str, TI_TIME_STR_LEN);
+    //datetime::get_format_now_time_us(m_snapStockCash.recv_time_str, TI_TIME_STR_LEN);
     m_snapStockCash.recv_timestamp  = datetime::get_now_timestamp_ms();
 
     TiQuoteSnapshotStockField* pL1Snap = m_l1_client->GetStockSnapshot(m_snapStockCash.symbol, m_snapStockCash.exchange);
@@ -338,8 +338,8 @@ void TiHxQuoteClient::OnRtnIndex(CTORATstpLev2IndexField *pIndex){
         m_snapIndexCash.time            = pIndex->DataTimeStamp;
     }
     m_snapIndexCash.timestamp       = datetime::get_timestamp_ms(m_trading_day, m_snapIndexCash.time);
-    datetime::get_format_time_ms(m_trading_day, m_snapIndexCash.time, m_snapIndexCash.time_str, TI_TIME_STR_LEN);
-    datetime::get_format_now_time_us(m_snapIndexCash.recv_time_str, TI_TIME_STR_LEN);
+    //datetime::get_format_time_ms(m_trading_day, m_snapIndexCash.time, m_snapIndexCash.time_str, TI_TIME_STR_LEN);
+    //datetime::get_format_now_time_us(m_snapIndexCash.recv_time_str, TI_TIME_STR_LEN);
     m_snapStockCash.recv_timestamp  = datetime::get_now_timestamp_ms();
 
     m_snapIndexCash.last            = pIndex->LastIndex;
@@ -379,8 +379,8 @@ void TiHxQuoteClient::OnRtnOrderDetail(CTORATstpLev2OrderDetailField *pOrderDeta
         m_orderCash.time            = pOrderDetail->OrderTime;
     }
     m_orderCash.timestamp       = datetime::get_timestamp_ms(m_trading_day, m_orderCash.time);
-    datetime::get_format_time_ms(m_trading_day, m_orderCash.time, m_orderCash.time_str, TI_TIME_STR_LEN);
-    datetime::get_format_now_time_us(m_orderCash.recv_time_str, TI_TIME_STR_LEN);
+    //datetime::get_format_time_ms(m_trading_day, m_orderCash.time, m_orderCash.time_str, TI_TIME_STR_LEN);
+    //datetime::get_format_now_time_us(m_orderCash.recv_time_str, TI_TIME_STR_LEN);
     m_orderCash.recv_timestamp  = datetime::get_now_timestamp_ms();
 
     m_orderCash.channel         = pOrderDetail->MainSeq;
@@ -432,8 +432,8 @@ void TiHxQuoteClient::OnRtnTransaction(CTORATstpLev2TransactionField *pTransacti
         m_matchCash.time            = pTransaction->TradeTime;
     }
     m_matchCash.timestamp           = datetime::get_timestamp_ms(m_trading_day, m_matchCash.time);
-    datetime::get_format_time_ms(m_trading_day, m_matchCash.time, m_matchCash.time_str, TI_TIME_STR_LEN);
-    datetime::get_format_now_time_us(m_matchCash.recv_time_str, TI_TIME_STR_LEN);
+    //datetime::get_format_time_ms(m_trading_day, m_matchCash.time, m_matchCash.time_str, TI_TIME_STR_LEN);
+    //datetime::get_format_now_time_us(m_matchCash.recv_time_str, TI_TIME_STR_LEN);
     m_matchCash.recv_timestamp  = datetime::get_now_timestamp_ms();
     
     m_matchCash.channel         = pTransaction->MainSeq;
@@ -486,8 +486,8 @@ void TiHxQuoteClient::OnRtnNGTSTick(CTORATstpLev2NGTSTickField *pTick)
         }
 
         m_matchCash.timestamp         = datetime::get_timestamp_ms(m_trading_day, m_matchCash.time);
-        datetime::get_format_time_ms(m_trading_day, m_matchCash.time, m_matchCash.time_str, TI_TIME_STR_LEN);
-        datetime::get_format_now_time_us(m_matchCash.recv_time_str, TI_TIME_STR_LEN);
+        //datetime::get_format_time_ms(m_trading_day, m_matchCash.time, m_matchCash.time_str, TI_TIME_STR_LEN);
+        //datetime::get_format_now_time_us(m_matchCash.recv_time_str, TI_TIME_STR_LEN);
         m_matchCash.recv_timestamp  = datetime::get_now_timestamp_ms();
 
         m_matchCash.channel         = pTick->MainSeq;
@@ -517,8 +517,8 @@ void TiHxQuoteClient::OnRtnNGTSTick(CTORATstpLev2NGTSTickField *pTick)
         }
 
         m_orderCash.timestamp       = datetime::get_timestamp_ms(m_trading_day, m_orderCash.time);
-        datetime::get_format_time_ms(m_trading_day, m_orderCash.time, m_orderCash.time_str, TI_TIME_STR_LEN);
-        datetime::get_format_now_time_us(m_orderCash.recv_time_str, TI_TIME_STR_LEN);
+        //datetime::get_format_time_ms(m_trading_day, m_orderCash.time, m_orderCash.time_str, TI_TIME_STR_LEN);
+        //datetime::get_format_now_time_us(m_orderCash.recv_time_str, TI_TIME_STR_LEN);
         m_orderCash.recv_timestamp  = datetime::get_now_timestamp_ms();
 
         m_orderCash.channel         = pTick->MainSeq;
