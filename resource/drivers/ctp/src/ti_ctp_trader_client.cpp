@@ -19,6 +19,9 @@ TiCtpTraderClient::TiCtpTraderClient(std::string configPath, TiTraderCallback* u
     m_cb = userCb;
     nReqId = 100;   //跳过xtp client设置成交模式的区段
 
+    
+    std::cout << "[TiCtpTraderClient] GetApiVersion: " << CThostFtdcTraderApi::GetApiVersion() << std::endl;
+
 
     m_client = CThostFtdcTraderApi::CreateFtdcTraderApi();
     m_client->RegisterSpi(this);
@@ -27,7 +30,9 @@ TiCtpTraderClient::TiCtpTraderClient(std::string configPath, TiTraderCallback* u
     m_client->RegisterFront((char*)m_config->szLocations.c_str());
 
     m_client->Init();
+    std::cout << "[TiCtpTraderClient] Init over" << std::endl;
     m_client->Join();
+    std::cout << "[TiCtpTraderClient] Join over" << std::endl;
 };
 
 
@@ -50,9 +55,18 @@ void TiCtpTraderClient::OnFrontConnected()
 
 
     CThostFtdcReqAuthenticateField req = {0};
-    strncpy(req.BrokerID, m_config->szBrokerID.c_str(), sizeof(req.BrokerID));
-    strncpy(req.AppID, m_config->szAppID.c_str(), sizeof(req.AppID));
-    strncpy(req.AuthCode, m_config->szAuthCode.c_str(), sizeof(req.AuthCode));
+    
+    //strncpy(req.BrokerID, m_config->szBrokerID.c_str(), sizeof(req.BrokerID));
+    //strncpy(req.AppID, m_config->szAppID.c_str(), sizeof(req.AppID));
+    //strncpy(req.AuthCode, m_config->szAuthCode.c_str(), sizeof(req.AuthCode));
+
+    ///*
+    strcpy(req.BrokerID, "0001");
+    strcpy(req.AppID, "client_oceanus_v1.0");
+    strcpy(req.AuthCode, "VE4QFJANGU3VMYX6");
+    //strcpy(req.UserID, "000001788");
+    //strcpy(req.UserProductInfo, "client_oceanus_v1.0");
+    //*/
     
     int flag2 = m_client->ReqAuthenticate(&req, 2);
     std::cout << "ReqAuthenticate: " << flag2 << std::endl;
@@ -82,6 +96,8 @@ void TiCtpTraderClient::OnRspAuthenticate(CThostFtdcRspAuthenticateField *pRspAu
 ///登录请求响应
 void TiCtpTraderClient::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
     std::cout << "OnRspUserLogin:" << nRequestID << " ErrorID:" << pRspInfo->ErrorID << " ErrorMsg:" << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg) << std::endl;
+
+    orderInsert(NULL);
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -89,16 +105,16 @@ void TiCtpTraderClient::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogi
 ////////////////////////////////////////////////////////////////////////
 ///报单录入请求响应
 void TiCtpTraderClient::OnRspOrderInsert(CThostFtdcInputOrderField *pInputOrder, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
-    std::cout << "OnRspOrderInsert:" << nRequestID << " ErrorID:" << pRspInfo->ErrorID << std::endl;
+    std::cout << "OnRspOrderInsert:" << nRequestID << " ErrorID:" << pRspInfo->ErrorID << " ErrorMsg:" << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg) << std::endl;
 };
 ///报单操作请求响应
 void TiCtpTraderClient::OnRspOrderAction(CThostFtdcInputOrderActionField *pInputOrderAction, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
-    std::cout << "OnRspOrderAction:" << nRequestID << " ErrorID:" << pRspInfo->ErrorID << std::endl;
+    std::cout << "OnRspOrderAction:" << nRequestID << " ErrorID:" << pRspInfo->ErrorID << " ErrorMsg:" << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg) << std::endl;
 };
 
 ///错误应答
 void TiCtpTraderClient::OnRspError(CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast){
-    std::cout << "OnRspError:" << nRequestID << " ErrorID:" << pRspInfo->ErrorID << std::endl;
+    std::cout << "OnRspError:" << nRequestID << " ErrorID:" << pRspInfo->ErrorID << " ErrorMsg:" << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg) << std::endl;
 };
 ///报单通知
 void TiCtpTraderClient::OnRtnOrder(CThostFtdcOrderField *pOrder){
@@ -379,6 +395,41 @@ int TiCtpTraderClient::orderInsert(TiReqOrderInsert* req){
     if(!m_config){
         LOG(INFO) << "[loadConfig] Do not have config info";
         return -1;
+    }
+
+    CThostFtdcInputOrderField order;
+    memset(&order, 0, sizeof(order));
+
+    // 设置下单信息
+    order.RequestID = nReqId++;
+    strncpy(order.BrokerID, m_config->szBrokerID.c_str(), sizeof(order.BrokerID));
+    strncpy(order.InvestorID, "000001788", sizeof(order.InvestorID));
+    strncpy(order.InstrumentID, "IF2501", sizeof(order.InstrumentID));  // 指定期货合约
+    strncpy(order.UserID, "000001788", sizeof(order.UserID));
+    strncpy(order.ExchangeID, "CFFEX", sizeof(order.ExchangeID));       // 交易所
+    order.OrderPriceType = THOST_FTDC_OPT_LimitPrice;  // 限价单
+    order.Direction = THOST_FTDC_D_Sell;  // 买入
+    order.CombOffsetFlag[0] = THOST_FTDC_OF_Open;  // 开仓
+    order.CombHedgeFlag[0] = THOST_FTDC_HF_Speculation;  // 投机
+    order.LimitPrice = 3760.2;  // 设置买入价格
+    order.VolumeTotalOriginal = 1;  // 设置买入数量
+    order.MinVolume = 1;  // 最小成交量
+    order.ContingentCondition = THOST_FTDC_CC_Immediately;  // 立即触发
+    order.StopPrice = 0;  // 止损价
+    order.ForceCloseReason = THOST_FTDC_FCC_NotForceClose;  // 非强平
+    order.IsAutoSuspend = 0;  // 非自动挂起
+    order.TimeCondition = THOST_FTDC_TC_GFD;  // 当日有效
+    order.VolumeCondition = THOST_FTDC_VC_AV;  // 任意成交量
+    strcpy(order.OrderRef, "000000000001");  // 投资单元代码
+    order.IsSwapOrder = 0;  // 非互换单
+    order.UserForceClose = 0;  // 非强平
+
+
+    int result = m_client->ReqOrderInsert(&order, nReqId);
+    if (result != 0) {
+        std::cout << "Failed to place order!" << std::endl;
+    } else {
+        std::cout << "Order placed successfully!" << std::endl;
     }
 
     return -1;
