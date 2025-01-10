@@ -78,7 +78,10 @@ void OcIpcQuoteJsonServer::OnTimer()
         j["type"] = "snapshot";
         m_json_cash.push_back(j);
 
-        m_redis.hset(m_config->szQuoteQueryKey.c_str(), iter->second->symbol, j.dump().c_str());
+        if (!m_config->szQuoteQueryKey.empty())
+        {
+            m_redis.hset(m_config->szQuoteQueryKey.c_str(), iter->second->symbol, j.dump().c_str());
+        }
     }
     
     if (m_json_cash.empty())
@@ -89,7 +92,7 @@ void OcIpcQuoteJsonServer::OnTimer()
     std::string msg = m_json_cash.dump();
     m_json_cash = json::array();
 
-    m_redis.xadd(m_config->szQuoteStreamKey.c_str(), msg.c_str(), 2000);
+    m_redis.xadd(m_config->szQuoteStreamKey.c_str(), msg.c_str(), 500);
 };
 
 
