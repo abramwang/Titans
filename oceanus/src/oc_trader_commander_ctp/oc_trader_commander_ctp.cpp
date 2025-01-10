@@ -31,7 +31,8 @@ OcTraderCommanderCtp::OcTraderCommanderCtp(uv_loop_s* loop, std::string configPa
     m_timer.data = this;
     uv_timer_init(loop, &m_timer);
     uv_timer_start(&m_timer, onTimer, 1000, 500);
-
+    
+    m_client->connect();
     /*
     m_client->connect();
     sleep(3);
