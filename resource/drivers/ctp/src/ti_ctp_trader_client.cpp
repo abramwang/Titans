@@ -17,7 +17,7 @@ TiCtpTraderClient::TiCtpTraderClient(std::string configPath, TiTraderCallback* u
     
     nSessionId = 0;
     m_cb = userCb;
-    nReqId = 100;   //跳过xtp client设置成交模式的区段
+    nReqId =  datetime::get_time_sec_num()*10;   //跳过xtp client设置成交模式的区段
 
     
     std::cout << "[TiCtpTraderClient] GetApiVersion: " << CThostFtdcTraderApi::GetApiVersion() << std::endl;
@@ -31,7 +31,7 @@ TiCtpTraderClient::TiCtpTraderClient(std::string configPath, TiTraderCallback* u
 
     m_client->Init();
     std::cout << "[TiCtpTraderClient] Init over" << std::endl;
-    m_client->Join();
+    //m_client->Join();
     std::cout << "[TiCtpTraderClient] Join over" << std::endl;
 };
 
@@ -96,8 +96,20 @@ void TiCtpTraderClient::OnRspAuthenticate(CThostFtdcRspAuthenticateField *pRspAu
 ///登录请求响应
 void TiCtpTraderClient::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
     std::cout << "OnRspUserLogin:" << nRequestID << " ErrorID:" << pRspInfo->ErrorID << " ErrorMsg:" << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg) << std::endl;
+ 
+    /*
+    TiReqOrderInsert req;
+    memset(&req, 0, sizeof(TiReqOrderInsert));
+    strcpy(req.szSymbol, "IF2501");
+    strcpy(req.szExchange, "CF");
+    req.nTradeSideType = 'S';
+    req.nBusinessType = '0';
+    req.nOffsetType = 'C';
+    req.nOrderPrice = 3713.2;
+    req.nOrderVol = 1;
 
-    orderInsert(NULL);
+    orderInsert(&req);
+    */
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -396,23 +408,50 @@ int TiCtpTraderClient::orderInsert(TiReqOrderInsert* req){
         LOG(INFO) << "[loadConfig] Do not have config info";
         return -1;
     }
+    req->nReqId = ++nReqId;
+
 
     CThostFtdcInputOrderField order;
     memset(&order, 0, sizeof(order));
 
     // 设置下单信息
-    order.RequestID = nReqId++;
+    order.RequestID = req->nReqId;
+    if (!strcmp(req->szExchange, "CF"))
+    {
+        strncpy(order.ExchangeID, "CFFEX", sizeof(order.ExchangeID));       // 交易所
+    }else{
+        strncpy(order.ExchangeID, req->szExchange, sizeof(order.ExchangeID));       // 交易所
+    }
+
     strncpy(order.BrokerID, m_config->szBrokerID.c_str(), sizeof(order.BrokerID));
-    strncpy(order.InvestorID, "000001788", sizeof(order.InvestorID));
+    strncpy(order.InvestorID, m_config->szUser.c_str(), sizeof(order.InvestorID));
     strncpy(order.InstrumentID, "IF2501", sizeof(order.InstrumentID));  // 指定期货合约
-    strncpy(order.UserID, "000001788", sizeof(order.UserID));
-    strncpy(order.ExchangeID, "CFFEX", sizeof(order.ExchangeID));       // 交易所
+    strncpy(order.UserID, m_config->szUser.c_str(), sizeof(order.UserID));
     order.OrderPriceType = THOST_FTDC_OPT_LimitPrice;  // 限价单
-    order.Direction = THOST_FTDC_D_Sell;  // 买入
-    order.CombOffsetFlag[0] = THOST_FTDC_OF_Open;  // 开仓
+
+    switch (req->nTradeSideType)
+    {
+    case TI_TradeSideType_Sell:
+        order.Direction = THOST_FTDC_D_Sell;  // 买入
+        break;
+    case TI_TradeSideType_Buy:
+        order.Direction = THOST_FTDC_D_Buy;  // 买入
+        break;
+    }
+
+    switch (req->nOffsetType)
+    {
+    case TI_OffsetType_Open:
+        order.CombOffsetFlag[0] = THOST_FTDC_OF_Open;  // 开仓
+        break;
+    case TI_OffsetType_Close:
+        order.CombOffsetFlag[0] = THOST_FTDC_OF_Close;  // 平仓
+        break;
+    }
+
     order.CombHedgeFlag[0] = THOST_FTDC_HF_Speculation;  // 投机
-    order.LimitPrice = 3760.2;  // 设置买入价格
-    order.VolumeTotalOriginal = 1;  // 设置买入数量
+    order.LimitPrice = req->nOrderPrice;  // 设置买入价格
+    order.VolumeTotalOriginal = req->nOrderVol;  // 设置买入数量
     order.MinVolume = 1;  // 最小成交量
     order.ContingentCondition = THOST_FTDC_CC_Immediately;  // 立即触发
     order.StopPrice = 0;  // 止损价
@@ -420,7 +459,11 @@ int TiCtpTraderClient::orderInsert(TiReqOrderInsert* req){
     order.IsAutoSuspend = 0;  // 非自动挂起
     order.TimeCondition = THOST_FTDC_TC_GFD;  // 当日有效
     order.VolumeCondition = THOST_FTDC_VC_AV;  // 任意成交量
-    strcpy(order.OrderRef, "000000000001");  // 投资单元代码
+    //strcpy(order.OrderRef, "000000000001");  // 投资单元代码
+    sprintf(order.OrderRef, "%d\0", req->nReqId);  // 投资单元代码
+    
+
+    std::cout << "OrderRef: " << order.OrderRef << std::endl;
     order.IsSwapOrder = 0;  // 非互换单
     order.UserForceClose = 0;  // 非强平
 
