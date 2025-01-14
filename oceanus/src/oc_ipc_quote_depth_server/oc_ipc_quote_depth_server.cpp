@@ -1,9 +1,9 @@
 #include "oc_ipc_quote_depth_server.h"
 
-OcIpcQuoteDepthServer::OcIpcQuoteDepthServer(uv_loop_s* loop){
+OcIpcQuoteDepthServer::OcIpcQuoteDepthServer(uv_loop_s* loop, int threadpool_size){
     m_cout_time = 0;
     m_quote_ipc_publisher = new TiQuoteIpcPublisher("quote_depth_data");
-    for(int32_t i = 0; i < 8; i++){
+    for(int32_t i = 0; i < threadpool_size; i++){
         //TiQuoteIpcPublisher* quote_ipc_publisher = new TiQuoteIpcPublisher("quote_depth_data");
         OcBookWorker* worker = new OcBookWorker(i, m_quote_ipc_publisher, m_quote_ipc_publisher);
         m_worker_vec.push_back(worker);
