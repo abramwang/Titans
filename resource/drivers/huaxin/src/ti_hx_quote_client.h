@@ -19,7 +19,9 @@ public:
         std::string szL2ShHost;
         std::string szL2SzHost;
 
-        bool bIsMulticast;                  //是否组播行情
+        std::string szCore;                 //绑核参数
+
+        bool        bIsMulticast;           //是否组播行情
         std::string szL2Multicast;          //组播行情地址
         std::string szL2MulticastInterface; //组播行情接收网卡地址
 

@@ -560,6 +560,8 @@ int TiHxQuoteClient::loadConfig(std::string iniFileName){
     m_config->szL2ShHost            = string(_iniFile["ti_hx_quote_client"]["l2_sh_host"]);
     m_config->szL2SzHost            = string(_iniFile["ti_hx_quote_client"]["l2_sz_host"]);
 
+    m_config->szCore                = string(_iniFile["ti_hx_quote_client"]["core"]);
+
     m_config->bIsMulticast          = bool(_iniFile["ti_hx_quote_client"]["is_multicast"]);
     m_config->szL2Multicast         = string(_iniFile["ti_hx_quote_client"]["l2_multicast"]);
     m_config->szL2MulticastInterface= string(_iniFile["ti_hx_quote_client"]["l2_multicast_interface"]);
@@ -719,7 +721,12 @@ void TiHxQuoteClient::connect(){
         memset(&subType, 0, sizeof(subType));
         strcpy(subType, "MITO");
         m_multicast_api->DeclareMKSubTypes(subType);
-        m_multicast_api->Init("0,5,18");
+        if (m_config->szCore.empty())
+        {
+            m_multicast_api->Init(m_config->szCore.c_str());
+        }else{
+            m_multicast_api->Init();
+        }
         return;
     }
 
