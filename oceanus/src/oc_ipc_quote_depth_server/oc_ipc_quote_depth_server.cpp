@@ -67,7 +67,7 @@ void OcIpcQuoteDepthServer::OnTimer()
             << localTime->tm_hour << ":" << localTime->tm_min << ":" << localTime->tm_sec
             << std::endl;
     */
-    if (localTime->tm_hour == 15)
+    if (localTime->tm_hour >= 15)
     {
         if (localTime->tm_hour == 15 && localTime->tm_min < 30)
         {
