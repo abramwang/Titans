@@ -719,7 +719,7 @@ void TiHxQuoteClient::connect(){
         memset(&subType, 0, sizeof(subType));
         strcpy(subType, "MITO");
         m_multicast_api->DeclareMKSubTypes(subType);
-        m_multicast_api->Init();
+        m_multicast_api->Init("0,5,18");
         return;
     }
 
