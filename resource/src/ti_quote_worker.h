@@ -15,8 +15,10 @@ class TiQuoteWorker
 {
 public:
     TiQuoteWorker(TiQuoteCallback* callback);
+    TiQuoteWorker(TiQuoteCallback* callback, int32_t core_id);
     virtual ~TiQuoteWorker();
 public:
+    int32_t                 m_core_id;
     TiQuoteCallback*        m_callback;
     uv_async_t*             m_recv_signal;
     TI_QuoteCacheBufferType m_buffer;

@@ -1,6 +1,7 @@
 #include "ti_quote_worker.h"
 #include <string.h>
 #include <iostream>
+#include "ti_thread_tool.h"
 
 TiQuoteWorker::TiQuoteWorker(TiQuoteCallback* callback)
 {
@@ -12,7 +13,20 @@ TiQuoteWorker::TiQuoteWorker(TiQuoteCallback* callback)
     m_save_cache = new TiQuoteCache(m_buffer, TI_QUOTE_CACHE_MAX_LEN);
     m_read_cache = new TiQuoteCache();
     m_send_time = datetime::get_now_timestamp_ms();
-}
+}    
+
+TiQuoteWorker::TiQuoteWorker(TiQuoteCallback* callback, int32_t core_id)
+{
+    m_core_id = core_id;
+    m_callback = callback;
+    m_recv_signal = new uv_async_t;
+    m_recv_signal->data = this;
+    uv_async_init(m_loop, m_recv_signal, recv_data_cb);
+    memset(m_buffer, 0, TI_QUOTE_CACHE_MAX_LEN);
+    m_save_cache = new TiQuoteCache(m_buffer, TI_QUOTE_CACHE_MAX_LEN);
+    m_read_cache = new TiQuoteCache();
+    m_send_time = datetime::get_now_timestamp_ms();
+};
 
 TiQuoteWorker::~TiQuoteWorker()
 {
@@ -23,6 +37,10 @@ TiQuoteWorker::~TiQuoteWorker()
 void TiQuoteWorker::recv_data_cb(uv_async_t* handle)
 {
     TiQuoteWorker* p = (TiQuoteWorker*)handle->data;
+    if (p->m_core_id)
+    {
+        TiThreadTool::set_thread_affinity(p->m_core_id);
+    }
     void* buff = NULL;
     while (p->m_queue.try_dequeue(buff))
     {

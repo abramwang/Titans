@@ -13,7 +13,7 @@ class OcIpcQuoteDepthServer
     : public TiQuoteCallback
 {
 public:
-    OcIpcQuoteDepthServer(uv_loop_s* loop, int threadpool_size);
+    OcIpcQuoteDepthServer(uv_loop_s* loop, int threadpool_size, int core_id);
     virtual ~OcIpcQuoteDepthServer(){};
 private:
     int32_t m_cout_time;

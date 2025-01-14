@@ -11,6 +11,17 @@ TiQuoteWorkerPool::TiQuoteWorkerPool(std::vector<TiQuoteCallback*> cb_vec)
     }
 }
 
+TiQuoteWorkerPool::TiQuoteWorkerPool(std::vector<TiQuoteCallback*> cb_vec, int32_t core_id)
+{
+    m_core_id = core_id;
+    m_worker_num = 0;
+    for (auto cb : cb_vec)
+    {
+        TiQuoteWorkerPtr worker = std::make_shared<TiQuoteWorker>(cb, core_id++);
+        m_worker_vec.push_back(worker);
+    }
+};
+
 TiQuoteWorkerPtr TiQuoteWorkerPool::get_worker(const TI_ExchangeType exchange, const TI_SymbolType symbol)
 {
     int64_t id = TiQuoteTools::GetSymbolID(exchange, symbol);

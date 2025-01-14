@@ -15,8 +15,10 @@ class TiQuoteWorkerPool
 {
 public:
     TiQuoteWorkerPool(std::vector<TiQuoteCallback*> cb_vec);
+    TiQuoteWorkerPool(std::vector<TiQuoteCallback*> cb_vec, int32_t core_id);
     virtual ~TiQuoteWorkerPool(){};
 private:
+    int m_core_id;
     int m_worker_num;
     std::vector<TiQuoteWorkerPtr> m_worker_vec;
     std::unordered_map<int64_t, TiQuoteWorkerPtr> m_symbol_worker_map; //ex_symbol, worker
