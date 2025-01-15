@@ -525,7 +525,7 @@ void TiHxQuoteClient::OnRtnNGTSTick(CTORATstpLev2NGTSTickField *pTick)
         m_orderCash.seq             = pTick->SubSeq;
         m_orderCash.price           = pTick->Price;
         m_orderCash.volume          = pTick->Volume;
-        m_orderCash.order_orino     = pTick->MainSeq;
+        m_orderCash.order_orino     = pTick->SubSeq;
         if(pTick->Side == '1'){
             m_orderCash.function_code = 'B'; 
         }
