@@ -525,12 +525,13 @@ void TiHxQuoteClient::OnRtnNGTSTick(CTORATstpLev2NGTSTickField *pTick)
         m_orderCash.seq             = pTick->SubSeq;
         m_orderCash.price           = pTick->Price;
         m_orderCash.volume          = pTick->Volume;
-        m_orderCash.order_orino     = pTick->SubSeq;
         if(pTick->Side == '1'){
             m_orderCash.function_code = 'B'; 
+            m_orderCash.order_orino     = pTick->BuyNo;
         }
         if(pTick->Side == '2'){
             m_orderCash.function_code = 'S'; 
+            m_orderCash.order_orino     = pTick->SellNo;
         }
         m_orderCash.order_type      = pTick->TickType;
 
