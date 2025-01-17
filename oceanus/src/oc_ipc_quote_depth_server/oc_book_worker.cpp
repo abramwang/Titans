@@ -23,7 +23,7 @@ void OcBookWorker::OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData
     {
         if ((pData->time - m_cout_time) > 1000)
         {
-            printf("[OcBookWorker::OnL2FutureSnapshotRtn] %s, %s, %d, %d, %s, %f, %ld, %ld\n", 
+            printf("[OcBookWorker::OnL2FutureSnapshotRtn] %s, %s, %d, %d, %s, %f, %ld, %f\n", 
                 pData->symbol, pData->exchange, pData->time, m_cout_time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
             m_cout_time = pData->time;
         }
@@ -94,7 +94,7 @@ void OcBookWorker::OnDepthSnapshotRtn(const TiQuoteSnapshotStockField* pData)
     {
         if ((pData->time - m_cout_time) > 1000)
         {
-            printf("[OcBookWorker::OnL2StockSnapshotRtn] %s, %s, %d, %d, %s, %f, %ld, %ld\n", 
+            printf("[OcBookWorker::OnL2StockSnapshotRtn] %s, %s, %d, %d, %s, %f, %ld, %f\n", 
                 pData->symbol, pData->exchange, pData->time, m_cout_time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
             m_cout_time = pData->time;
         }
