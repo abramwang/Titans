@@ -56,17 +56,17 @@ void TiCtpTraderClient::OnFrontConnected()
 
     CThostFtdcReqAuthenticateField req = {0};
     
-    //strncpy(req.BrokerID, m_config->szBrokerID.c_str(), sizeof(req.BrokerID));
-    //strncpy(req.AppID, m_config->szAppID.c_str(), sizeof(req.AppID));
-    //strncpy(req.AuthCode, m_config->szAuthCode.c_str(), sizeof(req.AuthCode));
+    strncpy(req.BrokerID, m_config->szBrokerID.c_str(), sizeof(req.BrokerID));
+    strncpy(req.AppID, m_config->szAppID.c_str(), sizeof(req.AppID));
+    strncpy(req.AuthCode, m_config->szAuthCode.c_str(), sizeof(req.AuthCode));
 
-    ///*
-    strcpy(req.BrokerID, "0001");
+    /*
+    strcpy(req.BrokerID, "1032");
     strcpy(req.AppID, "client_oceanus_v1.0");
-    strcpy(req.AuthCode, "VE4QFJANGU3VMYX6");
+    strcpy(req.AuthCode, "NV6DXTLD3ZZ8R7UL");
     //strcpy(req.UserID, "000001788");
     //strcpy(req.UserProductInfo, "client_oceanus_v1.0");
-    //*/
+    */
     
     int flag2 = m_client->ReqAuthenticate(&req, 2);
     std::cout << "ReqAuthenticate: " << flag2 << std::endl;
@@ -97,6 +97,12 @@ void TiCtpTraderClient::OnRspAuthenticate(CThostFtdcRspAuthenticateField *pRspAu
 void TiCtpTraderClient::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogin, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
     std::cout << "OnRspUserLogin:" << nRequestID << " ErrorID:" << pRspInfo->ErrorID << " ErrorMsg:" << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg) << std::endl;
  
+    nReqId++;
+    CThostFtdcSettlementInfoConfirmField req = {0};
+    strncpy(req.BrokerID, m_config->szBrokerID.c_str(), sizeof(req.BrokerID));
+    strncpy(req.InvestorID, m_config->szUser.c_str(), sizeof(req.InvestorID));
+
+    m_client->ReqSettlementInfoConfirm(&req, nReqId);
     /*
     TiReqOrderInsert req;
     memset(&req, 0, sizeof(TiReqOrderInsert));
@@ -425,7 +431,7 @@ int TiCtpTraderClient::orderInsert(TiReqOrderInsert* req){
 
     strncpy(order.BrokerID, m_config->szBrokerID.c_str(), sizeof(order.BrokerID));
     strncpy(order.InvestorID, m_config->szUser.c_str(), sizeof(order.InvestorID));
-    strncpy(order.InstrumentID, "IF2501", sizeof(order.InstrumentID));  // 指定期货合约
+    strncpy(order.InstrumentID, req->szSymbol, sizeof(order.InstrumentID));  // 指定期货合约
     strncpy(order.UserID, m_config->szUser.c_str(), sizeof(order.UserID));
     order.OrderPriceType = THOST_FTDC_OPT_LimitPrice;  // 限价单
 
@@ -460,7 +466,7 @@ int TiCtpTraderClient::orderInsert(TiReqOrderInsert* req){
     order.TimeCondition = THOST_FTDC_TC_GFD;  // 当日有效
     order.VolumeCondition = THOST_FTDC_VC_AV;  // 任意成交量
     //strcpy(order.OrderRef, "000000000001");  // 投资单元代码
-    sprintf(order.OrderRef, "%d\0", req->nReqId);  // 投资单元代码
+    sprintf(order.OrderRef, "%d", req->nReqId);  // 投资单元代码
     
 
     std::cout << "OrderRef: " << order.OrderRef << std::endl;
@@ -472,7 +478,7 @@ int TiCtpTraderClient::orderInsert(TiReqOrderInsert* req){
     if (result != 0) {
         std::cout << "Failed to place order!" << std::endl;
     } else {
-        std::cout << "Order placed successfully!" << std::endl;
+        std::cout << "Order placed successfully! " << order.InstrumentID << std::endl;
     }
 
     return -1;
