@@ -187,6 +187,13 @@ void OcTraderCommanderCtp::OnCommandRtn(const char* type, const char* command)
         return;
     }
 
+    if (!strcmp(type, "cancelOrder"))
+    {
+        json j = json::parse(command);
+        cancelOrder(j);
+        return;
+    }
+
     if (!strcmp(type, "QueryAsset"))
     {
         m_client->QueryAsset();
@@ -326,6 +333,16 @@ void OcTraderCommanderCtp::enterOrder(json &msg)
     req.nOrderVol = msg["nOrderVol"];
 
     m_client->orderInsert(&req);
+};
+
+void OcTraderCommanderCtp::cancelOrder(json &msg)
+{
+    TiReqOrderDelete req;
+    memset(&req, 0, sizeof(TiReqOrderDelete));
+    req.nOrderId = msg["nOrderId"];
+    strcpy(req.szOrderStreamId, std::string(msg["szOrderStreamId"]).c_str());
+
+    m_client->orderDelete(&req);
 };
 
 ////////////////////////////////////////////////////////////////////////
