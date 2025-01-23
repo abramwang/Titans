@@ -121,6 +121,63 @@ void TiCtpTraderClient::OnRspUserLogin(CThostFtdcRspUserLoginField *pRspUserLogi
 ////////////////////////////////////////////////////////////////////////
 // 订单回调
 ////////////////////////////////////////////////////////////////////////
+void TiCtpTraderClient::OnRspQryOrder(CThostFtdcOrderField *pOrder, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+    std::cout << "OnRspQryOrder: " << nRequestID << " " << bIsLast << std::endl;
+    if(pOrder){
+        std::cout << "InstrumentID: " << pOrder->InstrumentID << std::endl;
+        std::cout << "OrderSysID: " << pOrder->OrderSysID << std::endl;
+        std::cout << "OrderRef: " << pOrder->OrderRef << std::endl;
+        std::cout << "OrderStatus: " << pOrder->OrderStatus << std::endl;
+        std::cout << "Direction: " << pOrder->Direction << std::endl;
+        std::cout << "LimitPrice: " << pOrder->LimitPrice << std::endl;
+        std::cout << "VolumeTotalOriginal: " << pOrder->VolumeTotalOriginal << std::endl;
+        std::cout << "VolumeTraded: " << pOrder->VolumeTraded << std::endl;
+        std::cout << "InsertDate: " << pOrder->InsertDate << std::endl;
+        std::cout << "InsertTime: " << pOrder->InsertTime << std::endl;
+        std::cout << "ActiveTime: " << pOrder->ActiveTime << std::endl;
+    }
+};
+
+void TiCtpTraderClient::OnRspQryTrade(CThostFtdcTradeField *pTrade, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+    std::cout << "OnRspQryTrade: " << nRequestID << " " << bIsLast << std::endl;
+    if(pTrade){
+        std::cout << "InstrumentID: " << pTrade->InstrumentID << std::endl;
+        std::cout << "TradeID: " << pTrade->TradeID << std::endl;
+        std::cout << "TradeTime: " << pTrade->TradeTime << std::endl;
+        std::cout << "ExchangeID: " << pTrade->ExchangeID << std::endl;
+        std::cout << "Price: " << pTrade->Price << std::endl;
+        std::cout << "Volume: " << pTrade->Volume << std::endl;
+    }
+};
+
+void TiCtpTraderClient::OnRspQryInvestorPosition(CThostFtdcInvestorPositionField *pInvestorPosition, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+    std::cout << "OnRspQryInvestorPosition: " << nRequestID << " " << bIsLast << std::endl;
+    if(pInvestorPosition){
+        std::cout << "InstrumentID: " << pInvestorPosition->InstrumentID << std::endl;
+        std::cout << "Position: " << pInvestorPosition->Position << std::endl;
+        std::cout << "TodayPosition: " << pInvestorPosition->TodayPosition << std::endl;
+        std::cout << "YdPosition: " << pInvestorPosition->YdPosition << std::endl;
+        std::cout << "PositionCost: " << pInvestorPosition->PositionCost << std::endl;
+        std::cout << "UseMargin: " << pInvestorPosition->UseMargin << std::endl;
+    }
+};
+
+void TiCtpTraderClient::OnRspQrySecAgentTradingAccount(CThostFtdcTradingAccountField *pTradingAccount, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast)
+{
+    std::cout << "OnRspQrySecAgentTradingAccount: " << nRequestID << " " << bIsLast << std::endl;
+    if(pTradingAccount){
+        std::cout << "Balance: " << pTradingAccount->Balance << std::endl;
+        std::cout << "Available: " << pTradingAccount->Available << std::endl;
+        std::cout << "CurrMargin: " << pTradingAccount->CurrMargin << std::endl;
+        std::cout << "FrozenMargin: " << pTradingAccount->FrozenMargin << std::endl;
+        std::cout << "WithdrawQuota: " << pTradingAccount->WithdrawQuota << std::endl;
+    }
+};
+
+
 ///报单录入请求响应
 void TiCtpTraderClient::OnRspOrderInsert(CThostFtdcInputOrderField *pInputOrder, CThostFtdcRspInfoField *pRspInfo, int nRequestID, bool bIsLast) {
     std::cout << "OnRspOrderInsert:" << nRequestID << " ErrorID:" << pRspInfo->ErrorID << " ErrorMsg:" << TiEncodingTool::GbkToUtf8(pRspInfo->ErrorMsg) << std::endl;
@@ -490,6 +547,24 @@ int TiCtpTraderClient::orderDelete(TiReqOrderDelete* req){
         return -1;
     }
 
+    CThostFtdcInputOrderActionField order = {0};
+    order.RequestID = ++nReqId;
+    strcpy(order.BrokerID, m_config->szBrokerID.c_str());
+    strcpy(order.InvestorID, m_config->szUser.c_str());
+    strcpy(order.ExchangeID, "CFFEX");
+    //strcpy(order.OrderRef, );               // 报单引用
+    strcpy(order.OrderSysID, req->szOrderStreamId);           // 报单编号
+    order.ActionFlag = THOST_FTDC_AF_Delete;        // 操作标志：撤单
+    order.FrontID = 0;                              // 如果需要前置机ID
+    order.SessionID = 0;                            // 如果需要会话ID
+
+    int result = m_client->ReqOrderAction(&order, nReqId);
+    if (result != 0) {
+        std::cout << "Failed to place order!" << std::endl;
+    } else {
+        std::cout << "Order action successfully! " << std::endl;
+    }
+
     return nReqId;
 };
 
@@ -522,6 +597,10 @@ int TiCtpTraderClient::QueryAsset()
         return -1;
     }
 
+    CThostFtdcQryTradingAccountField req = {0};
+    nReqId++;
+
+    m_client->ReqQrySecAgentTradingAccount(&req, nReqId);
     return nReqId;
 };
 
@@ -531,6 +610,14 @@ int TiCtpTraderClient::QueryOrders()
         LOG(INFO) << "[loadConfig] Do not have config info";
         return -1;
     }
+
+    CThostFtdcQryOrderField req = {0};
+    nReqId++;
+    strcpy(req.BrokerID, m_config->szBrokerID.c_str());
+    strcpy(req.InvestorID, m_config->szUser.c_str());
+    strcpy(req.ExchangeID, "CFFEX");
+
+    m_client->ReqQryOrder(&req, nReqId);
 
     return nReqId;
 };
@@ -542,6 +629,14 @@ int TiCtpTraderClient::QueryMatches()
         return -1;
     }
 
+    CThostFtdcQryTradeField req = {0};
+    nReqId++;
+    strcpy(req.BrokerID, m_config->szBrokerID.c_str());
+    strcpy(req.InvestorID, m_config->szUser.c_str());
+    strcpy(req.ExchangeID, "CFFEX");
+
+    m_client->ReqQryTrade(&req, nReqId);
+
     return nReqId;
 };
 
@@ -551,6 +646,15 @@ int TiCtpTraderClient::QueryPositions()
         LOG(INFO) << "[loadConfig] Do not have config info";
         return -1;
     }
+
+    CThostFtdcQryInvestorPositionField req = {0};
+    nReqId++;
+
+    strcpy(req.BrokerID, m_config->szBrokerID.c_str());
+    strcpy(req.InvestorID, m_config->szUser.c_str());
+    strcpy(req.ExchangeID, "CFFEX");
+
+    m_client->ReqQryInvestorPosition(&req, nReqId);
 
     return nReqId;
 };
