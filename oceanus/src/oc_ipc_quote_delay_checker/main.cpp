@@ -224,7 +224,7 @@ public:
         }
 
         // 写入数据
-        file << "snapshot," << data.exchange << "," << data.symbol << "," << data.date << "," << data.time << "," << data.timestamp << ","
+        file << "order," << data.exchange << "," << data.symbol << "," << data.date << "," << data.time << "," << data.timestamp << ","
             << data.time_str << "," << data.recv_time_str << "," << data.recv_timestamp << "," << data.recv_timestamp - data.timestamp << "\n";
 
         file.close();
@@ -247,7 +247,7 @@ public:
         }
 
         // 写入数据
-        file << "snapshot," << data.exchange << "," << data.symbol << "," << data.date << "," << data.time << "," << data.timestamp << ","
+        file << "matches," << data.exchange << "," << data.symbol << "," << data.date << "," << data.time << "," << data.timestamp << ","
             << data.time_str << "," << data.recv_time_str << "," << data.recv_timestamp << "," << data.recv_timestamp - data.timestamp << "\n";
 
         file.close();
