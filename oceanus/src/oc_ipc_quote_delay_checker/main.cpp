@@ -194,15 +194,12 @@ public:
         // 如果是新文件，写入标题行
         if (!isHeaderWritten) {
             // 写入标题
-            file << "type,exchange,symbol,date,time,timestamp,time_str,recv_time_str,recv_timestamp\n";
+            file << "type,exchange,symbol,date,time,timestamp,time_str,recv_time_str,recv_timestamp,delay\n";
         }
-
-        m_recv_timestamp  = datetime::get_now_timestamp_ms();
-        datetime::get_format_now_time_us(m_recv_time_str, TI_TIME_STR_LEN);
 
         // 写入数据
         file << "snapshot," << data.exchange << "," << data.symbol << "," << data.date << "," << data.time << "," << data.timestamp << ","
-            << data.time_str << "," << m_recv_time_str << "," << m_recv_timestamp << "\n";
+            << data.time_str << "," << data.recv_time_str << "," << data.recv_timestamp << "," << data.recv_timestamp - data.timestamp << "\n";
 
         file.close();
     }
@@ -220,14 +217,15 @@ public:
             throw std::runtime_error("Unable to open file: " + fileName);
         }
 
+        // 如果是新文件，写入标题行
         if (!isHeaderWritten) {
             // 写入标题
-            file << "type,exchange,symbol,date,time,timestamp,time_str,recv_time_str,recv_timestamp\n";
+            file << "type,exchange,symbol,date,time,timestamp,time_str,recv_time_str,recv_timestamp,delay\n";
         }
 
         // 写入数据
-        file << "orders," << data.exchange << "," << data.symbol << "," << data.date << "," << data.time << "," << data.timestamp << ","
-            << data.time_str << "," << m_recv_time_str << "," << m_recv_timestamp << "\n";
+        file << "snapshot," << data.exchange << "," << data.symbol << "," << data.date << "," << data.time << "," << data.timestamp << ","
+            << data.time_str << "," << data.recv_time_str << "," << data.recv_timestamp << "," << data.recv_timestamp - data.timestamp << "\n";
 
         file.close();
     }
@@ -245,12 +243,12 @@ public:
         // 如果是新文件，写入标题行
         if (!isHeaderWritten) {
             // 写入标题
-            file << "type,exchange,symbol,date,time,timestamp,time_str,recv_time_str,recv_timestamp\n";
+            file << "type,exchange,symbol,date,time,timestamp,time_str,recv_time_str,recv_timestamp,delay\n";
         }
 
         // 写入数据
-        file << "matches," << data.exchange << "," << data.symbol << "," << data.date << "," << data.time << "," << data.timestamp << ","
-            << data.time_str << "," << m_recv_time_str << "," << m_recv_timestamp << "\n";
+        file << "snapshot," << data.exchange << "," << data.symbol << "," << data.date << "," << data.time << "," << data.timestamp << ","
+            << data.time_str << "," << data.recv_time_str << "," << data.recv_timestamp << "," << data.recv_timestamp - data.timestamp << "\n";
 
         file.close();
     }
