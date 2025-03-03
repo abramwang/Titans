@@ -46,7 +46,7 @@ void OcQuoteDepthSnapRepairman::OnL2OriginalStockSnapshotRtn(const TiQuoteSnapsh
     memcpy(&m_original_snapshot_stock, pData, sizeof(TiQuoteSnapshotStockField));
 }
 
-void OcQuoteDepthSnapRepairman::OnL2FittedStockSnapshotRtn(const TiQuoteSnapshotStockField* pData)
+void OcQuoteDepthSnapRepairman::OnL2FittedStockSnapshotRtn(const TiQuoteSnapshotStockField* pData,  TiQuoteSnapshotStockField* pOut)
 {
     if (!m_closest_fitted_snapshot)
     {
@@ -77,4 +77,9 @@ void OcQuoteDepthSnapRepairman::OnL2FittedStockSnapshotRtn(const TiQuoteSnapshot
         m_acc_volume_diff = m_original_snapshot_stock->acc_volume - m_closest_fitted_snapshot->acc_volume;
         m_acc_turnover_diff = m_original_snapshot_stock->acc_turnover - m_closest_fitted_snapshot->acc_turnover;
     }
+
+    memcpy(pOut, m_lasted_fitted_snapshot, sizeof(TiQuoteSnapshotStockField));
+
+    pOut->acc_volume += m_acc_volume_diff;
+    pOut->acc_turnover += m_acc_turnover_diff;
 }

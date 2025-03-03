@@ -25,7 +25,7 @@ private:
 
 public:
     void OnL2OriginalStockSnapshotRtn(const TiQuoteSnapshotStockField* pData);
-    void OnL2FittedStockSnapshotRtn(const TiQuoteSnapshotStockField* pData);
+    void OnL2FittedStockSnapshotRtn(const TiQuoteSnapshotStockField* pData, TiQuoteSnapshotStockField* pOut);
 
 };
 
