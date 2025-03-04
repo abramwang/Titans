@@ -16,6 +16,19 @@ OcBookWorker::~OcBookWorker()
     delete m_book_engine;
 }
 
+OcQuoteDepthSnapRepairmanPtr OcBookWorker::GetRepairman(TiQuoteSnapshotStockField* pData)
+{
+    int64_t symbol_id = TiQuoteTools::GetSymbolID(pData->exchange, pData->symbol);
+
+    auto it = m_repairman_map.find(symbol_id);
+    if (it == m_repairman_map.end())
+    {
+        OcQuoteDepthSnapRepairmanPtr repairman = std::make_shared<OcQuoteDepthSnapRepairman>(pData->exchange, pData->symbol);
+        m_repairman_map[symbol_id] = repairman;
+        return repairman;
+    }
+    return it->second;
+};
 
 void OcBookWorker::OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData)
 {
@@ -80,7 +93,16 @@ void OcBookWorker::OnDepthSnapshotRtn(const TiQuoteDepthSnapshotBaseField* pBase
         m_book_snap_cash.bid_order_num[i] = bids[i]->order_count;
     }
 
-    OnDepthSnapshotRtn(&m_book_snap_cash);
+    //OnDepthSnapshotRtn(&m_book_snap_cash);
+
+    OcQuoteDepthSnapRepairmanPtr repairman = GetRepairman(&m_book_snap_cash);
+    bool fitted = repairman->OnL2FittedStockSnapshotRtn(&m_book_snap_cash, &m_book_fitted_snap_cash);
+    if (fitted)
+    {
+        m_callback->OnL2StockSnapshotRtn(&m_book_fitted_snap_cash);
+    }else{
+        m_callback->OnL2StockSnapshotRtn(&m_book_snap_cash);
+    }
 };
 
 void OcBookWorker::OnDepthOrderBookLevelRtn(const TiQuoteOrderBookField* pData)
@@ -90,14 +112,7 @@ void OcBookWorker::OnDepthOrderBookLevelRtn(const TiQuoteOrderBookField* pData)
 
 void OcBookWorker::OnDepthSnapshotRtn(const TiQuoteSnapshotStockField* pData)
 {
-    if (!m_id)
-    {
-        if ((pData->time - m_cout_time) > 1000)
-        {
-            printf("[OcBookWorker::OnL2StockSnapshotRtn] %s, %s, %d, %d, %s, %f, %ld, %f\n", 
-                pData->symbol, pData->exchange, pData->time, m_cout_time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
-            m_cout_time = pData->time;
-        }
-    }
+    OcQuoteDepthSnapRepairmanPtr repairman = GetRepairman(&m_book_snap_cash);
+    repairman->OnL2OriginalStockSnapshotRtn(&m_book_snap_cash);
     m_callback->OnL2StockSnapshotRtn(pData);
 };

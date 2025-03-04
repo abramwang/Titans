@@ -8,7 +8,7 @@
 
 int main(int argc, char* argv[]) 
 {
-    int threadpool_size = 5;
+    int threadpool_size = 4;
     char value[32] = {0};
     sprintf(value, "%d", threadpool_size);
     setenv("UV_THREADPOOL_SIZE", value, 0);
