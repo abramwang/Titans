@@ -20,6 +20,8 @@ private:
     std::vector<TiQuoteCallback*>      m_worker_vec;
     TiQuoteWorkerPool*                 m_quote_worker_pool;
     TiQuoteIpcPublisher*               m_quote_ipc_publisher;
+
+    OcBookWorker*                       m_worker; 
     uv_timer_t m_timer;
 public:
     virtual void OnTradingDayRtn(const unsigned int day, const char* exchangeName){};

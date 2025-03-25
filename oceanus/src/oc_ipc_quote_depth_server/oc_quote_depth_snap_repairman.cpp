@@ -43,7 +43,7 @@ void OcQuoteDepthSnapRepairman::OnL2OriginalStockSnapshotRtn(const TiQuoteSnapsh
         m_original_snapshot_stock = new TiQuoteSnapshotStockField;
         memset(m_original_snapshot_stock, 0, sizeof(TiQuoteSnapshotStockField));
     }
-    memcpy(&m_original_snapshot_stock, pData, sizeof(TiQuoteSnapshotStockField));
+    memcpy(m_original_snapshot_stock, pData, sizeof(TiQuoteSnapshotStockField));
 }
 
 bool OcQuoteDepthSnapRepairman::OnL2FittedStockSnapshotRtn(const TiQuoteSnapshotStockField* pData,  TiQuoteSnapshotStockField* pOut)

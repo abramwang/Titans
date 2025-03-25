@@ -1,14 +1,14 @@
 #include "oc_book_worker.h"
+#include "ti_quote_tools.h"
 #include <string.h>
 
-OcBookWorker::OcBookWorker(int32_t id, TiQuoteCallback* callback, TiQuoteDepthCallback* depth_callback)
+OcBookWorker::OcBookWorker(int32_t id, TiQuoteIpcPublisher* quote_ipc_publisher)
 {
     m_book_engine = new TiBookEngine(this, 0, 10);
     memset(&m_book_snap_cash, 0, sizeof(TiQuoteSnapshotStockField));
     m_cout_time = 0;
     m_id = id;
-    m_callback = callback;
-    m_depth_callback = depth_callback;
+    m_quote_ipc_publisher = quote_ipc_publisher;
 }
 
 OcBookWorker::~OcBookWorker()
@@ -41,15 +41,22 @@ void OcBookWorker::OnL2FutureSnapshotRtn(const TiQuoteSnapshotFutureField* pData
             m_cout_time = pData->time;
         }
     }
-    m_callback->OnL2FutureSnapshotRtn(pData);
+    m_quote_ipc_publisher->OnL2FutureSnapshotRtn(pData);
 };
 
 void OcBookWorker::OnL2StockSnapshotRtn(const TiQuoteSnapshotStockField* pData)
-{    
-    OnDepthSnapshotRtn(pData);
+{
+    printf("[OcBookWorker::OnL2StockSnapshotRtn] %s, %s, %d, %f, %ld, %f\n", 
+        pData->symbol, pData->time_str, pData->time, pData->last, pData->acc_volume, pData->acc_turnover);
+        
     if(m_book_engine){
         m_book_engine->RecvStockSnap(pData);
     }
+
+    OcQuoteDepthSnapRepairmanPtr repairman = GetRepairman((TiQuoteSnapshotStockField*)pData);
+    repairman->OnL2OriginalStockSnapshotRtn(pData);
+
+    m_quote_ipc_publisher->OnL2StockSnapshotRtn(pData);
 };
 void OcBookWorker::OnL2StockMatchesRtn(const TiQuoteMatchesField* pData){
     m_book_engine->RecvMatch(pData);
@@ -93,26 +100,29 @@ void OcBookWorker::OnDepthSnapshotRtn(const TiQuoteDepthSnapshotBaseField* pBase
         m_book_snap_cash.bid_order_num[i] = bids[i]->order_count;
     }
 
-    //OnDepthSnapshotRtn(&m_book_snap_cash);
-
     OcQuoteDepthSnapRepairmanPtr repairman = GetRepairman(&m_book_snap_cash);
     bool fitted = repairman->OnL2FittedStockSnapshotRtn(&m_book_snap_cash, &m_book_fitted_snap_cash);
+
     if (fitted)
     {
-        m_callback->OnL2StockSnapshotRtn(&m_book_fitted_snap_cash);
+        OnDepthSnapshotRtn(&m_book_fitted_snap_cash);
+        m_quote_ipc_publisher->OnL2StockSnapshotRtn(&m_book_fitted_snap_cash);
     }else{
-        m_callback->OnL2StockSnapshotRtn(&m_book_snap_cash);
+        OnDepthSnapshotRtn(&m_book_snap_cash);
+        m_quote_ipc_publisher->OnL2StockSnapshotRtn(&m_book_snap_cash);
     }
 };
 
 void OcBookWorker::OnDepthOrderBookLevelRtn(const TiQuoteOrderBookField* pData)
 {
-    m_depth_callback->OnDepthOrderBookLevelRtn(pData);
+    m_quote_ipc_publisher->OnDepthOrderBookLevelRtn(pData);
 };
 
 void OcBookWorker::OnDepthSnapshotRtn(const TiQuoteSnapshotStockField* pData)
 {
-    OcQuoteDepthSnapRepairmanPtr repairman = GetRepairman(&m_book_snap_cash);
-    repairman->OnL2OriginalStockSnapshotRtn(&m_book_snap_cash);
-    m_callback->OnL2StockSnapshotRtn(pData);
+    printf("[OcBookWorker::OnDepthSnapshotRtn] %s, %s, %d, %f, %ld, %f\n", 
+        pData->symbol, pData->time_str, pData->time, pData->last, pData->acc_volume, pData->acc_turnover);
+    //OcQuoteDepthSnapRepairmanPtr repairman = GetRepairman((TiQuoteSnapshotStockField* )pData);
+    //repairman->OnL2OriginalStockSnapshotRtn(pData);
+    //m_callback->OnL2StockSnapshotRtn(pData);
 };

@@ -7,7 +7,8 @@
 #include "ti_book_engine.h"
 #include "ti_quote_callback.h"
 #include "ti_quote_depth_callback.h"
-#include "ti_quote_tools.h"
+#include "ti_quote_ipc_publisher.h"
+
 #include "oc_quote_depth_snap_repairman.h"
 
 typedef std::shared_ptr<OcQuoteDepthSnapRepairman> OcQuoteDepthSnapRepairmanPtr;
@@ -16,7 +17,7 @@ class OcBookWorker
     : public TiQuoteCallback, public TiQuoteDepthCallback
 {
 public:
-    OcBookWorker(int32_t id, TiQuoteCallback* callback, TiQuoteDepthCallback* depth_callback);
+    OcBookWorker(int32_t id, TiQuoteIpcPublisher* quote_ipc_publisher);
     virtual ~OcBookWorker();
 private:
     TiBookEngine*                   m_book_engine;
@@ -24,8 +25,7 @@ private:
     TiQuoteSnapshotStockField       m_book_fitted_snap_cash;
     int32_t m_cout_time;
     int32_t m_id;
-    TiQuoteCallback* m_callback;
-    TiQuoteDepthCallback* m_depth_callback;
+    TiQuoteIpcPublisher*            m_quote_ipc_publisher;
 
     std::unordered_map<int64_t, OcQuoteDepthSnapRepairmanPtr> m_repairman_map;
 
