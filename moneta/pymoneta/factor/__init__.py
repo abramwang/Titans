@@ -3,6 +3,7 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb_client.client.exceptions import InfluxDBError
 import pandas as pd
 from typing import List, Dict, Optional
+from datetime import timedelta
 
 class FactorDB:
     def __init__(self, url: str, token: str, org: str, bucket: str):
