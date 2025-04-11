@@ -1,4 +1,4 @@
-from influxdb_client import InfluxDBClient, Point, WriteOptions
+from influxdb_client import InfluxDBClient, Point, WriteOptions, Task, TaskStatusType
 from influxdb_client.client.write_api import SYNCHRONOUS
 from influxdb_client.client.exceptions import InfluxDBError
 import pandas as pd
@@ -163,6 +163,140 @@ class FactorDB:
         """释放资源"""
         self.write_api.close()
         self.client.close()
+
+
+class EnhancedFactorDB(FactorDB):
+    def __init__(self, url: str, token: str, org: str, bucket: str):
+        super().__init__(url, token, org, bucket)
+        self.tasks_api = self.client.tasks_api()
+        self.buckets_api = self.client.buckets_api()
+    
+    def create_resample_task(self, 
+                           task_name: str,
+                           source_bucket: str,
+                           destination_bucket: str,
+                           frequency: str,
+                           agg_func: str = "mean",
+                           every_interval: str = "1h",
+                           delay: str = "5m"):
+        """
+        创建重采样定时任务
+        :param task_name: 任务唯一名称
+        :param source_bucket: 原始数据存储桶
+        :param destination_bucket: 目标存储桶
+        :param frequency: 目标频率（1h, 1d等）
+        :param agg_func: 聚合函数（mean, median, sum等）
+        :param every_interval: 任务执行间隔
+        :param delay: 数据延迟等待时间
+        """
+        flux_script = f'''
+        option task = {{
+            name: "{task_name}",
+            every: {every_interval},
+            delay: {delay}
+        }}
+        
+        from(bucket: "{source_bucket}")
+            |> range(start: -task.every)
+            |> filter(fn: (r) => r._measurement =~ /^factor_/)
+            |> aggregateWindow(
+                every: {frequency},
+                fn: {agg_func},
+                createEmpty: false
+            )
+            |> to(bucket: "{destination_bucket}")
+        '''
+        
+        try:
+            task = Task(
+                org_id=self.buckets_api.find_bucket_by_name(source_bucket).org_id,
+                flux=flux_script,
+                description=f"Resample to {frequency}",
+                status=TaskStatusType.ACTIVE
+            )
+            return self.tasks_api.create_task(task)
+        except InfluxDBError as e:
+            print(f"创建任务失败: {e}")
+    
+    def query_with_resample(self,
+                          frequency: str,
+                          symbol: str,
+                          factor_type: str,
+                          start: str,
+                          stop: str = "now()",
+                          fields: List[str] = ["value"],
+                          auto_downsample: bool = True) -> pd.DataFrame:
+        """
+        智能查询（自动选择最优数据源）
+        :param auto_downsample: 是否自动使用降采样数据
+        """
+        # 自动选择数据源逻辑
+        if auto_downsample:
+            time_range = pd.Timestamp(stop) - pd.Timestamp(start)
+            if time_range > timedelta(days=7):
+                target_bucket = "factors_1h"
+            elif time_range > timedelta(days=30):
+                target_bucket = "factors_1d"
+            else:
+                target_bucket = self.bucket
+        else:
+            target_bucket = self.bucket
+        
+        measurement = f"factor_{frequency}"
+        
+        query = f'''
+        from(bucket: "{target_bucket}")
+          |> range(start: {start}, stop: {stop})
+          |> filter(fn: (r) => r._measurement == "{measurement}")
+          |> filter(fn: (r) => r.symbol == "{symbol}")
+          |> filter(fn: (r) => r.factor_type == "{factor_type}")
+          |> pivot(
+              rowKey:["_time"],
+              columnKey: ["_field"],
+              valueColumn: "_value"
+          )
+        '''
+        
+        try:
+            return self.query_api.query_data_frame(query, org=self.org)
+        except Exception as e:
+            print(f"查询失败: {e}")
+            return pd.DataFrame()
+    
+    def list_active_tasks(self) -> List[Dict]:
+        """获取所有活跃任务"""
+        return [
+            {
+                "id": task.id,
+                "name": task.name,
+                "status": task.status,
+                "interval": task.every
+            }
+            for task in self.tasks_api.find_tasks()
+            if task.status == TaskStatusType.ACTIVE
+        ]
+    
+    def delete_task(self, task_id: str):
+        """删除指定任务"""
+        try:
+            self.tasks_api.delete_task(task_id)
+        except InfluxDBError as e:
+            print(f"删除任务失败: {e}")
+
+    def monitor_tasks(self) -> pd.DataFrame:
+        """监控任务运行状态"""
+        query = '''
+        import "influxdata/influxdb/tasks"
+        tasks.lastSuccess()
+        |> map(fn: (r) => ({
+            task_id: r.taskID,
+            last_run: r._time,
+            status: if r.started >= r.finished then "running" else "completed",
+            duration: duration(v: uint(v: r.finished) - uint(v: r.started)
+        }))
+        '''
+        return self.query_api.query_data_frame(query, org=self.org)
+
 
 # 使用示例
 if __name__ == "__main__":
