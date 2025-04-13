@@ -6,7 +6,7 @@ except ImportError:
 setup(
     name='pymoneta',  #
     author='bo.wang',  #
-    version='0.5.0',  #
+    version='0.6.0',  #
     license='MIT',
 
     description='moneta',  #
@@ -25,6 +25,7 @@ setup(
         "pyarrow >= 3.0.0",
         "requests >= 2.0.0",
         "lxml >= 5.0.0",
+        "influxdb-client >= 1.0.0",
     ],
     python_requires='>=3',
     classifiers=[
