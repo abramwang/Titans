@@ -30,6 +30,7 @@ class FactorDB:
     def write_factor_point(self, 
                           frequency: str,
                           factor_type: str,
+                          name: str,
                           symbol: str,
                           value: float,
                           market: str = "UNKNOWN",
@@ -40,6 +41,7 @@ class FactorDB:
         写入单因子数据点
         :param frequency: 数据频率（'1m','1d'等）
         :param factor_type: 因子类型（'momentum','value'等）
+        :param name: 因子名称（'alpha101'等）
         :param symbol: 证券代码
         :param value: 因子数值（必须字段）
         :param market: 交易市场
@@ -51,6 +53,7 @@ class FactorDB:
         
         point = Point(measurement)\
             .tag("factor_type", factor_type)\
+            .tag("name", name)\
             .tag("symbol", symbol)\
             .tag("market", market)\
             .tag("source", source)\
@@ -75,6 +78,7 @@ class FactorDB:
         {
             "frequency": "1m",
             "factor_type": "momentum",
+            "name": "alpha101",
             "symbol": "AAPL",
             "value": 2.34,
             "market": "NASDAQ",
@@ -88,6 +92,7 @@ class FactorDB:
             measurement = f"factor_{dp['frequency']}"
             point = Point(measurement)\
                 .tag("factor_type", dp['factor_type'])\
+                .tag("name", dp['name'])\
                 .tag("symbol", dp['symbol'])\
                 .tag("market", dp.get('market', 'UNKNOWN'))\
                 .tag("source", dp.get('source', 'DEFAULT'))\
@@ -110,6 +115,7 @@ class FactorDB:
 
     def query_factors(self, 
                      frequency: str,
+                     name: str,
                      symbol: str,
                      factor_type: str,
                      start: str,
@@ -119,6 +125,7 @@ class FactorDB:
         """
         查询因子数据（返回DataFrame）
         :param frequency: 数据频率
+        :param name: 因子名称
         :param symbol: 证券代码
         :param factor_type: 因子类型
         :param start: 开始时间（RFC3339格式）
@@ -132,6 +139,7 @@ class FactorDB:
         from(bucket: "{self.bucket}")
           |> range(start: {start}, stop: {stop})
           |> filter(fn: (r) => r._measurement == "{measurement}")
+          |> filter(fn: (r) => r.name == "{name}")
           |> filter(fn: (r) => r.symbol == "{symbol}")
           |> filter(fn: (r) => r.factor_type == "{factor_type}")
         '''
@@ -221,6 +229,7 @@ class EnhancedFactorDB(FactorDB):
     
     def query_with_resample(self,
                           frequency: str,
+                          name: str,
                           symbol: str,
                           factor_type: str,
                           start: str,
@@ -249,6 +258,7 @@ class EnhancedFactorDB(FactorDB):
         from(bucket: "{target_bucket}")
           |> range(start: {start}, stop: {stop})
           |> filter(fn: (r) => r._measurement == "{measurement}")
+          |> filter(fn: (r) => r.name == "{name}")
           |> filter(fn: (r) => r.symbol == "{symbol}")
           |> filter(fn: (r) => r.factor_type == "{factor_type}")
           |> pivot(
@@ -312,6 +322,7 @@ if __name__ == "__main__":
         db.write_factor_point(
             frequency="1m",
             factor_type="momentum",
+            name="alpha_001",
             symbol="AAPL",
             value=2.34,
             market="NASDAQ",
@@ -323,6 +334,7 @@ if __name__ == "__main__":
         batch_data = [{
             "frequency": "1d",
             "factor_type": "value",
+            "name": "alpha_002",
             "symbol": "MSFT",
             "value": 15.6,
             "market": "NYSE",
@@ -334,6 +346,7 @@ if __name__ == "__main__":
         # 查询数据
         df = db.query_factors(
             frequency="1m",
+            name="alpha_001",
             symbol="AAPL",
             factor_type="momentum",
             start="2023-09-01T00:00:00Z",
