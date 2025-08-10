@@ -5,8 +5,8 @@ DATABASE_CONFIG = {
     'host': 'localhost',
     'port': 3307,
     'user': 'root',
-    'password': '',  # 请填入MySQL密码
-    'database': 'trading_performance',
+    'password': 'MySecureRootPassword123!',
+    'database': 'ti_trading_performance',
     'charset': 'utf8mb4'
 }
 

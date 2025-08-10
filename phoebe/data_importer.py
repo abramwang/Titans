@@ -9,19 +9,21 @@ import glob
 import re
 from datetime import datetime
 import logging
+from config import DATABASE_CONFIG, LOGGING_CONFIG
 
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 class TradingDataImporter:
-    def __init__(self, host='localhost', port=3306, user='root', password='', database='trading_performance'):
+    def __init__(self, host=None, port=None, user=None, password=None, database=None):
         """初始化数据库连接"""
-        self.host = host
-        self.port = port
-        self.user = user
-        self.password = password
-        self.database = database
+        # 使用配置文件中的参数，如果没有传入参数的话
+        self.host = host or DATABASE_CONFIG['host']
+        self.port = port or DATABASE_CONFIG['port']
+        self.user = user or DATABASE_CONFIG['user']
+        self.password = password or DATABASE_CONFIG['password']
+        self.database = database or DATABASE_CONFIG['database']
         self.engine = None
         self.connection = None
         
@@ -54,20 +56,23 @@ class TradingDataImporter:
             # 获取所有Excel文件
             excel_files = glob.glob("./data/*.xlsx")
             
-            # 分类文件
-            daily_files = [f for f in excel_files if "业绩估算" in f]
-            summary_files = [f for f in excel_files if "业绩统计" in f]
+            # 重新分类文件 - 基于文件内容而非文件名
+            summary_files = [f for f in excel_files if "业绩统计" in f]  # 汇总统计文件
+            daily_files = [f for f in excel_files if re.search(r'\d{4}-\d{2}-\d{2}', f)]  # 包含日期的日交易文件
             
-            logger.info(f"发现 {len(daily_files)} 个日业绩估算文件")
-            logger.info(f"发现 {len(summary_files)} 个业绩统计文件")
+            logger.info(f"发现 {len(summary_files)} 个业绩统计文件(汇总数据)")
+            logger.info(f"发现 {len(daily_files)} 个日业绩估算文件(交易明细)")
             
-            # 导入业绩统计数据
+            # 首先导入业绩统计数据（汇总级别）
             for file_path in summary_files:
                 self.import_summary_file(file_path)
             
-            # 导入日业绩估算数据
+            # 然后导入日业绩估算数据（交易明细级别）
             for file_path in daily_files:
                 self.import_daily_file(file_path)
+            
+            # 最后进行数据一致性检查
+            self.validate_data_consistency()
             
             logger.info("所有数据导入完成")
             return True
@@ -158,8 +163,13 @@ class TradingDataImporter:
                     # 先插入证券信息
                     self.insert_securities(trading_records)
                     
-                    # 插入交易明细
-                    df_trading = pd.DataFrame(trading_records)
+                    # 插入交易明细（移除security_name字段，因为数据库表中没有这个字段）
+                    trading_records_for_db = []
+                    for record in trading_records:
+                        db_record = {k: v for k, v in record.items() if k != 'security_name'}
+                        trading_records_for_db.append(db_record)
+                    
+                    df_trading = pd.DataFrame(trading_records_for_db)
                     df_trading.to_sql('daily_trading_details', self.engine, if_exists='append', index=False)
                     logger.info(f"成功导入 {len(trading_records)} 条交易明细记录")
                 
@@ -196,6 +206,7 @@ class TradingDataImporter:
                 'account_id': account_id,
                 'trade_date': trade_date,
                 'security_code': security_code,
+                'security_name': security_name,  # 添加证券名称，供后续插入证券信息时使用
                 'buy_price': self.safe_float(row.iloc[2]),
                 'buy_quantity': self.safe_int(row.iloc[3]),
                 'sell_price': self.safe_float(row.iloc[4]) if len(row) > 4 else None,
@@ -362,19 +373,65 @@ class TradingDataImporter:
                 value = value[:-2] + '.' + value[-2:]
         
         return self.safe_float(value)
+    
+    def validate_data_consistency(self):
+        """验证数据一致性：检查业绩统计与交易明细的关联性"""
+        try:
+            logger.info("开始数据一致性检查...")
+            
+            with self.engine.connect() as conn:
+                # 检查有交易明细但无汇总数据的日期
+                missing_summary = conn.execute(text("""
+                    SELECT DISTINCT dtd.trade_date 
+                    FROM daily_trading_details dtd 
+                    LEFT JOIN daily_account_assets daa ON dtd.trade_date = daa.trade_date 
+                    WHERE daa.trade_date IS NULL
+                """)).fetchall()
+                
+                if missing_summary:
+                    logger.warning(f"发现 {len(missing_summary)} 个交易日缺少汇总数据: {[row[0] for row in missing_summary]}")
+                
+                # 检查有汇总数据但无交易明细的日期
+                missing_details = conn.execute(text("""
+                    SELECT DISTINCT daa.trade_date 
+                    FROM daily_account_assets daa 
+                    LEFT JOIN daily_trading_details dtd ON daa.trade_date = dtd.trade_date 
+                    WHERE dtd.trade_date IS NULL AND daa.estimated_profit IS NOT NULL
+                """)).fetchall()
+                
+                if missing_details:
+                    logger.warning(f"发现 {len(missing_details)} 个汇总日期缺少交易明细: {[row[0] for row in missing_details]}")
+                
+                # 检查盈亏差异
+                profit_comparison = conn.execute(text("""
+                    SELECT 
+                        daa.trade_date,
+                        daa.estimated_profit as summary_profit,
+                        SUM(dtd.profit) as detail_profit,
+                        ABS(daa.estimated_profit - COALESCE(SUM(dtd.profit), 0)) as difference
+                    FROM daily_account_assets daa 
+                    LEFT JOIN daily_trading_details dtd ON daa.trade_date = dtd.trade_date 
+                    WHERE daa.estimated_profit IS NOT NULL
+                    GROUP BY daa.trade_date, daa.estimated_profit
+                    HAVING ABS(daa.estimated_profit - COALESCE(SUM(dtd.profit), 0)) > 100
+                    ORDER BY difference DESC
+                """)).fetchall()
+                
+                if profit_comparison:
+                    logger.warning(f"发现 {len(profit_comparison)} 个日期的盈亏数据存在显著差异:")
+                    for row in profit_comparison[:5]:  # 只显示前5个
+                        logger.warning(f"  {row[0]}: 汇总盈利 {row[1]:.2f}, 明细合计 {row[2]:.2f}, 差异 {row[3]:.2f}")
+                
+                logger.info("数据一致性检查完成")
+                
+        except Exception as e:
+            logger.error(f"数据一致性检查失败: {e}")
 
 # 使用示例
 if __name__ == "__main__":
-    # 注意：需要先创建数据库和表
-    # 可以使用 database_design.sql 文件中的SQL语句
+    # 使用配置文件中的数据库设置
     
-    importer = TradingDataImporter(
-        host='localhost',
-        port=3306,
-        user='root',  # 请根据实际情况修改
-        password='',  # 请根据实际情况修改
-        database='trading_performance'
-    )
+    importer = TradingDataImporter()
     
     success = importer.import_all_data()
     if success:

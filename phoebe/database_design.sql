@@ -1,11 +1,20 @@
 -- 华鑫证券业绩管理数据库设计
--- 数据库名称: trading_performance
+-- 数据库名称: ti_trading_performance
+-- 
+-- 数据源说明:
+-- 1. 业绩统计文件: 汇总级别的日度账户资产变化和绩效统计
+-- 2. 业绩估算文件: 每日具体的交易明细和持仓情况
+-- 
+-- 两类数据的关系:
+-- - 业绩统计文件提供宏观的账户资产变化趋势
+-- - 业绩估算文件提供微观的交易执行详情
+-- - 业绩统计中的"预估盈利"应与对应日期的业绩估算文件中的交易盈亏相关联
 
-CREATE DATABASE IF NOT EXISTS trading_performance 
+CREATE DATABASE IF NOT EXISTS ti_trading_performance 
 DEFAULT CHARACTER SET utf8mb4 
 DEFAULT COLLATE utf8mb4_unicode_ci;
 
-USE trading_performance;
+USE ti_trading_performance;
 
 -- 1. 账户信息表
 CREATE TABLE account_info (
@@ -33,7 +42,7 @@ CREATE TABLE securities (
     INDEX idx_exchange (exchange)
 ) COMMENT '证券基础信息表';
 
--- 3. 日度账户资产表（来源于业绩统计文件）
+-- 3. 日度账户资产表（来源：业绩统计文件 - 汇总数据）
 CREATE TABLE daily_account_assets (
     id INT AUTO_INCREMENT PRIMARY KEY,
     account_id VARCHAR(50) NOT NULL COMMENT '账户编号',
@@ -42,19 +51,20 @@ CREATE TABLE daily_account_assets (
     end_assets DECIMAL(15,2) COMMENT '日末账户资产(不含公募占款)',
     net_value DECIMAL(10,6) COMMENT '净值',
     custody_net_value DECIMAL(10,6) COMMENT '托管净值',
-    estimated_profit DECIMAL(15,2) COMMENT '预估盈利',
+    estimated_profit DECIMAL(15,2) COMMENT '预估盈利(与日交易明细关联)',
     floating_pnl DECIMAL(15,2) COMMENT '浮动盈亏',
     capital_flow DECIMAL(15,2) COMMENT '出入金',
     cumulative_profit DECIMAL(15,2) COMMENT '累计盈利',
     profit_including_floating DECIMAL(15,2) COMMENT '包含浮动盈利',
+    data_source VARCHAR(20) DEFAULT 'SUMMARY' COMMENT '数据来源：SUMMARY-业绩统计文件',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uk_account_date (account_id, trade_date),
     INDEX idx_trade_date (trade_date),
     FOREIGN KEY (account_id) REFERENCES account_info(account_id)
-) COMMENT '日度账户资产表';
+) COMMENT '日度账户资产表-来源于业绩统计汇总文件';
 
--- 4. 日度交易明细表（来源于业绩估算文件）
+-- 4. 日度交易明细表（来源：业绩估算文件 - 具体交易详情）
 CREATE TABLE daily_trading_details (
     id INT AUTO_INCREMENT PRIMARY KEY,
     account_id VARCHAR(50) NOT NULL COMMENT '账户编号',
@@ -67,16 +77,19 @@ CREATE TABLE daily_trading_details (
     current_price DECIMAL(10,4) COMMENT '当前价格',
     current_market_value DECIMAL(15,2) COMMENT '当前市值',
     cost_amount DECIMAL(15,2) COMMENT '成本金额',
-    profit DECIMAL(15,2) COMMENT '利润',
+    profit DECIMAL(15,2) COMMENT '单笔交易利润',
     trade_type VARCHAR(20) DEFAULT 'T0' COMMENT '交易类型：T0/T1等',
+    position_type VARCHAR(20) DEFAULT 'INTRADAY' COMMENT '持仓类型：INTRADAY-日内/OVERNIGHT-隔夜',
+    data_source VARCHAR(20) DEFAULT 'DAILY' COMMENT '数据来源：DAILY-日业绩估算文件',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     INDEX idx_account_date (account_id, trade_date),
     INDEX idx_security_code (security_code),
     INDEX idx_trade_date (trade_date),
+    INDEX idx_profit (profit),
     FOREIGN KEY (account_id) REFERENCES account_info(account_id),
     FOREIGN KEY (security_code) REFERENCES securities(security_code)
-) COMMENT '日度交易明细表';
+) COMMENT '日度交易明细表-来源于各日业绩估算文件';
 
 -- 5. 日度盈亏汇总表（来源于业绩估算文件的汇总数据）
 CREATE TABLE daily_pnl_summary (
