@@ -313,5 +313,165 @@ def guess_data_type(df, start_row, end_row):
     else:
         return "未知类型数据"
 
+def analyze_business_logic_structure():
+    """基于业务逻辑分析Excel数据结构"""
+    print("\n" + "="*80)
+    print("基于业务逻辑的Excel数据结构分析")
+    print("="*80)
+    print("根据用户说明，每个日期Excel文件包含4个业务部分：")
+    print()
+    
+    business_sections = {
+        "日内底仓T0": {
+            "类型": "交易数据",
+            "说明": "日内T0交易操作",
+            "用途": "分析日内交易策略和执行效果"
+        },
+        "ETF日内申赎": {
+            "类型": "交易数据", 
+            "说明": "ETF申购赎回操作",
+            "用途": "分析ETF申赎策略和套利效果"
+        },
+        "隔夜底仓": {
+            "类型": "持仓数据",
+            "说明": "隔夜持有的底仓",
+            "用途": "分析隔夜持仓风险和收益"
+        },
+        "ETF赎回涨停票": {
+            "类型": "持仓数据",
+            "说明": "ETF赎回获得的涨停股票",
+            "用途": "分析涨停股票持仓价值"
+        }
+    }
+    
+    print("📊 4个数据部分详细说明:")
+    print("-" * 60)
+    
+    for i, (section_name, info) in enumerate(business_sections.items(), 1):
+        print(f"{i}. 【{section_name}】")
+        print(f"   类型: {info['类型']}")
+        print(f"   说明: {info['说明']}")
+        print(f"   用途: {info['用途']}")
+        print()
+    
+    print("💼 业务逻辑分组:")
+    print("-" * 30)
+    print("🔄 交易数据组合:")
+    print("   • 日内底仓T0 + ETF日内申赎 = 当日交易活动")
+    print("   • 用于计算交易损益、分析交易策略")
+    print()
+    print("📦 持仓数据组合:")
+    print("   • 隔夜底仓 + ETF赎回涨停票 = 当日收盘持仓")
+    print("   • 用于计算持仓市值、分析资产配置")
+    print()
+    
+    # 保存业务逻辑说明到文档
+    save_business_logic_documentation(business_sections)
+
+def save_business_logic_documentation(business_sections):
+    """保存业务逻辑文档"""
+    doc_content = f"""# 华鑫证券Excel数据业务逻辑说明
+
+最后更新: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+## 数据文件结构
+
+### 汇总文件
+- **华鑫_314000045768_业绩统计.xlsx**: 日度账户资产变化和绩效汇总
+
+### 明细文件  
+- **华鑫_314000045768_业绩估算_YYYY-MM-DD.xlsx**: 每日详细交易和持仓数据
+
+## 每日Excel文件的4个数据部分
+
+"""
+    
+    for i, (section_name, info) in enumerate(business_sections.items(), 1):
+        doc_content += f"""### {i}. 【{section_name}】
+- **数据类型**: {info['类型']}
+- **业务说明**: {info['说明']}
+- **分析用途**: {info['用途']}
+
+"""
+    
+    doc_content += """## 业务逻辑分组
+
+### 🔄 交易数据组 (Trading Data)
+- **组成**: 日内底仓T0 + ETF日内申赎
+- **业务含义**: 当日的所有主动交易操作
+- **分析价值**: 
+  - 交易策略效果评估
+  - 交易成本分析
+  - T0和申赎策略对比
+  - 日内交易损益计算
+
+### 📦 持仓数据组 (Position Data)
+- **组成**: 隔夜底仓 + ETF赎回涨停票
+- **业务含义**: 当日收盘时的实际持仓状况
+- **分析价值**:
+  - 资产配置分析
+  - 持仓风险评估
+  - 隔夜持仓收益计算
+  - 涨停股票价值分析
+
+## 数据库设计建议
+
+### 表结构建议
+```sql
+-- 交易明细表 (Trading Details)
+CREATE TABLE trading_details (
+    trade_date DATE,
+    security_code VARCHAR(20),
+    section_type ENUM('日内底仓T0', 'ETF日内申赎'),
+    -- 其他交易字段...
+);
+
+-- 持仓明细表 (Position Details) 
+CREATE TABLE position_details (
+    trade_date DATE,
+    security_code VARCHAR(20),
+    section_type ENUM('隔夜底仓', 'ETF赎回涨停票'),
+    -- 其他持仓字段...
+);
+```
+
+### 分析查询示例
+```sql
+-- 交易数据分析
+SELECT trade_date, section_type, SUM(profit) as total_profit
+FROM trading_details 
+GROUP BY trade_date, section_type;
+
+-- 持仓数据分析
+SELECT trade_date, section_type, SUM(market_value) as total_position
+FROM position_details
+GROUP BY trade_date, section_type;
+```
+
+## 系统实现建议
+
+1. **数据导入时分类**:
+   - 识别4个数据部分的边界
+   - 按业务逻辑分别存储到不同表/字段
+
+2. **分析报告分层**:
+   - 交易层面: 基于交易数据组
+   - 持仓层面: 基于持仓数据组
+   - 综合层面: 结合汇总数据
+
+3. **风险控制**:
+   - 持仓集中度监控
+   - 交易频率分析
+   - 隔夜风险评估
+"""
+    
+    try:
+        with open('README_EXCEL_STRUCTURE.md', 'w', encoding='utf-8') as f:
+            f.write(doc_content)
+        print("✅ 业务逻辑说明已保存到 README_EXCEL_STRUCTURE.md")
+    except Exception as e:
+        print(f"❌ 保存文档失败: {e}")
+
 if __name__ == "__main__":
     analyze_excel_four_sections()
+    analyze_business_logic_structure()

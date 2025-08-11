@@ -15,9 +15,11 @@ def print_menu():
     print("3. 重新分析数据结构(明确汇总与明细关系)")
     print("4. 创建数据库和表结构")
     print("5. 导入Excel数据到数据库")
-    print("6. 验证导入的数据")
-    print("7. 生成高级分析报告")
-    print("8. 查看系统状态")
+    print("6. 基于4个业务部分的增强数据导入")
+    print("7. 基于业务部分的增强分析报告")
+    print("8. 验证数据质量")
+    print("9. 生成完整分析报告")
+    print("0. 退出")
     print("0. 退出")
     print("="*60)
 
@@ -40,6 +42,125 @@ def create_database():
     """创建数据库"""
     print("\n正在创建数据库和表结构...")
     os.system(f"{sys.executable} create_database.py")
+
+def enhanced_import():
+    """增强版数据导入"""
+    print("\n正在运行增强版数据导入...")
+    os.system(f"{sys.executable} enhanced_importer.py")
+
+def enhanced_import():
+    """基于4个业务部分的增强数据导入"""
+    print("\n正在运行基于4个业务部分的增强数据导入...")
+    os.system(f"{sys.executable} enhanced_importer.py")
+
+def enhanced_business_analysis():
+    """基于业务部分的增强分析报告"""
+    print("\n正在生成基于4个业务部分的增强分析报告...")
+    
+    try:
+        import pandas as pd
+        from sqlalchemy import create_engine
+        from config import DATABASE_CONFIG
+        
+        connection_string = f"mysql+pymysql://{DATABASE_CONFIG['user']}:{DATABASE_CONFIG['password']}@{DATABASE_CONFIG['host']}:{DATABASE_CONFIG['port']}/{DATABASE_CONFIG['database']}?charset={DATABASE_CONFIG['charset']}"
+        engine = create_engine(connection_string)
+        
+        print("="*80)
+        print("基于4个业务部分的增强分析报告")
+        print("="*80)
+        
+        # 1. 业务部分概览
+        section_overview = pd.read_sql("""
+            SELECT 
+                section_type,
+                data_category,
+                COUNT(*) as record_count,
+                COUNT(DISTINCT trade_date) as trading_days,
+                COUNT(DISTINCT security_code) as unique_securities,
+                SUM(profit) as total_profit,
+                AVG(profit) as avg_profit,
+                MAX(profit) as max_profit,
+                MIN(profit) as min_profit
+            FROM daily_trading_details 
+            WHERE section_type IS NOT NULL
+            GROUP BY section_type, data_category
+            ORDER BY data_category, total_profit DESC
+        """, engine)
+        
+        print("\n1. 业务部分概览:")
+        print(section_overview.to_string(index=False))
+        
+        # 2. 日度业绩趋势
+        daily_trend = pd.read_sql("""
+            SELECT 
+                trade_date,
+                section_type,
+                COUNT(*) as records,
+                SUM(profit) as daily_profit
+            FROM daily_trading_details 
+            WHERE section_type IS NOT NULL
+            GROUP BY trade_date, section_type
+            ORDER BY trade_date, section_type
+        """, engine)
+        
+        print("\n2. 日度业绩趋势 (最近10天):")
+        print(daily_trend.tail(20).to_string(index=False))
+        
+        # 3. 交易 vs 持仓数据对比
+        category_comparison = pd.read_sql("""
+            SELECT 
+                data_category,
+                COUNT(*) as total_records,
+                COUNT(DISTINCT security_code) as unique_securities,
+                SUM(profit) as total_profit,
+                AVG(profit) as avg_profit
+            FROM daily_trading_details
+            GROUP BY data_category
+        """, engine)
+        
+        print("\n3. 交易 vs 持仓数据对比:")
+        print(category_comparison.to_string(index=False))
+        
+        # 4. 证券表现排行
+        security_performance = pd.read_sql("""
+            SELECT 
+                security_code,
+                section_type,
+                COUNT(*) as appear_count,
+                SUM(profit) as total_profit,
+                AVG(profit) as avg_profit
+            FROM daily_trading_details
+            WHERE section_type IS NOT NULL
+            GROUP BY security_code, section_type
+            HAVING total_profit != 0
+            ORDER BY total_profit DESC
+            LIMIT 15
+        """, engine)
+        
+        print("\n4. 证券表现排行 (前15名):")
+        print(security_performance.to_string(index=False))
+        
+        # 5. 业务部分盈利贡献分析
+        profit_contribution = pd.read_sql("""
+            SELECT 
+                section_type,
+                SUM(profit) as section_profit,
+                SUM(profit) / (SELECT SUM(profit) FROM daily_trading_details WHERE profit > 0) * 100 as profit_contribution_pct
+            FROM daily_trading_details
+            WHERE section_type IS NOT NULL AND profit > 0
+            GROUP BY section_type
+            ORDER BY section_profit DESC
+        """, engine)
+        
+        print("\n5. 盈利贡献分析:")
+        print(profit_contribution.to_string(index=False))
+        
+        print("\n" + "="*80)
+        print("分析完成")
+        print("="*80)
+        
+    except Exception as e:
+        print(f"生成增强分析报告时出错: {e}")
 
 def import_data():
     """导入数据"""
@@ -105,7 +226,7 @@ def main():
     while True:
         try:
             print_menu()
-            choice = input("请选择操作 (0-8): ").strip()
+            choice = input("请选择操作 (0-9): ").strip()
             
             if choice == '0':
                 print("\n感谢使用！再见！")
@@ -121,11 +242,16 @@ def main():
             elif choice == '5':
                 import_data()
             elif choice == '6':
-                verify_data()
+                enhanced_import()
             elif choice == '7':
-                advanced_analysis()
+                enhanced_business_analysis()
             elif choice == '8':
-                show_status()
+                verify_data()
+            elif choice == '9':
+                advanced_analysis()
+            elif choice == '0':
+                print("\n感谢使用！再见！")
+                break
             else:
                 print("\n无效选择，请重新输入！")
             
