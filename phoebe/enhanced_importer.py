@@ -182,13 +182,16 @@ class EnhancedDataImporter:
             if not security_code:
                 continue
             
+            # 正确计算持仓盈亏
+            profit = self.calculate_position_profit(row)
+            
             # 提取持仓数据
             record = {
                 'account_id': '314000045768',
                 'trade_date': date_str,
                 'security_code': security_code,
                 'section_type': section_name,
-                'position_value': self.extract_position_value(row)
+                'profit': profit  # 使用正确计算的盈亏
             }
             
             # 添加其他字段
@@ -219,14 +222,24 @@ class EnhancedDataImporter:
                     return float(cell)
         return 0.0
     
-    def extract_position_value(self, row):
-        """提取持仓价值"""
-        # 寻找可能的市值字段
+    def calculate_position_profit(self, row):
+        """计算持仓盈亏 - 修正版"""
+        # 寻找可能的成本价、数量、收盘价字段
+        numeric_values = []
         for cell in row:
-            if pd.notna(cell) and isinstance(cell, (int, float)):
-                # 假设市值较大
-                if cell > 1000:
-                    return float(cell)
+            if pd.notna(cell) and isinstance(cell, (int, float)) and cell > 0:
+                numeric_values.append(float(cell))
+        
+        # 需要至少3个数值：成本价、数量、收盘价
+        if len(numeric_values) >= 3:
+            cost_price = numeric_values[0]      # 买入成本
+            quantity = numeric_values[1]        # 剩余数量
+            current_price = numeric_values[2]   # 收盘价
+            
+            # 计算盈亏: (收盘价 - 成本价) * 数量
+            profit = (current_price - cost_price) * quantity
+            return profit
+        
         return 0.0
     
     def extract_trading_fields(self, row):
@@ -270,10 +283,7 @@ class EnhancedDataImporter:
         """保存持仓数据"""
         for record in position_data:
             record['data_category'] = 'POSITION'
-            # 处理持仓数据的字段映射
-            if 'position_value' in record:
-                record['profit'] = record['position_value']
-                del record['position_value']
+            # 持仓数据的字段映射
             if 'quantity' in record:
                 record['buy_quantity'] = record['quantity'] if record['quantity'] and record['quantity'] > 0 else None
                 record['sell_quantity'] = None

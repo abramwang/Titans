@@ -1,7 +1,37 @@
-env
-build
-dist
-test
-*.xlsx
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
 *.pyc
+
+# Virtual Environment
+env/
+venv/
+
+# Build
+build/
+dist/
+
+# Test
+test/
+
+# Excel files (temporary reports)
+*.xlsx
+trading_report_*.xlsx
+
+# Logs
 *.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*_old.py
+*_backup.*
