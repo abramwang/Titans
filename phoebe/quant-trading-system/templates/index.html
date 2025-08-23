@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+
+{% block title %}交易概览 - 量化交易系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- 页面标题 -->
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-dashboard me-2 text-primary"></i>今日交易概览</h2>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary btn-sm" onclick="importTodayData()">
+                    <i class="fas fa-upload me-1"></i>导入今日数据
+                </button>
+                <button class="btn btn-outline-secondary btn-sm" onclick="location.reload()">
+                    <i class="fas fa-sync me-1"></i>刷新
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 今日交易汇总卡片 -->
+    <div class="col-md-3 mb-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">总交易额</h6>
+                        <h4 id="totalAmount">{{ "¥{:,.2f}".format(daily_summary.overall_summary.total_amount) if daily_summary else "¥0.00" }}</h4>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-exchange-alt fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <small class="text-white-50">
+                    交易笔数: {{ daily_summary.overall_summary.total_trades if daily_summary else 0 }}
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">今日盈亏</h6>
+                        <h4 id="todayPnl">{{ "¥{:,.2f}".format(daily_summary.overall_summary.total_pnl) if daily_summary else "¥0.00" }}</h4>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-chart-line fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <small class="text-white-50">
+                    买入: ¥{{ "{:,.2f}".format(daily_summary.overall_summary.buy_amount) if daily_summary else "0.00" }}
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">手续费</h6>
+                        <h4 id="totalFee">{{ "¥{:,.2f}".format(daily_summary.overall_summary.total_fee) if daily_summary else "¥0.00" }}</h4>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-coins fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <small class="text-white-50">
+                    卖出: ¥{{ "{:,.2f}".format(daily_summary.overall_summary.sell_amount) if daily_summary else "0.00" }}
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">持仓数量</h6>
+                        <h4 id="positionCount">{{ positions.summary.total_positions if positions else 0 }}</h4>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-wallet fa-2x opacity-75"></i>
+                    </div>
+                </div>
+                <small class="text-white-50">
+                    总市值: ¥{{ "{:,.2f}".format(positions.summary.total_market_value) if positions else "0.00" }}
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 业务类型分布 -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-pie-chart me-2"></i>业务类型分布
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="businessTypeChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 今日最活跃证券 -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-fire me-2"></i>今日最活跃证券
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>代码</th>
+                                <th>名称</th>
+                                <th>成交额</th>
+                                <th>盈亏</th>
+                                <th>交易次数</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topSecuritiesTable">
+                            {% if daily_summary and daily_summary.top_securities %}
+                                {% for sec in daily_summary.top_securities[:10] %}
+                                <tr>
+                                    <td>{{ sec.security_code }}</td>
+                                    <td>{{ sec.security_name }}</td>
+                                    <td>¥{{ "{:,.0f}".format(sec.total_amount) }}</td>
+                                    <td class="{% if sec.total_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        ¥{{ "{:,.2f}".format(sec.total_pnl) }}
+                                    </td>
+                                    <td>{{ sec.trade_count }}</td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">暂无数据</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 当前持仓 -->
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-briefcase me-2"></i>当前持仓
+                </h5>
+                <div>
+                    <span class="badge bg-primary me-2">
+                        总市值: ¥{{ "{:,.2f}".format(positions.summary.total_market_value) if positions else "0.00" }}
+                    </span>
+                    <span class="badge bg-{{ 'success' if positions and positions.summary.total_unrealized_pnl >= 0 else 'danger' }}">
+                        浮动盈亏: ¥{{ "{:,.2f}".format(positions.summary.total_unrealized_pnl) if positions else "0.00" }}
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>证券代码</th>
+                                <th>证券名称</th>
+                                <th>业务类型</th>
+                                <th>持仓数量</th>
+                                <th>平均成本</th>
+                                <th>当前价格</th>
+                                <th>市值</th>
+                                <th>浮动盈亏</th>
+                                <th>盈亏比例</th>
+                                <th>更新时间</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if positions and positions.positions %}
+                                {% for pos in positions.positions %}
+                                <tr>
+                                    <td><code>{{ pos.security_code }}</code></td>
+                                    <td>{{ pos.security_name }}</td>
+                                    <td><span class="badge bg-secondary">{{ pos.business_type }}</span></td>
+                                    <td class="text-end">{{ "{:,}".format(pos.current_volume) }}</td>
+                                    <td class="text-end">¥{{ "{:.4f}".format(pos.avg_cost) }}</td>
+                                    <td class="text-end">¥{{ "{:.4f}".format(pos.current_price) }}</td>
+                                    <td class="text-end">¥{{ "{:,.2f}".format(pos.market_value) }}</td>
+                                    <td class="text-end {% if pos.unrealized_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        ¥{{ "{:,.2f}".format(pos.unrealized_pnl) }}
+                                    </td>
+                                    <td class="text-end {% if pos.unrealized_pnl_rate >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {{ "{:.2f}%".format(pos.unrealized_pnl_rate) }}
+                                    </td>
+                                    <td class="text-muted">{{ pos.last_updated or '-' }}</td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="10" class="text-center text-muted">暂无持仓数据</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// 页面加载完成后执行
+document.addEventListener('DOMContentLoaded', function() {
+    // 绘制业务类型分布图
+    drawBusinessTypeChart();
+    
+    // 定时刷新数据（每5分钟）
+    setInterval(function() {
+        refreshDashboardData();
+    }, 5 * 60 * 1000);
+});
+
+function drawBusinessTypeChart() {
+    const ctx = document.getElementById('businessTypeChart').getContext('2d');
+    
+    {% if daily_summary and daily_summary.business_summary %}
+    const businessData = {{ daily_summary.business_summary | tojson }};
+    const labels = Object.keys(businessData);
+    const data = labels.map(key => businessData[key].total_pnl);
+    const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'];
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: colors.slice(0, labels.length),
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.label + ': ¥' + context.raw.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+    {% else %}
+    // 显示无数据提示
+    ctx.fillStyle = '#666';
+    ctx.font = '16px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('暂无数据', ctx.canvas.width / 2, ctx.canvas.height / 2);
+    {% endif %}
+}
+
+function importTodayData() {
+    showLoading('正在导入今日数据...');
+    
+    fetch('/api/import-data', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        if (data.success) {
+            showAlert('success', '数据导入成功！');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showAlert('danger', '数据导入失败: ' + data.message);
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showAlert('danger', '网络错误: ' + error.message);
+    });
+}
+
+function refreshDashboardData() {
+    // 静默刷新关键数据
+    fetch('/api/trading-summary/' + '{{ today }}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateDashboardNumbers(data.data);
+            }
+        })
+        .catch(error => console.error('刷新数据失败:', error));
+}
+
+function updateDashboardNumbers(summary) {
+    if (summary.overall_summary) {
+        document.getElementById('totalAmount').textContent = 
+            '¥' + summary.overall_summary.total_amount.toLocaleString();
+        document.getElementById('todayPnl').textContent = 
+            '¥' + summary.overall_summary.total_pnl.toLocaleString();
+        document.getElementById('totalFee').textContent = 
+            '¥' + summary.overall_summary.total_fee.toLocaleString();
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,491 @@
+{% extends "base.html" %}
+
+{% block title %}绩效分析 - 量化交易系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2><i class="fas fa-chart-bar me-2 text-primary"></i>交易绩效分析</h2>
+    </div>
+</div>
+
+<!-- 时间范围选择 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form id="dateRangeForm" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="startDate" class="form-label">开始日期</label>
+                        <input type="date" class="form-control" id="startDate" name="start_date">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="endDate" class="form-label">结束日期</label>
+                        <input type="date" class="form-control" id="endDate" name="end_date">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i>查询
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="btn-group d-grid" role="group">
+                            <button type="button" class="btn btn-outline-secondary" onclick="setDateRange(7)">近7天</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="setDateRange(30)">近30天</button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="setDateRange(90)">近90天</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 关键指标卡片 -->
+<div id="metricsSection" class="row mb-4" style="display: none;">
+    <div class="col-md-2 mb-3">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body text-center">
+                <h6 class="card-title">总收益</h6>
+                <h4 id="totalReturn">¥0.00</h4>
+                <small id="totalReturnPct">0.00%</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-3">
+        <div class="card bg-info text-white h-100">
+            <div class="card-body text-center">
+                <h6 class="card-title">夏普比率</h6>
+                <h4 id="sharpeRatio">0.00</h4>
+                <small>风险调整收益</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-3">
+        <div class="card bg-warning text-white h-100">
+            <div class="card-body text-center">
+                <h6 class="card-title">最大回撤</h6>
+                <h4 id="maxDrawdown">0.00%</h4>
+                <small id="maxDrawdownAmt">¥0.00</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-3">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body text-center">
+                <h6 class="card-title">胜率</h6>
+                <h4 id="winRate">0.00%</h4>
+                <small id="winDays">0/0天</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-3">
+        <div class="card bg-secondary text-white h-100">
+            <div class="card-body text-center">
+                <h6 class="card-title">盈亏比</h6>
+                <h4 id="profitLossRatio">0.00</h4>
+                <small>平均盈利/平均亏损</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-3">
+        <div class="card bg-dark text-white h-100">
+            <div class="card-body text-center">
+                <h6 class="card-title">波动率</h6>
+                <h4 id="volatility">0.00</h4>
+                <small>日收益标准差</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 图表区域 -->
+<div class="row">
+    <!-- PnL趋势图 -->
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-line me-2"></i>累计盈亏趋势
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="pnlTrendChart" height="400"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 月度统计 -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-calendar-alt me-2"></i>月度统计
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="monthlyStatsContainer">
+                    <p class="text-muted text-center">请选择日期范围查看数据</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 每日收益分布 -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-histogram me-2"></i>每日收益分布
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="dailyReturnsChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 业务类型收益对比 -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-layer-group me-2"></i>业务类型收益对比
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="businessComparisonChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 详细统计表格 -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-table me-2"></i>详细绩效报告
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>收益指标</h6>
+                        <table class="table table-sm">
+                            <tbody id="returnMetricsTable">
+                                <tr><td colspan="2" class="text-muted text-center">暂无数据</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>风险指标</h6>
+                        <table class="table table-sm">
+                            <tbody id="riskMetricsTable">
+                                <tr><td colspan="2" class="text-muted text-center">暂无数据</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let pnlChart = null;
+let dailyReturnsChart = null;
+let businessChart = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 设置默认日期范围（近30天）
+    setDateRange(30);
+    
+    // 绑定表单提交事件
+    document.getElementById('dateRangeForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        loadAnalyticsData();
+    });
+});
+
+function setDateRange(days) {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - days);
+    
+    document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+    document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
+    
+    loadAnalyticsData();
+}
+
+function loadAnalyticsData() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    
+    if (!startDate || !endDate) {
+        showAlert('warning', '请选择开始和结束日期');
+        return;
+    }
+    
+    showLoading('正在加载数据...');
+    
+    // 同时加载PnL报告和绩效指标
+    Promise.all([
+        fetch(`/api/pnl-report?start_date=${startDate}&end_date=${endDate}`).then(r => r.json()),
+        fetch(`/api/performance-metrics?start_date=${startDate}&end_date=${endDate}`).then(r => r.json())
+    ])
+    .then(([pnlData, metricsData]) => {
+        hideLoading();
+        
+        if (pnlData.success && metricsData.success) {
+            updateMetricsCards(metricsData.data);
+            updateCharts(pnlData.data, metricsData.data);
+            updateDetailedTables(metricsData.data);
+            updateMonthlyStats(metricsData.data.monthly_stats);
+            
+            document.getElementById('metricsSection').style.display = 'flex';
+        } else {
+            showAlert('danger', '数据加载失败: ' + (pnlData.message || metricsData.message));
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showAlert('danger', '网络错误: ' + error.message);
+    });
+}
+
+function updateMetricsCards(data) {
+    document.getElementById('totalReturn').textContent = `¥${data.returns.total_return.toLocaleString()}`;
+    document.getElementById('sharpeRatio').textContent = data.returns.sharpe_ratio;
+    document.getElementById('maxDrawdown').textContent = `${data.risk.max_drawdown_pct}%`;
+    document.getElementById('maxDrawdownAmt').textContent = `¥${data.risk.max_drawdown.toLocaleString()}`;
+    document.getElementById('winRate').textContent = `${data.win_loss.win_rate}%`;
+    document.getElementById('winDays').textContent = `${data.win_loss.winning_days}/${data.period.trading_days}天`;
+    document.getElementById('profitLossRatio').textContent = data.win_loss.profit_loss_ratio;
+    document.getElementById('volatility').textContent = data.returns.volatility;
+}
+
+function updateCharts(pnlData, metricsData) {
+    // 更新PnL趋势图
+    updatePnLChart(metricsData.dates, metricsData.cumulative_returns);
+    
+    // 更新每日收益分布图
+    updateDailyReturnsChart(metricsData.daily_returns);
+    
+    // 更新业务类型对比图
+    if (pnlData.summary && pnlData.summary.business_pnl) {
+        updateBusinessComparisonChart(pnlData.summary.business_pnl);
+    }
+}
+
+function updatePnLChart(dates, cumulativeReturns) {
+    const ctx = document.getElementById('pnlTrendChart').getContext('2d');
+    
+    if (pnlChart) {
+        pnlChart.destroy();
+    }
+    
+    pnlChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: '累计盈亏',
+                data: cumulativeReturns,
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                fill: true,
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '¥' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return '累计盈亏: ¥' + context.raw.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function updateDailyReturnsChart(dailyReturns) {
+    const ctx = document.getElementById('dailyReturnsChart').getContext('2d');
+    
+    if (dailyReturnsChart) {
+        dailyReturnsChart.destroy();
+    }
+    
+    // 创建直方图数据
+    const bins = 20;
+    const min = Math.min(...dailyReturns);
+    const max = Math.max(...dailyReturns);
+    const binSize = (max - min) / bins;
+    
+    const histogram = new Array(bins).fill(0);
+    const binLabels = [];
+    
+    for (let i = 0; i < bins; i++) {
+        const binStart = min + i * binSize;
+        binLabels.push(binStart.toFixed(0));
+    }
+    
+    dailyReturns.forEach(value => {
+        const binIndex = Math.min(Math.floor((value - min) / binSize), bins - 1);
+        histogram[binIndex]++;
+    });
+    
+    dailyReturnsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: binLabels,
+            datasets: [{
+                label: '天数',
+                data: histogram,
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+}
+
+function updateBusinessComparisonChart(businessPnl) {
+    const ctx = document.getElementById('businessComparisonChart').getContext('2d');
+    
+    if (businessChart) {
+        businessChart.destroy();
+    }
+    
+    const labels = Object.keys(businessPnl);
+    const data = Object.values(businessPnl);
+    const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'];
+    
+    businessChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '收益',
+                data: data,
+                backgroundColor: colors.slice(0, labels.length),
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '¥' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ¥' + context.raw.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+function updateDetailedTables(data) {
+    // 更新收益指标表
+    const returnMetrics = [
+        ['总收益', `¥${data.returns.total_return.toLocaleString()}`],
+        ['平均日收益', `¥${data.returns.avg_daily_return.toLocaleString()}`],
+        ['夏普比率', data.returns.sharpe_ratio],
+        ['交易天数', data.period.trading_days]
+    ];
+    
+    const returnTableBody = document.getElementById('returnMetricsTable');
+    returnTableBody.innerHTML = returnMetrics.map(([label, value]) => 
+        `<tr><td>${label}</td><td class="text-end">${value}</td></tr>`
+    ).join('');
+    
+    // 更新风险指标表
+    const riskMetrics = [
+        ['最大回撤', `¥${data.risk.max_drawdown.toLocaleString()}`],
+        ['最大回撤比例', `${data.risk.max_drawdown_pct}%`],
+        ['波动率', data.risk.volatility],
+        ['胜率', `${data.win_loss.win_rate}%`]
+    ];
+    
+    const riskTableBody = document.getElementById('riskMetricsTable');
+    riskTableBody.innerHTML = riskMetrics.map(([label, value]) => 
+        `<tr><td>${label}</td><td class="text-end">${value}</td></tr>`
+    ).join('');
+}
+
+function updateMonthlyStats(monthlyStats) {
+    const container = document.getElementById('monthlyStatsContainer');
+    
+    if (!monthlyStats || monthlyStats.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center">暂无月度数据</p>';
+        return;
+    }
+    
+    const statsHtml = monthlyStats.map(stat => `
+        <div class="border-bottom pb-2 mb-2">
+            <div class="d-flex justify-content-between">
+                <strong>${stat.month}</strong>
+                <span class="${stat.return >= 0 ? 'text-success' : 'text-danger'}">
+                    ¥${stat.return.toLocaleString()}
+                </span>
+            </div>
+            <small class="text-muted">
+                ${stat.trading_days}个交易日 | 胜率: ${stat.win_rate}%
+            </small>
+        </div>
+    `).join('');
+    
+    container.innerHTML = statsHtml;
+}
+</script>
+{% endblock %}

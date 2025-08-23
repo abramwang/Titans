@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}系统错误 - 量化交易系统{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>系统错误
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <i class="fas fa-bug fa-4x text-danger mb-3"></i>
+                <h4>抱歉，系统遇到了问题</h4>
+                <p class="text-muted">{{ error if error else "未知错误，请联系系统管理员" }}</p>
+                
+                <div class="mt-4">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary me-2">
+                        <i class="fas fa-home me-1"></i>返回首页
+                    </a>
+                    <button class="btn btn-outline-secondary" onclick="history.back()">
+                        <i class="fas fa-arrow-left me-1"></i>返回上页
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

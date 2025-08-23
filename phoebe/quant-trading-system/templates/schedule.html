@@ -1,0 +1,405 @@
+{% extends "base.html" %}
+
+{% block title %}数据导入 - 量化交易系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2><i class="fas fa-upload me-2 text-primary"></i>数据导入管理</h2>
+    </div>
+</div>
+
+<!-- 导入操作区域 -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-database me-2"></i>数据导入操作
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <button class="btn btn-primary btn-lg w-100" onclick="importAllData()">
+                            <i class="fas fa-upload me-2"></i>导入所有未处理数据
+                        </button>
+                        <small class="text-muted">自动检测并导入data目录下的所有新文件</small>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-success btn-lg w-100" onclick="importTodayData()">
+                            <i class="fas fa-calendar-day me-2"></i>导入今日数据
+                        </button>
+                        <small class="text-muted">只导入今天日期的Excel文件</small>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label for="customDate" class="form-label">指定日期导入</label>
+                        <input type="date" class="form-control" id="customDate" name="custom_date">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-grid">
+                            <button class="btn btn-outline-primary" onclick="importCustomDate()">
+                                <i class="fas fa-calendar-check me-2"></i>导入指定日期
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 状态信息 -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>系统状态
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 id="totalFiles" class="text-primary">-</h4>
+                        <small class="text-muted">待处理文件</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 id="processedFiles" class="text-success">-</h4>
+                        <small class="text-muted">已处理文件</small>
+                    </div>
+                </div>
+                <hr>
+                <div class="text-center">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="refreshStatus()">
+                        <i class="fas fa-sync me-1"></i>刷新状态
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 进度显示区域 -->
+<div id="progressSection" class="row mb-4" style="display: none;">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h6>导入进度</h6>
+                <div class="progress mb-2">
+                    <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                </div>
+                <div id="progressText" class="text-muted">准备开始...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 导入历史记录 -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-history me-2"></i>导入历史记录
+                </h5>
+                <button class="btn btn-outline-secondary btn-sm" onclick="loadImportHistory()">
+                    <i class="fas fa-sync me-1"></i>刷新
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>文件名</th>
+                                <th>导入日期</th>
+                                <th>状态</th>
+                                <th>导入记录数</th>
+                                <th>导入时间</th>
+                                <th>错误信息</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="importHistoryTable">
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">
+                                    <i class="fas fa-spinner fa-spin me-2"></i>加载中...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 文件浏览器模态框 -->
+<div class="modal fade" id="fileBrowserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">数据文件浏览</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="fileList">
+                    <p class="text-muted">加载中...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadImportHistory();
+    refreshStatus();
+    
+    // 设置默认日期为今天
+    document.getElementById('customDate').value = new Date().toISOString().split('T')[0];
+});
+
+function importAllData() {
+    if (!confirm('确定要导入所有未处理的数据文件吗？这可能需要一些时间。')) {
+        return;
+    }
+    
+    showProgress('开始导入所有数据...');
+    
+    fetch('/api/import-data', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            import_type: 'all'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideProgress();
+        if (data.success) {
+            showAlert('success', `数据导入完成！共处理 ${data.data.length} 个文件`);
+            loadImportHistory();
+            refreshStatus();
+        } else {
+            showAlert('danger', '数据导入失败: ' + data.message);
+        }
+    })
+    .catch(error => {
+        hideProgress();
+        showAlert('danger', '网络错误: ' + error.message);
+    });
+}
+
+function importTodayData() {
+    const today = new Date().toISOString().split('T')[0];
+    importDateData(today, '今日');
+}
+
+function importCustomDate() {
+    const customDate = document.getElementById('customDate').value;
+    if (!customDate) {
+        showAlert('warning', '请选择要导入的日期');
+        return;
+    }
+    
+    importDateData(customDate, '指定日期');
+}
+
+function importDateData(dateStr, description) {
+    showProgress(`开始导入${description}数据...`);
+    
+    fetch('/api/import-data', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            import_type: 'date',
+            target_date: dateStr
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideProgress();
+        if (data.success) {
+            if (data.data.length > 0) {
+                showAlert('success', `${description}数据导入完成！共处理 ${data.data.length} 个文件`);
+            } else {
+                showAlert('info', `${description}没有找到待导入的文件`);
+            }
+            loadImportHistory();
+            refreshStatus();
+        } else {
+            showAlert('danger', `${description}数据导入失败: ` + data.message);
+        }
+    })
+    .catch(error => {
+        hideProgress();
+        showAlert('danger', '网络错误: ' + error.message);
+    });
+}
+
+function loadImportHistory() {
+    fetch('/api/import-status')
+        .then(response => response.json())
+        .then(data => {
+            const tbody = document.getElementById('importHistoryTable');
+            
+            if (data.success && data.data.length > 0) {
+                tbody.innerHTML = data.data.map(log => `
+                    <tr>
+                        <td>
+                            <code class="text-primary">${log.file_name}</code>
+                        </td>
+                        <td>${log.import_date || '-'}</td>
+                        <td>
+                            <span class="badge bg-${getStatusColor(log.status)}">
+                                ${getStatusText(log.status)}
+                            </span>
+                        </td>
+                        <td class="text-end">${log.records_imported || 0}</td>
+                        <td>${log.import_time || '-'}</td>
+                        <td>
+                            ${log.error_message ? 
+                                `<span class="text-danger" title="${log.error_message}">
+                                    ${log.error_message.substring(0, 50)}${log.error_message.length > 50 ? '...' : ''}
+                                </span>` : 
+                                '-'
+                            }
+                        </td>
+                        <td>
+                            ${log.status === 'failed' ? 
+                                `<button class="btn btn-sm btn-outline-warning" onclick="retryImport('${log.file_name}')">
+                                    <i class="fas fa-redo me-1"></i>重试
+                                </button>` : 
+                                '-'
+                            }
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">暂无导入记录</td></tr>';
+            }
+        })
+        .catch(error => {
+            document.getElementById('importHistoryTable').innerHTML = 
+                '<tr><td colspan="7" class="text-center text-danger">加载失败: ' + error.message + '</td></tr>';
+        });
+}
+
+function refreshStatus() {
+    // 这里应该调用API获取文件状态
+    // 简化实现，显示模拟数据
+    fetch('/api/file-status')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('totalFiles').textContent = data.data.pending_files || 0;
+                document.getElementById('processedFiles').textContent = data.data.processed_files || 0;
+            }
+        })
+        .catch(error => {
+            console.error('获取文件状态失败:', error);
+        });
+}
+
+function retryImport(fileName) {
+    if (!confirm(`确定要重新导入文件 ${fileName} 吗？`)) {
+        return;
+    }
+    
+    showProgress('重新导入文件...');
+    
+    fetch('/api/retry-import', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            file_name: fileName
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideProgress();
+        if (data.success) {
+            showAlert('success', '文件重新导入成功！');
+            loadImportHistory();
+            refreshStatus();
+        } else {
+            showAlert('danger', '文件重新导入失败: ' + data.message);
+        }
+    })
+    .catch(error => {
+        hideProgress();
+        showAlert('danger', '网络错误: ' + error.message);
+    });
+}
+
+function showProgress(message) {
+    document.getElementById('progressSection').style.display = 'block';
+    document.getElementById('progressText').textContent = message;
+    document.getElementById('progressBar').style.width = '0%';
+    
+    // 模拟进度
+    let progress = 0;
+    const interval = setInterval(() => {
+        progress += Math.random() * 10;
+        if (progress > 90) progress = 90;
+        
+        document.getElementById('progressBar').style.width = progress + '%';
+        
+        if (progress >= 90) {
+            clearInterval(interval);
+        }
+    }, 200);
+    
+    // 存储interval ID以便后续清理
+    window.progressInterval = interval;
+}
+
+function hideProgress() {
+    if (window.progressInterval) {
+        clearInterval(window.progressInterval);
+    }
+    
+    document.getElementById('progressBar').style.width = '100%';
+    document.getElementById('progressText').textContent = '完成';
+    
+    setTimeout(() => {
+        document.getElementById('progressSection').style.display = 'none';
+    }, 1000);
+}
+
+function getStatusColor(status) {
+    switch(status) {
+        case 'success': return 'success';
+        case 'failed': return 'danger';
+        case 'processing': return 'warning';
+        default: return 'secondary';
+    }
+}
+
+function getStatusText(status) {
+    switch(status) {
+        case 'success': return '成功';
+        case 'failed': return '失败';
+        case 'processing': return '处理中';
+        default: return '未知';
+    }
+}
+</script>
+{% endblock %}
