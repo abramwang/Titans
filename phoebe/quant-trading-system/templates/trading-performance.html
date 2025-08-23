@@ -1,0 +1,437 @@
+{% extends "base.html" %}
+
+{% block title %}交易绩效 - 量化交易系统{% endblock %}
+
+{% block extra_head %}
+<style>
+    .card {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: none;
+        margin-bottom: 20px;
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-bottom: none;
+    }
+    
+    .metric-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .positive { color: #28a745; }
+    .negative { color: #dc3545; }
+    .neutral { color: #6c757d; }
+    
+    .chart-container {
+        position: relative;
+        height: 400px;
+        margin-bottom: 20px;
+    }
+    
+    .loading {
+        text-align: center;
+        padding: 40px;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-chart-area me-2"></i>
+            交易绩效分析
+        </h2>
+    </div>
+</div>
+
+<!-- 绩效指标卡片 -->
+<div class="row" id="metricsCards">
+    <div class="col-md-2 col-sm-4">
+        <div class="metric-card text-center">
+            <h6>总收益</h6>
+            <h4 id="totalReturn">加载中...</h4>
+            <small>Total Return</small>
+        </div>
+    </div>
+    <div class="col-md-2 col-sm-4">
+        <div class="metric-card text-center">
+            <h6>夏普比率</h6>
+            <h4 id="sharpeRatio">加载中...</h4>
+            <small>Sharpe Ratio</small>
+        </div>
+    </div>
+    <div class="col-md-2 col-sm-4">
+        <div class="metric-card text-center">
+            <h6>胜率</h6>
+            <h4 id="winRate">加载中...</h4>
+            <small>Win Rate</small>
+        </div>
+    </div>
+    <div class="col-md-2 col-sm-4">
+        <div class="metric-card text-center">
+            <h6>最大回撤</h6>
+            <h4 id="maxDrawdown">加载中...</h4>
+            <small>Max Drawdown</small>
+        </div>
+    </div>
+    <div class="col-md-2 col-sm-4">
+        <div class="metric-card text-center">
+            <h6>波动率</h6>
+            <h4 id="volatility">加载中...</h4>
+            <small>Volatility</small>
+        </div>
+    </div>
+    <div class="col-md-2 col-sm-4">
+        <div class="metric-card text-center">
+            <h6>交易天数</h6>
+            <h4 id="tradingDays">加载中...</h4>
+            <small>Trading Days</small>
+        </div>
+    </div>
+</div>
+
+<!-- 图表区域 -->
+<div class="row">
+    <!-- 累计收益曲线 -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-line me-2"></i>
+                    累计收益曲线
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="returnsChartLoading" class="loading">
+                    <i class="fas fa-spinner fa-spin fa-2x"></i>
+                    <p class="mt-2">正在加载图表...</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="returnsChart" style="display: none;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 月度统计 -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-calendar me-2"></i>
+                    月度统计
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="monthlyStatsLoading" class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>加载中...</p>
+                </div>
+                <div id="monthlyStatsTable" style="display: none;">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>月份</th>
+                                    <th>收益</th>
+                                    <th>胜率</th>
+                                </tr>
+                            </thead>
+                            <tbody id="monthlyStatsBody">
+                                <!-- 动态生成 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 日收益分布 -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    日收益分布
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="dailyReturnsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 胜负分析 -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-pie-chart me-2"></i>
+                    胜负分析
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="winLossChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let performanceData = null;
+
+// 页面加载时初始化
+document.addEventListener('DOMContentLoaded', function() {
+    loadPerformanceMetrics();
+});
+
+// 加载绩效指标
+async function loadPerformanceMetrics() {
+    try {
+        const response = await fetch('/api/performance-metrics');
+        const data = await response.json();
+        
+        if (data.success) {
+            performanceData = data.data;
+            updateMetricsCards();
+            renderChartsWhenReady();
+        } else {
+            throw new Error(data.error || '获取数据失败');
+        }
+    } catch (error) {
+        console.error('加载绩效指标失败:', error);
+        showError('加载数据失败：' + error.message);
+    }
+}
+
+// 更新指标卡片
+function updateMetricsCards() {
+    const { returns, risk, win_loss, period } = performanceData;
+    
+    // 更新总收益
+    const totalReturnElement = document.getElementById('totalReturn');
+    totalReturnElement.textContent = `¥${returns.total_return.toLocaleString()}`;
+    totalReturnElement.className = returns.total_return >= 0 ? 'positive' : 'negative';
+    
+    // 更新夏普比率
+    document.getElementById('sharpeRatio').textContent = returns.sharpe_ratio.toFixed(2);
+    
+    // 更新胜率
+    document.getElementById('winRate').textContent = `${win_loss.win_rate.toFixed(1)}%`;
+    
+    // 更新最大回撤
+    const maxDrawdownElement = document.getElementById('maxDrawdown');
+    maxDrawdownElement.textContent = `${risk.max_drawdown_pct.toFixed(1)}%`;
+    maxDrawdownElement.className = 'negative';
+    
+    // 更新波动率
+    document.getElementById('volatility').textContent = `${risk.volatility.toLocaleString()}`;
+    
+    // 更新交易天数
+    document.getElementById('tradingDays').textContent = period.trading_days;
+}
+
+// 等待图表库加载完成后渲染图表
+function renderChartsWhenReady() {
+    if (typeof Chart !== 'undefined') {
+        renderCharts();
+    } else {
+        setTimeout(renderChartsWhenReady, 100);
+    }
+}
+
+// 渲染所有图表
+function renderCharts() {
+    renderReturnsChart();
+    renderMonthlyStats();
+    renderDailyReturnsChart();
+    renderWinLossChart();
+}
+
+// 渲染累计收益曲线
+function renderReturnsChart() {
+    const ctx = document.getElementById('returnsChart').getContext('2d');
+    const { cumulative_returns, dates } = performanceData;
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: '累计收益',
+                data: cumulative_returns,
+                borderColor: '#667eea',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: {
+                        callback: function(value) {
+                            return '¥' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return '累计收益: ¥' + context.parsed.y.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // 隐藏加载指示器，显示图表
+    document.getElementById('returnsChartLoading').style.display = 'none';
+    document.getElementById('returnsChart').style.display = 'block';
+}
+
+// 渲染月度统计
+function renderMonthlyStats() {
+    const { monthly_stats } = performanceData;
+    const tbody = document.getElementById('monthlyStatsBody');
+    
+    tbody.innerHTML = '';
+    monthly_stats.forEach(stat => {
+        const returnClass = stat.return >= 0 ? 'positive' : 'negative';
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${stat.month}</td>
+            <td class="${returnClass}">¥${stat.return.toLocaleString()}</td>
+            <td>${stat.win_rate.toFixed(1)}%</td>
+        `;
+        tbody.appendChild(row);
+    });
+    
+    document.getElementById('monthlyStatsLoading').style.display = 'none';
+    document.getElementById('monthlyStatsTable').style.display = 'block';
+}
+
+// 渲染日收益分布
+function renderDailyReturnsChart() {
+    const ctx = document.getElementById('dailyReturnsChart').getContext('2d');
+    const { daily_returns, dates } = performanceData;
+    
+    // 创建颜色数组（正收益绿色，负收益红色）
+    const colors = daily_returns.map(value => value >= 0 ? '#28a745' : '#dc3545');
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: dates,
+            datasets: [{
+                label: '日收益',
+                data: daily_returns,
+                backgroundColor: colors,
+                borderColor: colors,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '¥' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return '日收益: ¥' + context.parsed.y.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// 渲染胜负分析
+function renderWinLossChart() {
+    const ctx = document.getElementById('winLossChart').getContext('2d');
+    const { win_loss } = performanceData;
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['盈利天数', '亏损天数'],
+            datasets: [{
+                data: [win_loss.winning_days, win_loss.losing_days],
+                backgroundColor: ['#28a745', '#dc3545'],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = win_loss.winning_days + win_loss.losing_days;
+                            const percentage = ((context.parsed / total) * 100).toFixed(1);
+                            return `${context.label}: ${context.parsed}天 (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// 显示错误信息
+function showError(message) {
+    const alertHtml = `
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    const alertContainer = document.getElementById('alertContainer');
+    if (alertContainer) {
+        alertContainer.innerHTML = alertHtml;
+    }
+}
+</script>
+{% endblock %}

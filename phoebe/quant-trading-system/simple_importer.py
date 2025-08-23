@@ -127,9 +127,15 @@ class SimpleDataImporter:
             security_code = str(row.iloc[0]).strip()
             security_name = str(row.iloc[1]).strip() if pd.notna(row.iloc[1]) else ''
             
-            # 区分业务类型：
-            # "日内底仓T0"、"ETF日内申赎" - 当日交易记录明细
-            # "隔夜底仓"、"ETF赎回涨停票" - 当日收盘后留下的持仓
+            # 区分业务分类：
+            # "日内底仓T0"、"ETF日内申赎" - 交易明细 (trading)
+            # "隔夜底仓"、"ETF赎回涨停票" - 持仓明细 (position)
+            if business_type in ['日内底仓T0', 'ETF日内申赎']:
+                business_category = 'trading'
+            elif business_type in ['隔夜底仓', 'ETF赎回涨停票']:
+                business_category = 'position'
+            else:
+                business_category = 'trading'  # 默认为交易
             
             if business_type in ['日内底仓T0']:
                 # 日内T0业务: 证券代码, 证券名称, 买入价格, 买入数量, 买入金额, 卖出价格, 卖出数量, 卖出金额, 手续费, 利润
@@ -153,6 +159,7 @@ class SimpleDataImporter:
                     security_code=security_code,
                     security_name=security_name,
                     business_type=business_type,
+                    business_category=business_category,
                     trade_direction='T0交易',
                     trade_volume=net_volume,
                     trade_price=avg_price,
@@ -190,6 +197,7 @@ class SimpleDataImporter:
                     security_code=security_code,
                     security_name=security_name,
                     business_type=business_type,
+                    business_category=business_category,
                     trade_direction='申赎',
                     trade_volume=volume,
                     trade_price=price,
@@ -225,6 +233,7 @@ class SimpleDataImporter:
                     security_code=security_code,
                     security_name=security_name,
                     business_type=business_type,
+                    business_category=business_category,
                     trade_direction='持仓',
                     trade_volume=position_volume,
                     trade_price=position_price,

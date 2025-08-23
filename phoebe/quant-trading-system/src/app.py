@@ -183,14 +183,20 @@ def get_trading_details():
                 td.security_name,
                 td.business_type,
                 td.trade_direction,
-                td.trade_volume,
-                td.trade_price,
-                td.trade_amount,
-                td.commission,
-                td.total_fee,
-                td.net_amount,
-                td.pnl,
-                td.created_at
+                COALESCE(td.trade_volume, 0) as trade_volume,
+                COALESCE(td.trade_price, 0) as trade_price,
+                COALESCE(td.trade_amount, 0) as trade_amount,
+                COALESCE(td.commission, 0) as commission,
+                COALESCE(td.total_fee, 0) as total_fee,
+                COALESCE(td.net_amount, 0) as net_amount,
+                COALESCE(td.pnl, 0) as pnl,
+                td.created_at,
+                COALESCE(td.buy_price, 0) as buy_price,
+                COALESCE(td.sell_price, 0) as sell_price,
+                COALESCE(td.buy_volume, 0) as buy_volume,
+                COALESCE(td.sell_volume, 0) as sell_volume,
+                COALESCE(td.buy_amount, 0) as buy_amount,
+                COALESCE(td.sell_amount, 0) as sell_amount
             FROM trading_details td
             WHERE 1=1
         '''
@@ -224,7 +230,7 @@ def get_trading_details():
         details = []
         for row in results:
             details.append({
-                'trade_date': row.trade_date.strftime('%Y-%m-%d'),
+                'trade_date': row.trade_date.strftime('%Y-%m-%d') if row.trade_date else '',
                 'security_code': row.security_code,
                 'security_name': row.security_name,
                 'business_type': row.business_type,
@@ -236,7 +242,13 @@ def get_trading_details():
                 'total_fee': float(row.total_fee),
                 'net_amount': float(row.net_amount),
                 'pnl': float(row.pnl),
-                'created_at': row.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                'buy_price': float(row.buy_price),
+                'sell_price': float(row.sell_price),
+                'buy_volume': int(row.buy_volume),
+                'sell_volume': int(row.sell_volume),
+                'buy_amount': float(row.buy_amount),
+                'sell_amount': float(row.sell_amount),
+                'created_at': row.created_at.strftime('%Y-%m-%d %H:%M:%S') if row.created_at else ''
             })
         
         session.close()
@@ -273,8 +285,8 @@ def get_daily_summary_api():
                 trade_date,
                 business_type,
                 COUNT(*) as record_count,
-                SUM(pnl) as daily_pnl,
-                SUM(trade_amount) as total_amount,
+                COALESCE(SUM(pnl), 0) as daily_pnl,
+                COALESCE(SUM(trade_amount), 0) as total_amount,
                 COUNT(DISTINCT security_code) as unique_securities
             FROM trading_details
             GROUP BY trade_date, business_type
@@ -377,13 +389,13 @@ def get_trading_dates():
         '''
         
         results = session.execute(text(query)).fetchall()
-        dates = [row.trade_date.strftime('%Y-%m-%d') for row in results]
+        trading_dates = [row.trade_date.strftime('%Y-%m-%d') for row in results if row.trade_date]
         
         session.close()
         
         return jsonify({
             'success': True,
-            'data': dates
+            'data': trading_dates
         })
         
     except Exception as e:

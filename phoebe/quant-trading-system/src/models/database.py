@@ -70,6 +70,7 @@ class TradingDetails(Base):
     security_code = Column(String(20), nullable=False, comment='证券代码')
     security_name = Column(String(100), nullable=False, comment='证券名称')
     business_type = Column(String(50), nullable=False, comment='业务类型')
+    business_category = Column(String(20), nullable=False, default='trading', comment='业务分类: trading=交易明细, position=持仓明细')
     trade_direction = Column(String(10), nullable=False, comment='买卖方向')
     trade_volume = Column(Integer, comment='成交数量')
     trade_price = Column(Numeric(10, 4), comment='成交价格')

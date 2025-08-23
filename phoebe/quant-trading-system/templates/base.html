@@ -36,6 +36,16 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'trading_performance' %}active{% endif %}" href="{{ url_for('trading_performance') }}">
+                            <i class="fas fa-chart-area me-1"></i>交易绩效
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'trading_details' %}active{% endif %}" href="{{ url_for('trading_details') }}">
+                            <i class="fas fa-list-alt me-1"></i>交易明细
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {% if request.endpoint == 'analytics' %}active{% endif %}" href="{{ url_for('analytics') }}">
                             <i class="fas fa-chart-bar me-1"></i>绩效分析
                         </a>

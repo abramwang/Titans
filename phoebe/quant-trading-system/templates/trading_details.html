@@ -202,6 +202,10 @@
                                     <th>数量</th>
                                     <th>价格</th>
                                     <th>交易金额</th>
+                                    <th>买入价格</th>
+                                    <th>卖出价格</th>
+                                    <th>买入数量</th>
+                                    <th>卖出数量</th>
                                     <th>手续费</th>
                                     <th>盈亏</th>
                                     <th>创建时间</th>
@@ -361,6 +365,24 @@
             details.forEach(detail => {
                 const pnlClass = detail.pnl > 0 ? 'positive' : detail.pnl < 0 ? 'negative' : 'neutral';
                 
+                // 判断是否为T0交易，显示买卖详细信息
+                const isT0 = detail.business_type === '日内底仓T0';
+                
+                // 构建买卖详细信息列
+                let buyPriceCell, sellPriceCell, buyVolumeCell, sellVolumeCell;
+                
+                if (isT0 && detail.buy_price > 0 && detail.sell_price > 0) {
+                    buyPriceCell = `<td class="text-end text-success">¥${detail.buy_price.toFixed(2)}</td>`;
+                    sellPriceCell = `<td class="text-end text-danger">¥${detail.sell_price.toFixed(2)}</td>`;
+                    buyVolumeCell = `<td class="text-end text-success">${detail.buy_volume.toLocaleString()}</td>`;
+                    sellVolumeCell = `<td class="text-end text-danger">${detail.sell_volume.toLocaleString()}</td>`;
+                } else {
+                    buyPriceCell = `<td class="text-muted text-center">-</td>`;
+                    sellPriceCell = `<td class="text-muted text-center">-</td>`;
+                    buyVolumeCell = `<td class="text-muted text-center">-</td>`;
+                    sellVolumeCell = `<td class="text-muted text-center">-</td>`;
+                }
+                
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${detail.trade_date}</td>
@@ -371,6 +393,10 @@
                     <td class="text-end">${detail.trade_volume.toLocaleString()}</td>
                     <td class="text-end">¥${detail.trade_price.toFixed(2)}</td>
                     <td class="text-end">¥${detail.trade_amount.toLocaleString()}</td>
+                    ${buyPriceCell}
+                    ${sellPriceCell}
+                    ${buyVolumeCell}
+                    ${sellVolumeCell}
                     <td class="text-end">¥${detail.total_fee.toFixed(2)}</td>
                     <td class="text-end ${pnlClass}">¥${detail.pnl.toLocaleString()}</td>
                     <td class="small text-muted">${detail.created_at}</td>
