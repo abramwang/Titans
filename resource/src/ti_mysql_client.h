@@ -3,7 +3,7 @@
 
 #include <string>
 #include <iostream>
-#include <mysql/mysql.h>
+#include <mariadb/mysql.h>
 
 #include <vector>
 #include <map>
