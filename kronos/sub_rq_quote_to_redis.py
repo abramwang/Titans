@@ -43,7 +43,7 @@ for market in client.listen():
     del data["channel"]
     del data["action"]
     
-    redis_conn.xadd("oc_rq_quote_tick",
+    redis_conn.xadd("oc_rq_quote",
         {
             "snapshot": json.dumps(market)
         }
