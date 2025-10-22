@@ -5,8 +5,6 @@
 #include "redis_commander.h"
 #include "redis_sync_handle.h"
 #include <nlohmann/json.hpp>
-#include "oc_quote_info_mysql.h"
-#include "oc_quote_cache.h"
 
 #include "ti_ctp_quote_client.h"
 #include "oc_quote_ipc_server.h"
@@ -30,11 +28,6 @@ public:
         std::string szQuoteConsumerId;
 
         std::string szQuoteIpcTopic;
-
-        std::string szSqlIp;
-        int         nSqlPort;
-        std::string szSqlUser;
-        std::string szSqlPassword;
     } ConfigInfo;
 
 public:
@@ -60,15 +53,10 @@ public:
    
 private:
     RedisSyncHandle m_redis;
-    OcQuoteInfoMysql* m_quote_info_mysql_client;
 
     uv_timer_t m_timer;
     ConfigInfo* m_config;
     
-    std::vector<OCInstrumentInfo> m_instrument_info_list;
-    OcQuoteCache m_quote_cache;
-    
-
     TiCtpQuoteClient* m_ctp_client;
     OcQuoteIpcServer m_ipc_server;
 private:

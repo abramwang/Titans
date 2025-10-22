@@ -29,7 +29,7 @@ link_directories( "./" )
 
 add_executable( ${PROJECT_NAME} ${SRCS} )
 
-target_link_libraries(${PROJECT_NAME} -lcurl -lmysqlclient -larrow -lparquet -luv -lhiredis -lglog -lrt)
+target_link_libraries(${PROJECT_NAME} -lcurl -lmariadbclient -larrow -lparquet -luv -lhiredis -lglog -lrt)
 
 
 # 指定源文件和目标文件路径
