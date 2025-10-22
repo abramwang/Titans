@@ -12,7 +12,7 @@ TiQuoteOrderReader::TiQuoteOrderReader(const char* path, char* field_list[], siz
         arrow::io::ReadableFile::Open(path,
                                     arrow::default_memory_pool()));
     PARQUET_THROW_NOT_OK(
-        parquet::arrow::OpenFile(infile, arrow::default_memory_pool(), &m_reader));
+        parquet::arrow::OpenFile(infile, arrow::default_memory_pool()));
     
     PARQUET_THROW_NOT_OK(m_reader->GetSchema(&m_file_schema));
 

@@ -10,7 +10,7 @@ void TiQuoteParquetReader::init_read_array_work(uv_work_t* req){
         arrow::io::ReadableFile::Open(req_info->m_file_path.c_str(),
                                     arrow::default_memory_pool()));
     PARQUET_THROW_NOT_OK(
-        parquet::arrow::OpenFile(_infile, arrow::default_memory_pool(), &_reader));
+        parquet::arrow::OpenFile(_infile, arrow::default_memory_pool()));
     PARQUET_THROW_NOT_OK(_reader->GetSchema(&_schema));
     
     int _field_index = _schema->GetFieldIndex(req_info->m_field); 
@@ -45,7 +45,7 @@ void TiQuoteParquetReader::loadAllArray(std::string file_path)
         arrow::io::ReadableFile::Open(file_path.c_str(),
                                     arrow::default_memory_pool()));
     PARQUET_THROW_NOT_OK(
-        parquet::arrow::OpenFile(infile, arrow::default_memory_pool(), &_reader));
+        parquet::arrow::OpenFile(infile, arrow::default_memory_pool()));
     PARQUET_THROW_NOT_OK(_reader->GetSchema(&_schema));
 
     std::vector<std::string> _field_names_vec = _schema->field_names();
