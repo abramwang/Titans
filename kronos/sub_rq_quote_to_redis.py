@@ -12,10 +12,13 @@ redis_pool = redis.ConnectionPool(host='192.168.3.100',
 redis_conn = redis.Redis(connection_pool= redis_pool)
 
 
+df = rqdatac.all_instruments(type="ETF", market='cn', date=None)
+order_book_id_list = df['order_book_id'].tolist()
+order_book_id_list = ['tick_' + oid for oid in order_book_id_list]
 
 client = LiveMarketDataClient()
 # 订阅一支tick标的
-client.subscribe(['tick_000001.XSHE', 'tick_000002.XSHE'])
+client.subscribe(order_book_id_list)
 
 exchange_dict = {
     "XSHG": "SH",
@@ -29,46 +32,11 @@ exchange_dict = {
     "GFEX": "GFEX",
 }
 
-def convert_timestamp_to_datetime(timestamp: int) -> datetime:
-    """
-    Convert a timestamp integer in the format YYYYMMDDHHMMSSmmm to a datetime object.
-    This version uses integer arithmetic for efficiency, avoiding string conversion.
-    
-    Args:
-        timestamp (int): The timestamp, e.g., 20251022094221000
-    
-    Returns:
-        datetime: The corresponding datetime object
-    """
-    # Extract components using integer division and modulo
-    year = timestamp // 10000000000000
-    month = (timestamp // 100000000000) % 100
-    day = (timestamp // 1000000000) % 100
-    hour = (timestamp // 10000000) % 100
-    minute = (timestamp // 100000) % 100
-    second = (timestamp // 1000) % 100
-    millisecond = timestamp % 1000
-    microsecond = millisecond * 1000  # Convert milliseconds to microseconds
-    
-    return datetime(year, month, day, hour, minute, second, microsecond)
 
-
-def convert_to_unix_timestamp(timestamp: int) -> float:
-    """
-    Convert a timestamp integer in the format YYYYMMDDHHMMSSmmm to a Unix timestamp (seconds since 1970-01-01 00:00:00 UTC).
-    
-    Args:
-        timestamp (int): The timestamp, e.g., 20251022094221000
-    
-    Returns:
-        float: The Unix timestamp
-    """
-    dt = convert_timestamp_to_datetime(timestamp)
-    return dt.timestamp()
-
+print(order_book_id_list)
 
 for market in client.listen():
-    print(datetime.now(), market)
+    #print(datetime.now(), market)
     data = market
     data["market"] = exchange_dict[market["order_book_id"].split(".")[1]] 
     data["symbol"] = market["order_book_id"].split(".")[0]
@@ -79,5 +47,5 @@ for market in client.listen():
         {
             "snapshot": json.dumps(market)
         }
-        , maxlen= 2000
+        , maxlen= 200000
     )
