@@ -29,7 +29,7 @@ link_directories( "./" )
 
 add_executable( ${PROJECT_NAME} ${SRCS} )
 
-target_link_libraries(${PROJECT_NAME} -lmysqlclient -lcurl -larrow -lparquet -luv -lhiredis -lglog -lrt)
+target_link_libraries(${PROJECT_NAME} -lmariadbclient -lcurl -larrow -lparquet -luv -lhiredis -lglog -lrt)
 
 # 指定源文件和目标文件路径
 set(SOURCE_FILE "./oc_ipc_quote_to_influxdb")
