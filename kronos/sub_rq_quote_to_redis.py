@@ -38,7 +38,7 @@ print(order_book_id_list)
 for market in client.listen():
     #print(datetime.now(), market)
     data = market
-    data["market"] = exchange_dict[market["order_book_id"].split(".")[1]] 
+    data["exchange"] = exchange_dict[market["order_book_id"].split(".")[1]] 
     data["symbol"] = market["order_book_id"].split(".")[0]
     del data["channel"]
     del data["action"]
