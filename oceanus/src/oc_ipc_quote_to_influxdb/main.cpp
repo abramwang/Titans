@@ -26,8 +26,8 @@ private:
 public:
     UserCallback(uv_loop_s* loop){
         m_influxdb_client = new TiInfluxdbClient(
-            "http://192.168.71.26:8086", 
-            "sbB2OFOtAcL-StvkbW1ONfoY9LDtfdBtIqDBPaigr1gFAc_qfiz52itwb3tRxZ9DJ245LZey95cW8VzfU0WTZg==");
+            "http://192.168.3.100:8086", 
+            "NKvi_7kqu2enf8vYiwYcl-cc8UnR5_ne4pZEMxPOWJkh9vGfrRuN0KUyX0DxxoEBQsHuosg3X7KX-N2QyAKogg==");
 
         m_cout_future_time = 0;
         m_cout_snap_time = 0;
@@ -102,7 +102,7 @@ public:
 
         if ((pData->time - m_cout_future_time) > 5000)
         {
-            m_influxdb_client->write("ti_tick_snapshot", "timely", "ms");
+            m_influxdb_client->write("ti_tick_snapshot", "ti_quant", "ms");
             printf("[OnL2FutureSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
                 pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
             m_cout_future_time = pData->time;
@@ -148,7 +148,7 @@ public:
 
         if ((pData->time - m_cout_snap_time) > 5000)
         {
-            m_influxdb_client->write("ti_tick_snapshot", "timely", "ms");
+            m_influxdb_client->write("ti_tick_snapshot", "ti_quant", "ms");
             printf("[OnL2StockSnapshotRtn] %s, %s, %d, %s, %f, %ld, %f\n", 
                 pData->symbol, pData->exchange, pData->time, pData->time_str, pData->last, pData->acc_volume, pData->acc_turnover);
             //json j;

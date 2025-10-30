@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 __all__ = [
     'SetRootPath', 'GetDayBar', 'GetBar', 'GetMarket', 'GetBaseData'
 ]
 __author__ = 'bo wang <bo.wang@sci-inv.cn>'
 
 
-__history_root__ = "http://172.17.0.1"
+__history_root__ = "http://192.168.3.100/data"
 __history_root_type__ = "URL"
 
 
