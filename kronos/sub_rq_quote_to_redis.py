@@ -30,6 +30,12 @@ df = rqdatac.all_instruments(type="ETF", market='cn', date=None)
 order_book_id_list = df['order_book_id'].tolist()
 order_book_id_list = ['tick_' + oid for oid in order_book_id_list]
 
+df2 = rqdatac.all_instruments(type="INDX", market='cn', date=None)
+order_book_id_list2 = df2['order_book_id'].tolist()
+order_book_id_list2 = ['tick_' + oid for oid in order_book_id_list2]
+
+order_book_id_list = order_book_id_list + order_book_id_list2
+
 client = LiveMarketDataClient()
 # 订阅一支tick标的
 client.subscribe(order_book_id_list)
@@ -38,6 +44,7 @@ exchange_dict = {
     "XSHG": "SH",
     "XSHE": "SZ",
     "INDX" : "INDX",
+    "RI": "RI",
     "DCE": "DCE",
     "SHFE": "SHFE",
     "CZCE": "CZCE",
