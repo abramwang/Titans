@@ -138,3 +138,15 @@ yum install -y --enablerepo=epel arrow-dataset-glib-devel # For Apache Arrow Dat
 yum install -y --enablerepo=epel parquet-devel # For Apache Parquet C++
 yum install -y --enablerepo=epel parquet-glib-devel 
 ```
+
+应该要使用新版本了
+```shell
+yum install -y \
+  https://packages.apache.org/artifactory/arrow/centos/7/apache-arrow-release-latest.rpm
+
+# C++ 读写 Parquet，先只主动安装这两个包
+yum install -y --enablerepo=epel arrow-devel parquet-devel
+
+# 需要 Dataset API（多文件、分区数据集扫描）时再安装
+yum install -y --enablerepo=epel arrow-dataset-devel
+```
